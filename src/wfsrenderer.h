@@ -304,7 +304,7 @@ WfsRenderer::RenderFunction::select(SourceChannel& in)
   _in = &in;
 
   // define a restricted area around loudspeakers to avoid division by zero:
-  const float safety_radius = 0.01f; // 1 cm
+  const float safety_radius = 0.1f; // 10 cm
 
   // TODO: move reference calculation to WfsRenderer::Process?
   auto ref = DirectionalPoint(_out.parent.state.reference_position
