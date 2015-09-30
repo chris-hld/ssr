@@ -476,16 +476,18 @@ WfsRenderer::RenderFunction::select(SourceChannel& in)
       break;
   } // switch source model
 
+  // ===== Additional distance attenuation, only perceptual motivated ===== //
+  //
   // no distance attenuation for plane waves 
   if (in.source.model == ::Source::plane)
   {
     float ampl_ref = _out.parent.state.amplitude_reference_distance;
     assert(ampl_ref > 0);
 
-    // 1/r:
-    weighting_factor *= 0.5f / ampl_ref;
-    // 1/sqrt(r)
-    //weighting_factor *= 0.25f / std::sqrt(ampl_ref);
+    // r:
+    //weighting_factor *= 0.5f * ampl_ref;
+    // sqrt(r)
+    weighting_factor *= 0.25f * std::sqrt(ampl_ref);
   }
   else
   {
@@ -496,8 +498,8 @@ WfsRenderer::RenderFunction::select(SourceChannel& in)
     // no volume increase for sources closer than 0.5m to reference position
     source_distance = std::max(source_distance, 0.5f);
 
-    weighting_factor *= 0.5f / source_distance; // 1/r
-    // weighting_factor *= 0.25f / std::sqrt(source_distance); // 1/sqrt(r)
+    // weighting_factor *= 0.5f * source_distance; // r
+    weighting_factor *= 0.25f * std::sqrt(source_distance); // sqrt(r)
 #elif defined(WEIGHTING_DELFT)
 #endif
   }
