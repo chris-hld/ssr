@@ -500,12 +500,13 @@ WfsRenderer::RenderFunction::select(SourceChannel& in)
 
     if (in.source._focused)
     {
-      weighting_factor *= 0.5f / source_distance; // 1/r
+      //weighting_factor *= 0.5f / std::sqrt(source_distance); // 1/sqrt(r)
+      weighting_factor *= 0.25f;
     }
     else
     {
-      weighting_factor *= 0.25f * source_distance; // r
-      //weighting_factor *= 0.25f * std::sqrt(source_distance); // sqrt(r)
+      //weighting_factor *= 0.25f * source_distance; // r
+      weighting_factor *= 0.25f * std::sqrt(source_distance); // sqrt(r)
     }
 #elif defined(WEIGHTING_DELFT)
 #endif
