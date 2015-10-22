@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DEVICE=hw:USB
+#DEVICE=hw:USB
 
 #JACKOPTIONS="--realtime"
 ALSAOPTIONS="-n2"
@@ -12,12 +12,14 @@ ALSAOPTIONS="-n2"
 # -s, --softmode
 
 # sample rate
-RATE=48000
+RATE=41000
 BLOCKSIZE=1024
 
 #jackd -d dummy -r $RATE -p $BLOCKSIZE -C 64 -P 64 &
 
-jackd $JACKOPTIONS -d alsa -r$RATE -p$BLOCKSIZE -d$DEVICE $ALSAOPTIONS &
+#jackd $JACKOPTIONS -d alsa -r$RATE -p$BLOCKSIZE -d$DEVICE $ALSAOPTIONS &
+
+jackd $JACKOPTIONS -d alsa -r$RATE -p$BLOCKSIZE &
 
 # start control panel to check the input-output connections
 qjackctl &
