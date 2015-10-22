@@ -21,5 +21,6 @@ BLOCKSIZE=1024
 
 jackd $JACKOPTIONS -d alsa -r$RATE -p$BLOCKSIZE &
 
+
 # start control panel to check the input-output connections
 qjackctl &

@@ -7,9 +7,6 @@
 ./start_jack.sh
 sleep 4
 
-# PD
-./start_pd.sh
-sleep 10
 
 # SSR
 ./start_ssr.sh
