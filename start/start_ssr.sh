@@ -11,7 +11,7 @@ WORKING_DIR=$(pwd)
 #ssr-brs \
 #    -c $WORKING_DIR/$CONFFILE $SSROPTIONS &
 
-#ssr--wfs
+./data/ssr-wfs --prefilter=data/impulse_responses/wfs_prefilters/wfs_prefilter_120_1500_44100.wav --setup=data/reproduction_setups/circle.asd
 
 # Store PID of SSR in order to stop it from a script
 echo $! > pid.tmp
