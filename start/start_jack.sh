@@ -3,7 +3,7 @@
 #DEVICE=hw:USB
 
 #JACKOPTIONS="--realtime"
-ALSAOPTIONS="-n2"
+#ALSAOPTIONS="-n2"
 
 # general:
 # -R, --realtime
