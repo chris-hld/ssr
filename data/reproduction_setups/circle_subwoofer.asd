@@ -20,8 +20,8 @@
 	
 	    <!-- The following loudspeaker is a subwoofer at output channel 64 -->
     <loudspeaker model="subwoofer">
-      <position x="1" y="-2"/>
-      <orientation azimuth="0"/> <!-- angles are not limited to 0..360 -->
+      <position x="1" y="0"/>
+      <orientation azimuth="180"/> <!-- angles are not limited to 0..360 -->
     </loudspeaker>
 
   </reproduction_setup>
