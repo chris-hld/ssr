@@ -5,33 +5,26 @@
 # Also correcting the SSR Feed No. according to Channel No. by offset -10.
 # AUTHOR: Hagen Wierstorf, Chris Hold
 
-SSR_TYPE=WFSRenderer
+sleep 10
+
+SSR_TYPE=WFS-Renderer
 SYS=system
-#PD=pure_data_0
 
-# disconnect all standard connections
-jack_disconnect $SSR_TYPE:out_1  $SYS:playback_1
-jack_disconnect $SSR_TYPE:out_2  $SYS:playback_2
+#jack_disconnect system:capture_1 WFS-Renderer:in_1
 
-jack_disconnect $SYS:capture_1  $PD:input0
-jack_disconnect $SYS:capture_2  $PD:input1
-
-for (( i=0; i<=31; i++))
+for (( i=1; i<=32; i++))
 do
-	j=`expr $i + 1`
-	jack_disconnect $PD:output$i  $SYS:playback_$j
+	jack_disconnect $SYS:capture_$i $SSR_TYPE:in_$i
 done
 
-# connect PD channels 1..30 to SSR
-for (( i=0; i<=30; i++))
+
+# connect Sys channels 11..32 to SSR but correct channel no.
+for (( i=1; i<=32; i++))
 do
-	jack_connect $PD:output$i  $SSR_TYPE:in_$i
+	j=`expr $i + 10`
+	jack_connect $SYS:capture_$j  $SSR_TYPE:in_$i
 done
 
-# connect SSR Output to the sysoutput channels 1 and 2
-#jack_connect $BRS:out_1 $SYS:playback_1
-#jack_connect $BRS:out_2 $SYS:playback_2
-
-# connect SSR Output to the sysoutput channels 63 and 64
-jack_connect $SSR_TYPE:out_1 $SYS:playback_63
-jack_connect $SSR_TYPE:out_2 $SYS:playback_64
+# connect SSR Output to the sysoutput channels 63 and 64, Subwoofer
+jack_connect $SSR_TYPE:out_63 $SYS:playback_63
+jack_connect $SSR_TYPE:out_64 $SYS:playback_64

@@ -9,8 +9,8 @@ sleep 4
 
 
 # SSR
-./start/start_ssr.sh
-sleep 10
+./start/start_ssr.sh & ./start/connect_channels.sh
+sleep 8
 
-# Connect BRS outputs
-./start/connect_channels.sh
+# Connect SSR outputs
+#./start/connect_channels.sh
