@@ -12,14 +12,14 @@ SYS=system
 
 #jack_disconnect system:capture_1 WFS-Renderer:in_1
 
-for (( i=1; i<=32; i++))
+for (( i=1; i<=52; i++))
 do
 	jack_disconnect $SYS:capture_$i $SSR_TYPE:in_$i
 done
 
 
 # connect Sys channels 11..32 to SSR but correct channel no.
-for (( i=1; i<=32; i++))
+for (( i=1; i<=52; i++))
 do
 	j=`expr $i + 10`
 	jack_connect $SYS:capture_$j  $SSR_TYPE:in_$i
