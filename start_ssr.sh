@@ -11,7 +11,7 @@ WORKING_DIR=$(pwd)
 #ssr-brs \
 #    -c $WORKING_DIR/$CONFFILE $SSROPTIONS &
 
-./data/ssr-wfs --setup=data/reproduction_setups/circle_subwoofer.asd /data/scenes/daw_52inputs_init.asd
+./data/ssr-wfs --setup=data/reproduction_setups/circle_subwoofer.asd ./data/scenes/daw_52inputs_init.asd
 
 # Store PID of SSR in order to stop it from a script
 echo $! > pid.tmp
