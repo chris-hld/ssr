@@ -10,7 +10,7 @@ sleep 10
 SSR_TYPE=WFS-Renderer
 SYS=system
 
-#jack_disconnect system:capture_1 WFS-Renderer:in_1
+#jack_disconnect system:capture_1..52 from WFS-Renderer:in_1..52
 
 for (( i=1; i<=52; i++))
 do
@@ -18,7 +18,7 @@ do
 done
 
 
-# connect Sys channels 11..32 to SSR but correct channel no.
+# connect Sys channels 11..62 to SSR but correct channel no.
 for (( i=1; i<=52; i++))
 do
 	j=`expr $i + 10`
