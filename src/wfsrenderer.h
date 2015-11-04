@@ -342,14 +342,17 @@ WfsRenderer::RenderFunction::select(SourceChannel& in)
         float_delay = (src_pos - ref_off.position).length()
           - reference_distance;
 
-        if (std::abs(float_delay) < safety_radius)
-        {
-          weighting_factor = 1.0f / std::sqrt(safety_radius);
-        }
-        else
-        {
-          weighting_factor = 1.0f / std::sqrt(std::abs(float_delay));
-        }
+        //if (std::abs(float_delay) < safety_radius)
+        //{
+        // weighting_factor = 1.0f / std::sqrt(safety_radius);
+        //}
+        //else
+        //{
+        // weighting_factor = 1.0f / std::sqrt(std::abs(float_delay));
+        //}
+		
+		weighting_factor = 1.0f;
+		
         break; // step out of switch
       }
 
