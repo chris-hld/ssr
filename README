@@ -1,6 +1,16 @@
+This is a modified version of the SoundScape Renderer (SSR) source code, which
+compensates the inherent amplitude decay for different virtual source positions.
+
+Used e.g. for the experiments in:
+
+[AES - The_Difference_Between_Stereophony_and_Wave_Field_Synthesis](https://www.researchgate.net/publication/305985331_The_Difference_Between_Stereophony_and_Wave_Field_Synthesis_in_the_Context_of_Popular_Music)
+[AES - Positioning of Musical Foreground Parts](https://www.researchgate.net/publication/309014434_Positioning_of_Musical_Foreground_Parts_in_Surrounding_Sound_Stages)
+
+
+---
 This is the source distribution of SoundScape Renderer (SSR) licensed under the
 GPLv3+. Please consult the file COPYING for more information about this license.
- 
+
 The user manual in the doc/ directory contains relevant informations about the
 SSR, including installation instructions. Additional (very detailed)
 installation instructions can be found in the file INSTALL.
