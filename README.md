@@ -4,6 +4,7 @@ compensates the inherent amplitude decay for different virtual source positions.
 Used e.g. for the experiments in:
 
 [AES - The_Difference_Between_Stereophony_and_Wave_Field_Synthesis](https://www.researchgate.net/publication/305985331_The_Difference_Between_Stereophony_and_Wave_Field_Synthesis_in_the_Context_of_Popular_Music)
+
 [AES - Positioning of Musical Foreground Parts](https://www.researchgate.net/publication/309014434_Positioning_of_Musical_Foreground_Parts_in_Surrounding_Sound_Stages)
 
 
