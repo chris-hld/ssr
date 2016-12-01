@@ -21,7 +21,10 @@ For questions, bug reports and feature requests:
 Contact: ssr@spatialaudio.net
 Website: http://spatialaudio.net/ssr/
 
+Copyright (c) 2016 Division of Applied Acoustics
+                   Chalmers University of Technology
+
 Copyright (c) 2012-2014 Institut für Nachrichtentechnik, Universität Rostock
 
 Copyright (c) 2006-2012 Quality & Usability Lab
-                        Deutsche Telekom Laboratories, TU Berlin
+Deutsche Telekom Laboratories, TU Berlin
