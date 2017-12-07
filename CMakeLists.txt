@@ -11,6 +11,8 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/_build)
 
 # Set the compiler
 SET(CMAKE_CXX_COMPILER g++)
+# Enable C++11
+set (CMAKE_CXX_STANDARD 11)
 
 # The following folder will be included
 include_directories(${PROJECT_SOURCE_DIR}/src)
@@ -42,9 +44,23 @@ file(GLOB ALL_SOURCES "src/*.cpp")
 file(GLOB_RECURSE ALL_HEADERS "src/*.h")
 
 # Libraries
+include(FindPackageHandleStandardArgs)
+
+find_package(Threads REQUIRED)
+message(STATUS THREADS_FOUND = ${THREADS_FOUND})
 find_package(LibXml2 REQUIRED)
 include_directories(${LIBXML2_INCLUDE_DIR})
 message(STATUS LIBXML2_FOUND = ${LIBXML2_FOUND})
+
+find_path(LIBSNDFILE_INCLUDE_DIR sndfile.h)
+find_library(LIBSNDFILE_LIBRARY sndfile)
+find_package_handle_standard_args(
+    LibSndFile
+    DEFAULT_MSG
+    LIBSNDFILE_LIBRARY
+    LIBSNDFILE_INCLUDE_DIR
+)
+
 include_directories(/usr/include/libecasoundc)
 
 # Preprocessor symbols
@@ -56,10 +72,12 @@ add_definitions(-DPACKAGE_URL="ToDo")
 add_definitions(-DPACKAGE_BUGREPORT="ToDo")
 
 # Compiler flags
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -std=c++11 -pthread")
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 
 #add_executable(ssr-binaural ${SOURCE_FILES} ${HEADER_FILES})
 add_executable(ssr-binaural ${SOURCE_FILES})
 
 # Link
-#target_link_libraries(ssr-binaural ${LIBXML2_LIBRARIES})
+#target_link_libraries(ssr-binaural Threads::Threads ${LIBXML2_LIBRARIES})
