@@ -3,6 +3,7 @@ cmake_minimum_required (VERSION 3.0)
 
 # Project's name
 project(SSR)
+set(CMAKE_VERBOSE_MAKEFILE ON)
 
 # Set the output folder where your program will be created
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/_build)
