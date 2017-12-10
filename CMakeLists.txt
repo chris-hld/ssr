@@ -40,11 +40,9 @@ set(SOURCE_FILES
     src/xmlparser.cpp
 )
 
-file(GLOB ALL_SOURCES "src/*.cpp")
-file(GLOB_RECURSE ALL_HEADERS "src/*.h")
-
 # Libraries
-include(FindPackageHandleStandardArgs)
+set(LINKLIBS)
+#include(FindPackageHandleStandardArgs)
 
 find_package(Threads REQUIRED)
 message(STATUS THREADS_FOUND = ${THREADS_FOUND})
@@ -52,32 +50,45 @@ find_package(LibXml2 REQUIRED)
 include_directories(${LIBXML2_INCLUDE_DIR})
 message(STATUS LIBXML2_FOUND = ${LIBXML2_FOUND})
 
-find_path(LIBSNDFILE_INCLUDE_DIR sndfile.h)
-find_library(LIBSNDFILE_LIBRARY sndfile)
-find_package_handle_standard_args(
-    LibSndFile
-    DEFAULT_MSG
-    LIBSNDFILE_LIBRARY
-    LIBSNDFILE_INCLUDE_DIR
-)
+find_library(LIBSNDFILE_LIBRARY NAMES sndfile)
+list(APPEND LINKLIBS ${LIBSNDFILE_LIBRARY})
+message(STATUS "Using SNDFILE" : ${LIBSNDFILE_LIBRARY})
 
-include_directories(/usr/include/libecasoundc)
+find_path(ECASOUND_INCLUDE_DIR NAMES ecasoundc.h HINTS /usr/include/libecasoundc)
+include_directories(${ECASOUND_INCLUDE_DIR})
+find_library(ECASOUND_LIBRARY NAMES ecasoundc)
+list(APPEND LINKLIBS ${ECASOUND_LIBRARY})
+message(STATUS "Using ECASOUND" : ${ECASOUND_LIBRARY})
+
+find_library(JACK_LIBRARY NAMES jack)
+list(APPEND LINKLIBS ${JACK_LIBRARY})
+message(STATUS "Using JACK" : ${JACK_LIBRARY})
+
+find_library(FFTW_LIBRARY NAMES fftw3)
+list(APPEND LINKLIBS ${FFTW_LIBRARY})
+message(STATUS "Using FFTW" : ${FFTW_LIBRARY})
+
+find_library(FFTWF_LIBRARY NAMES fftw3f)
+list(APPEND LINKLIBS ${FFTWF_LIBRARY})
+message(STATUS "Using FFTWF" : ${FFTWF_LIBRARY})
+
 
 # Preprocessor symbols
-add_definitions(-DSSR_AUTHORS="ToDo")
-add_definitions(-DSSR_DATA_DIR="ToDo")
-add_definitions(-DSSR_COPYRIGHT="ToDo")
-add_definitions(-DPACKAGE_STRING="ToDo")
-add_definitions(-DPACKAGE_URL="ToDo")
-add_definitions(-DPACKAGE_BUGREPORT="ToDo")
+add_definitions(-DSSR_AUTHORS="TODO")
+add_definitions(-DSSR_DATA_DIR="TODO")
+add_definitions(-DSSR_COPYRIGHT="TODO")
+add_definitions(-DPACKAGE_STRING="TODO")
+add_definitions(-DPACKAGE_URL="TODO")
+add_definitions(-DPACKAGE_BUGREPORT="TODO")
+add_definitions(-DASIO_STANDALONE)  # TODO
 
 # Compiler flags
 set(THREADS_PREFER_PTHREAD_FLAG ON)
+SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -g)
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
-
-#add_executable(ssr-binaural ${SOURCE_FILES} ${HEADER_FILES})
+# Compile
 add_executable(ssr-binaural ${SOURCE_FILES})
 
 # Link
-#target_link_libraries(ssr-binaural Threads::Threads ${LIBXML2_LIBRARIES})
+target_link_libraries(ssr-binaural Threads::Threads ${LIBXML2_LIBRARIES})
+target_link_libraries(ssr-binaural ${LINKLIBS})
