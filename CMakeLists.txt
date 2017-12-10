@@ -35,8 +35,9 @@ set(SOURCE_FILES
     src/position.cpp
     src/scene.cpp
     src/ssr_binaural.cpp
+    src/ssr_global.cpp
     src/trackerpolhemus.cpp
-    src/trackerrazor.cpp
+    #src/trackerrazor.cpp
     src/xmlparser.cpp
 )
 
