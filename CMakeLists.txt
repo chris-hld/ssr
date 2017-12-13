@@ -24,7 +24,6 @@ include_directories(${APF_PATH})
 
 # Files
 set(SOURCE_FILES
-    src/ssr_binaural.cpp
     src/audioplayer.cpp
     src/audiorecorder.cpp
     src/configuration.cpp
@@ -32,7 +31,6 @@ set(SOURCE_FILES
     src/orientation.cpp
     src/position.cpp
     src/scene.cpp
-    src/ssr_binaural.cpp
     src/ssr_global.cpp
     src/trackerpolhemus.cpp
     src/trackerrazor.cpp
@@ -44,6 +42,10 @@ set(SOURCE_FILES
     src/network/server.cpp
 )
 
+set(MAIN_SOURCE_FILES
+    src/ssr_binaural
+    src/ssr_wfs)
+
 # Libraries
 set(LINKLIBS)
 
@@ -51,6 +53,7 @@ find_package(Threads REQUIRED)
 
 find_package(LibXml2 REQUIRED)
 include_directories(${LIBXML2_INCLUDE_DIR})
+list(APPEND LINKLIBS ${LIBXML2_LIBRARIES})
 
 find_library(LIBSNDFILE_LIBRARY NAMES sndfile)
 list(APPEND LINKLIBS ${LIBSNDFILE_LIBRARY})
@@ -89,8 +92,9 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -g)
 
 # Compile
-add_executable(ssr-binaural ${SOURCE_FILES})
+add_executable(ssr-binaural src/ssr_binaural.cpp ${SOURCE_FILES})
+add_executable(ssr-wfs src/ssr_wfs.cpp ${SOURCE_FILES})
 
 # Link
-target_link_libraries(ssr-binaural Threads::Threads ${LIBXML2_LIBRARIES})
-target_link_libraries(ssr-binaural ${LINKLIBS})
+target_link_libraries(ssr-binaural Threads::Threads ${LINKLIBS})
+target_link_libraries(ssr-wfs Threads::Threads ${LINKLIBS})
