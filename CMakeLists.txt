@@ -1,4 +1,4 @@
-# run: mkdir _build && cd _build && cmake .. && make
+# run: mkdir -p _build && cd _build && cmake .. && make && cd ..
 # Specify the minimum version for CMake
 cmake_minimum_required (VERSION 3.0)
 
