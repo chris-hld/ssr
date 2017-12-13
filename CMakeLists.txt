@@ -9,16 +9,16 @@ project(SSR)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
 # Set the output folder where your program will be created
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/_build)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/_build)
+set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/src)
 
 # Set the compiler
-SET(CMAKE_CXX_COMPILER g++)
+set(CMAKE_CXX_COMPILER g++)
 # Enable C++11
 set (CMAKE_CXX_STANDARD 11)
 
 # The following folders will be included
-include_directories(${PROJECT_SOURCE_DIR}/src)
+include_directories(${PROJECT_SOURCE_DIR}/src)  # necessary?
 set(APF_PATH ${PROJECT_SOURCE_DIR}/apf)
 include_directories(${APF_PATH})
 
@@ -35,8 +35,13 @@ set(SOURCE_FILES
     src/ssr_binaural.cpp
     src/ssr_global.cpp
     src/trackerpolhemus.cpp
-    #src/trackerrazor.cpp
+    src/trackerrazor.cpp
     src/xmlparser.cpp
+    src/razor-ahrs/RazorAHRS.cpp
+    src/network/commandparser.cpp
+    src/network/connection.cpp
+    src/network/networksubscriber.cpp
+    src/network/server.cpp
 )
 
 # Libraries
@@ -72,16 +77,16 @@ message(STATUS "Found FFTWF" : ${FFTWF_LIBRARY})
 
 # Preprocessor symbols
 add_definitions(-DSSR_AUTHORS="TODO")
-add_definitions(-DSSR_DATA_DIR="TODO")
+add_definitions(-DSSR_DATA_DIR="${PROJECT_SOURCE_DIR}/data/")
 add_definitions(-DSSR_COPYRIGHT="TODO")
 add_definitions(-DPACKAGE_STRING="TODO")
 add_definitions(-DPACKAGE_URL="TODO")
 add_definitions(-DPACKAGE_BUGREPORT="TODO")
-add_definitions(-DASIO_STANDALONE)  # TODO
+#add_definitions(-DASIO_STANDALONE)  # necessary?
 
 # Compiler flags
 set(THREADS_PREFER_PTHREAD_FLAG ON)
-SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -g)
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -g)
 
 # Compile
 add_executable(ssr-binaural ${SOURCE_FILES})
