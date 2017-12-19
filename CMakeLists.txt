@@ -5,6 +5,9 @@ cmake_minimum_required (VERSION 3.0)
 # Project's name
 project(SSR)
 
+# The version number
+set(SSR_VERSION 0.5.0-cmake)
+
 # Show more of make
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
@@ -19,6 +22,8 @@ set (CMAKE_CXX_STANDARD 11)
 
 # The following folders will be included
 include_directories(${PROJECT_SOURCE_DIR}/src)
+
+# Include APF
 set(APF_PATH ${PROJECT_SOURCE_DIR}/apf)
 include_directories(${APF_PATH})
 
@@ -32,14 +37,7 @@ set(SOURCE_FILES
     src/position.cpp
     src/scene.cpp
     src/ssr_global.cpp
-    src/trackerpolhemus.cpp
-    src/trackerrazor.cpp
     src/xmlparser.cpp
-    src/razor-ahrs/RazorAHRS.cpp
-    src/network/commandparser.cpp
-    src/network/connection.cpp
-    src/network/networksubscriber.cpp
-    src/network/server.cpp
 )
 
 set(MAIN_SOURCE_FILES
@@ -66,6 +64,7 @@ include_directories(${ECASOUND_INCLUDE_DIR})
 find_library(ECASOUND_LIBRARY NAMES ecasoundc)
 list(APPEND LINKLIBS ${ECASOUND_LIBRARY})
 message(STATUS "Found ECASOUND: " ${ECASOUND_LIBRARY})
+option(ENABLE_ECASOUND "Ecasound soundfile playback/recording" ON)
 
 find_library(JACK_LIBRARY NAMES jack)
 list(APPEND LINKLIBS ${JACK_LIBRARY})
@@ -123,18 +122,51 @@ if(GUI)
   list(APPEND LINKLIBS ${OPENGL_gl_LIBRARY})
   list(APPEND LINKLIBS ${OPENGL_glu_LIBRARY})
 
-else(GUI)
-  message(WARNING "No GUI. Switch on with 'cmake .. -DGUI=ON'")
+  option(ENABLE_GUI "graphical user interface (using Qt)" ON)
+  option(ENABLE_FLOATING_CONTROL_PANEL "separate control window" ON)
+
+else()
+  message(WARNING "GUI disabled. Switch on with 'cmake .. -DGUI=ON'")
 endif(GUI)
+
+# Network
+option(ENABLE_IP_INTERFACE "network (TCP/IP) interface" ON)
+if(ENABLE_IP_INTERFACE)
+  list(APPEND SOURCE_FILES
+    src/network/commandparser.cpp
+    src/network/connection.cpp
+    src/network/networksubscriber.cpp
+    src/network/server.cpp
+  )
+  include_directories(${PROJECT_SOURCE_DIR}/src/network)
+  add_definitions(-DASIO_STANDALONE)  # necessary?
+  message(STATUS "Enabled network interface")
+endif(ENABLE_IP_INTERFACE)
+
+# Head tracker
+option(HEAD_TRACKER "Basic head tracker support" ON)
+if(HEAD_TRACKER)
+  list(APPEND SOURCE_FILES
+    src/trackerpolhemus.cpp
+    src/trackerrazor.cpp
+    src/razor-ahrs/RazorAHRS.cpp
+  )
+  set(ENABLE_RAZOR ON)
+  set(ENABLE_POLHEMUS ON)
+  message(STATUS "Basic head tracker support")
+endif(HEAD_TRACKER)
 
 # Preprocessor symbols
 add_definitions(-DSSR_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
-add_definitions(-DASIO_STANDALONE)  # necessary?
 
 # Config definitions
-add_definitions(-DHAVE_CONFIG_H=TRUE)
-include_directories(${PROJECT_SOURCE_DIR}/src/network)
-
+# configure a header file to pass some of the CMake settings
+# to the source code
+add_definitions(-DHAVE_CONFIG_H)
+configure_file (
+  "${PROJECT_SOURCE_DIR}/generate_config.h.in"
+  "${PROJECT_SOURCE_DIR}/src/config.h"
+  )
 
 # Compiler flags
 set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-g")
