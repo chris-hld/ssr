@@ -18,7 +18,7 @@ set(CMAKE_CXX_COMPILER g++)
 set (CMAKE_CXX_STANDARD 11)
 
 # The following folders will be included
-include_directories(${PROJECT_SOURCE_DIR}/src)  # necessary?
+include_directories(${PROJECT_SOURCE_DIR}/src)
 set(APF_PATH ${PROJECT_SOURCE_DIR}/apf)
 include_directories(${APF_PATH})
 
@@ -49,6 +49,8 @@ set(MAIN_SOURCE_FILES
 # Libraries
 set(LINKLIBS)
 
+set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 find_package(Threads REQUIRED)
 
 find_package(LibXml2 REQUIRED)
@@ -57,39 +59,85 @@ list(APPEND LINKLIBS ${LIBXML2_LIBRARIES})
 
 find_library(LIBSNDFILE_LIBRARY NAMES sndfile)
 list(APPEND LINKLIBS ${LIBSNDFILE_LIBRARY})
-message(STATUS "Found SNDFILE" : ${LIBSNDFILE_LIBRARY})
+message(STATUS "Found SNDFILE: " ${LIBSNDFILE_LIBRARY})
 
 find_path(ECASOUND_INCLUDE_DIR NAMES ecasoundc.h HINTS /usr/include/libecasoundc)
 include_directories(${ECASOUND_INCLUDE_DIR})
 find_library(ECASOUND_LIBRARY NAMES ecasoundc)
 list(APPEND LINKLIBS ${ECASOUND_LIBRARY})
-message(STATUS "Found ECASOUND" : ${ECASOUND_LIBRARY})
+message(STATUS "Found ECASOUND: " ${ECASOUND_LIBRARY})
 
 find_library(JACK_LIBRARY NAMES jack)
 list(APPEND LINKLIBS ${JACK_LIBRARY})
-message(STATUS "Found JACK" : ${JACK_LIBRARY})
+message(STATUS "Found JACK :" ${JACK_LIBRARY})
 
 find_library(FFTW_LIBRARY NAMES fftw3)
 list(APPEND LINKLIBS ${FFTW_LIBRARY})
-message(STATUS "Found FFTW" : ${FFTW_LIBRARY})
+message(STATUS "Found FFTW: " ${FFTW_LIBRARY})
 
 find_library(FFTWF_LIBRARY NAMES fftw3f)
 list(APPEND LINKLIBS ${FFTWF_LIBRARY})
-message(STATUS "Found FFTWF" : ${FFTWF_LIBRARY})
+message(STATUS "Found FFTWF: " ${FFTWF_LIBRARY})
 
+
+# GUI
+option(GUI "Build GUI" ON)
+if(GUI)
+  message(STATUS "Build GUI")
+  # Tell CMake to run moc when necessary:
+  set(CMAKE_AUTOMOC ON)
+  # As moc files are generated in the binary dir, tell CMake
+  # to always look for includes there:
+  set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+  include_directories(${PROJECT_SOURCE_DIR}/src/gui)  # necessary?
+  set(GUI_SOURCE_FILES
+      src/gui/qclicktextlabel.cpp
+      src/gui/qcpulabel.cpp
+      src/gui/qfilemenulabel.cpp
+      src/gui/qgui.cpp
+      src/gui/qguiframe.cpp
+      src/gui/qopenglplotter.cpp
+      src/gui/qscenebutton.cpp
+      src/gui/qsourceproperties.cpp
+      src/gui/qssrtimeline.cpp
+      src/gui/qtimeedit.cpp
+      src/gui/quserinterface.cpp
+      src/gui/qvolumeslider.cpp
+      src/gui/qzoomlabel.cpp
+  )
+  list(APPEND SOURCE_FILES ${GUI_SOURCE_FILES})
+
+  # Widgets finds its own dependencies (QtGui and QtCore).
+  find_package(Qt5Widgets REQUIRED)
+  # The Qt5Widgets_INCLUDES also includes the include directories for
+  # dependencies QtCore and QtGui
+  include_directories(${Qt5Widgets_INCLUDE_DIRS})
+  # We need add -DQT_WIDGETS_LIB when using QtWidgets in Qt 5.
+  add_definitions(${Qt5Widgets_DEFINITIONS})
+
+  find_package(Qt5OpenGL REQUIRED)
+  find_package(OpenGL REQUIRED)
+  include_directories(${OPENGL_INCLUDE_DIR})
+
+  list(APPEND LINKLIBS ${OPENGL_gl_LIBRARY})
+  list(APPEND LINKLIBS ${OPENGL_glu_LIBRARY})
+
+else(GUI)
+  message(WARNING "No GUI. Switch on with 'cmake .. -DGUI=ON'")
+endif(GUI)
 
 # Preprocessor symbols
-add_definitions(-DSSR_AUTHORS="TODO")
-add_definitions(-DSSR_DATA_DIR="${PROJECT_SOURCE_DIR}/data/")
-add_definitions(-DSSR_COPYRIGHT="TODO")
-add_definitions(-DPACKAGE_STRING="TODO")
-add_definitions(-DPACKAGE_URL="TODO")
-add_definitions(-DPACKAGE_BUGREPORT="TODO")
-#add_definitions(-DASIO_STANDALONE)  # necessary?
+add_definitions(-DSSR_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+add_definitions(-DASIO_STANDALONE)  # necessary?
+
+# Config definitions
+add_definitions(-DHAVE_CONFIG_H=TRUE)
+include_directories(${PROJECT_SOURCE_DIR}/src/network)
+
 
 # Compiler flags
-set(THREADS_PREFER_PTHREAD_FLAG ON)
-set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -g)
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-g")
 
 # Compile
 add_executable(ssr-binaural src/ssr_binaural.cpp ${SOURCE_FILES})
@@ -98,3 +146,7 @@ add_executable(ssr-wfs src/ssr_wfs.cpp ${SOURCE_FILES})
 # Link
 target_link_libraries(ssr-binaural Threads::Threads ${LINKLIBS})
 target_link_libraries(ssr-wfs Threads::Threads ${LINKLIBS})
+if(GUI)
+  target_link_libraries(ssr-binaural Qt5::Widgets Qt5::OpenGL)
+  target_link_libraries(ssr-wfs Qt5::Widgets Qt5::OpenGL)
+endif(GUI)
