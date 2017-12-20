@@ -1,4 +1,4 @@
-# run: mkdir -p _build && cd _build && cmake .. && make && cd ..
+# run: mkdir -p _build && cd _build && cmake -DCMAKE_BUILD_TYPE=RELEASE .. && make -j3 && cd ..
 # Specify the minimum version for CMake
 cmake_minimum_required (VERSION 3.0)
 
@@ -29,8 +29,6 @@ include_directories(${APF_PATH})
 
 # Files
 set(SOURCE_FILES
-    src/audioplayer.cpp
-    src/audiorecorder.cpp
     src/configuration.cpp
     src/directionalpoint.cpp
     src/orientation.cpp
@@ -45,6 +43,7 @@ set(MAIN_SOURCE_FILES
     src/ssr_wfs)
 
 # Libraries
+# Add libraries to LINKLIBS
 set(LINKLIBS)
 
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
@@ -59,12 +58,18 @@ find_library(LIBSNDFILE_LIBRARY NAMES sndfile)
 list(APPEND LINKLIBS ${LIBSNDFILE_LIBRARY})
 message(STATUS "Found SNDFILE: " ${LIBSNDFILE_LIBRARY})
 
-find_path(ECASOUND_INCLUDE_DIR NAMES ecasoundc.h HINTS /usr/include/libecasoundc)
-include_directories(${ECASOUND_INCLUDE_DIR})
-find_library(ECASOUND_LIBRARY NAMES ecasoundc)
-list(APPEND LINKLIBS ${ECASOUND_LIBRARY})
-message(STATUS "Found ECASOUND: " ${ECASOUND_LIBRARY})
 option(ENABLE_ECASOUND "Ecasound soundfile playback/recording" ON)
+if(ENABLE_ECASOUND)
+  list(APPEND SOURCE_FILES
+    src/audioplayer.cpp
+    src/audiorecorder.cpp
+  )
+  find_path(ECASOUND_INCLUDE_DIR NAMES ecasoundc.h HINTS /usr/include/libecasoundc)
+  include_directories(${ECASOUND_INCLUDE_DIR})
+  find_library(ECASOUND_LIBRARY NAMES ecasoundc)
+  list(APPEND LINKLIBS ${ECASOUND_LIBRARY})
+  message(STATUS "Found ECASOUND: " ${ECASOUND_LIBRARY})
+endif(ENABLE_ECASOUND)
 
 find_library(JACK_LIBRARY NAMES jack)
 list(APPEND LINKLIBS ${JACK_LIBRARY})
@@ -78,15 +83,12 @@ find_library(FFTWF_LIBRARY NAMES fftw3f)
 list(APPEND LINKLIBS ${FFTWF_LIBRARY})
 message(STATUS "Found FFTWF: " ${FFTWF_LIBRARY})
 
-
 # GUI
 option(GUI "Build GUI" ON)
 if(GUI)
-  message(STATUS "Build GUI")
   # Tell CMake to run moc when necessary:
   set(CMAKE_AUTOMOC ON)
-  # As moc files are generated in the binary dir, tell CMake
-  # to always look for includes there:
+  # As moc files are generated in the binary dir, always look for includes there:
   set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
   include_directories(${PROJECT_SOURCE_DIR}/src/gui)  # necessary?
@@ -124,6 +126,8 @@ if(GUI)
 
   option(ENABLE_GUI "graphical user interface (using Qt)" ON)
   option(ENABLE_FLOATING_CONTROL_PANEL "separate control window" ON)
+
+  message(STATUS "Build GUI")
 
 else()
   message(WARNING "GUI disabled. Switch on with 'cmake .. -DGUI=ON'")
