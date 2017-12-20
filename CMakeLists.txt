@@ -173,7 +173,10 @@ configure_file (
   )
 
 # Compiler flags
-set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-g")
+# Add a few for release builds (MAKE_BUILD_TYPE=RELEASE)
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall -fomit-frame-pointer -ffast-math -funroll-loops -march=k8 -mmmx -msse -mfpmath=sse -msse2 -mfpmath=sse")
+
+
 
 # Compile
 add_executable(ssr-binaural src/ssr_binaural.cpp ${SOURCE_FILES})
