@@ -16,7 +16,7 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/_build)
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/src)
 
 # Set the compiler
-set(CMAKE_CXX_COMPILER g++)
+#set(CMAKE_CXX_COMPILER g++)
 # Enable C++11
 set (CMAKE_CXX_STANDARD 11)
 
@@ -175,7 +175,6 @@ configure_file (
 # Compiler flags
 # Add a few for release builds (MAKE_BUILD_TYPE=RELEASE)
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall -fomit-frame-pointer -ffast-math -funroll-loops -march=k8 -mmmx -msse -mfpmath=sse -msse2 -mfpmath=sse")
-
 
 
 # Compile
