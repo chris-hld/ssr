@@ -49,6 +49,11 @@
  * boost.filesystem or using a totally different language (like Python) for such
  * things.
  **/
+
+#ifdef _WIN32
+extern int fchdir(int fildes);
+#endif
+
 namespace posixpathtools
 {
 
@@ -99,7 +104,7 @@ inline bool getcwd(std::string& path)
               {
                 if (strcmp(entry->d_name, ".")
                     && strcmp(entry->d_name, "..")
-                    && !lstat(entry->d_name, &sb))
+                    && !stat(entry->d_name, &sb))
                 {
                   auto child_id = file_id(sb.st_dev, sb.st_ino);
                   // We found where we came from, add its name to the list
