@@ -36,8 +36,6 @@
 
 #include <cassert>  // for assert()
 
-#include "jack/systemdeps.h"
-
 #include "apf/jackclient.h"
 #include "apf/parameter_map.h"
 #include "apf/stringtools.h"
@@ -130,7 +128,7 @@ struct thread_traits<jack_policy, jack_native_thread_t>
           throw std::runtime_error("Can't set scheduling priority for thread!");
         }
       #endif
-  
+
     }
     else
     {
