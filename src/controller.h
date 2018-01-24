@@ -36,7 +36,7 @@
 
 // TODO: move these includes to a more suitable location?
 #include "apf/jack_policy.h"
-#include "apf/posix_thread_policy.h"
+#include "apf/cxx_thread_policy.h"
 
 #define SSR_QUERY_POLICY apf::enable_queries
 
@@ -1953,4 +1953,3 @@ Controller<Renderer>::_add_audio_file_name(Node& node, const std::string& name
 
 // Settings for Vim (http://www.vim.org/), please do not remove:
 // vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent
-// vim:fdm=expr:foldexpr=getline(v\:lnum)=~'/\\*\\*'&&getline(v\:lnum)!~'\\*\\*/'?'a1'\:getline(v\:lnum)=~'\\*\\*/'&&getline(v\:lnum)!~'/\\*\\*'?'s1'\:'='
