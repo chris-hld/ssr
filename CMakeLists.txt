@@ -51,10 +51,14 @@ set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 find_package(Threads REQUIRED)
 
 IF (WIN32)
-	set(CMAKE_PREFIX_PATH ${PROJECT_SOURCE_DIR}/extern/)
-	message(STATUS "WINDOWS Prefix: " ${CMAKE_PREFIX_PATH})
-	include_directories(${PROJECT_SOURCE_DIR}/extern/include/})
-	message(STATUS "WINDOWS Included: " ${PROJECT_SOURCE_DIR}/extern/include/)
+  # Set Path to extern headers and libraries for Windows builds
+  set(EXTERN_PATH ${PROJECT_SOURCE_DIR}/extern)
+	set(CMAKE_PREFIX_PATH ${EXTERN_PATH})
+  message(STATUS "WINDOWS Prefix: " ${CMAKE_PREFIX_PATH})
+  
+  # Include extern headers
+  include_directories(${EXTERN_PATH}/include)
+	message(STATUS "WINDOWS Included: " ${EXTERN_PATH}/include)
 ENDIF()
 
 IF (WIN32)
@@ -161,7 +165,7 @@ if(ENABLE_IP_INTERFACE)
 endif(ENABLE_IP_INTERFACE)
 
 # Head tracker
-option(HEAD_TRACKER "Basic head tracker support" ON)
+option(HEAD_TRACKER "Basic head tracker support" OFF)
 if(HEAD_TRACKER)
   list(APPEND SOURCE_FILES
     src/trackerpolhemus.cpp
