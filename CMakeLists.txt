@@ -50,15 +50,28 @@ set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 find_package(Threads REQUIRED)
 
-find_package(LibXml2 REQUIRED)
-include_directories(${LIBXML2_INCLUDE_DIR})
-list(APPEND LINKLIBS ${LIBXML2_LIBRARIES})
+IF (WIN32)
+	set(CMAKE_PREFIX_PATH ${PROJECT_SOURCE_DIR}/extern/)
+	message(STATUS "WINDOWS Prefix: " ${CMAKE_PREFIX_PATH})
+	include_directories(${PROJECT_SOURCE_DIR}/extern/include/})
+	message(STATUS "WINDOWS Included: " ${PROJECT_SOURCE_DIR}/extern/include/)
+ENDIF()
 
-find_library(LIBSNDFILE_LIBRARY NAMES sndfile)
+IF (WIN32)
+	find_library(XML2_LIBRARY NAMES libxml2)
+	list(APPEND LINKLIBS ${XML2_LIBRARY})
+	message(STATUS "Found XML2: " ${XML2_LIBRARY})
+ELSE()
+	find_package(LibXml2 REQUIRED)
+	include_directories(${LIBXML2_INCLUDE_DIR})
+	list(APPEND LINKLIBS ${LIBXML2_LIBRARIES})
+ENDIF()
+
+find_library(LIBSNDFILE_LIBRARY NAMES sndfile libsndfile-1)
 list(APPEND LINKLIBS ${LIBSNDFILE_LIBRARY})
 message(STATUS "Found SNDFILE: " ${LIBSNDFILE_LIBRARY})
 
-option(ENABLE_ECASOUND "Ecasound soundfile playback/recording" ON)
+option(ENABLE_ECASOUND "Ecasound soundfile playback/recording" OFF)
 if(ENABLE_ECASOUND)
   list(APPEND SOURCE_FILES
     src/audioplayer.cpp
@@ -71,20 +84,20 @@ if(ENABLE_ECASOUND)
   message(STATUS "Found ECASOUND: " ${ECASOUND_LIBRARY})
 endif(ENABLE_ECASOUND)
 
-find_library(JACK_LIBRARY NAMES jack)
+find_library(JACK_LIBRARY NAMES jack libjack)
 list(APPEND LINKLIBS ${JACK_LIBRARY})
 message(STATUS "Found JACK :" ${JACK_LIBRARY})
 
-find_library(FFTW_LIBRARY NAMES fftw3)
+find_library(FFTW_LIBRARY NAMES fftw3 libfftw3-3)
 list(APPEND LINKLIBS ${FFTW_LIBRARY})
 message(STATUS "Found FFTW: " ${FFTW_LIBRARY})
 
-find_library(FFTWF_LIBRARY NAMES fftw3f)
+find_library(FFTWF_LIBRARY NAMES fftw3f libfftw3f-3)
 list(APPEND LINKLIBS ${FFTWF_LIBRARY})
 message(STATUS "Found FFTWF: " ${FFTWF_LIBRARY})
 
 # GUI
-option(GUI "Build GUI" ON)
+option(GUI "Build GUI" OFF)
 if(GUI)
   # Tell CMake to run moc when necessary:
   set(CMAKE_AUTOMOC ON)
@@ -134,7 +147,7 @@ else()
 endif(GUI)
 
 # Network
-option(ENABLE_IP_INTERFACE "network (TCP/IP) interface" ON)
+option(ENABLE_IP_INTERFACE "network (TCP/IP) interface" OFF)
 if(ENABLE_IP_INTERFACE)
   list(APPEND SOURCE_FILES
     src/network/commandparser.cpp
