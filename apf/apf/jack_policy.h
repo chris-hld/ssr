@@ -36,6 +36,8 @@
 
 #include <cassert>  // for assert()
 
+#include "jack/systemdeps.h"
+
 #include "apf/jackclient.h"
 #include "apf/parameter_map.h"
 #include "apf/stringtools.h"
@@ -121,10 +123,14 @@ struct thread_traits<jack_policy, jack_native_thread_t>
     {
       struct sched_param param;
       param.sched_priority = obj.get_real_time_priority();
-      if (pthread_setschedparam(thread_id, SCHED_FIFO, &param))
-      {
-        throw std::runtime_error("Can't set scheduling priority for thread!");
-      }
+      // pthread scheduling priority on UNIX
+      #ifndef _WIN32
+        if (pthread_setschedparam(thread_id, SCHED_FIFO, &param))
+        {
+          throw std::runtime_error("Can't set scheduling priority for thread!");
+        }
+      #endif
+  
     }
     else
     {
