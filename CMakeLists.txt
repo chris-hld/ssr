@@ -1,6 +1,7 @@
 # run: mkdir -p _build && cd _build && cmake -DCMAKE_BUILD_TYPE=RELEASE .. && make -j3 && cd ..
 # Specify the minimum version for CMake
-cmake_minimum_required (VERSION 3.0)
+MESSAGE( STATUS "CMAKE_VERSION: " ${CMAKE_VERSION} )
+cmake_minimum_required (VERSION 3.8)
 
 # Project's name
 project(SSR)
