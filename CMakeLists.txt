@@ -89,9 +89,15 @@ if(ENABLE_ECASOUND)
   message(STATUS "Found ECASOUND: " ${ECASOUND_LIBRARY})
 endif(ENABLE_ECASOUND)
 
-find_library(JACK_LIBRARY NAMES jack libjack)
+find_library(JACK_LIBRARY NAMES jack libjack64)
 list(APPEND LINKLIBS ${JACK_LIBRARY})
 message(STATUS "Found JACK :" ${JACK_LIBRARY})
+
+IF (WIN32)
+  find_library(JACKSERVER_LIBRARY NAMES libjackserver64)
+  list(APPEND LINKLIBS ${JACKSERVER_LIBRARY})
+  message(STATUS "Found JACK :" ${JACKSERVER_LIBRARY})
+ENDIF()
 
 find_library(FFTW_LIBRARY NAMES fftw3 libfftw3-3)
 list(APPEND LINKLIBS ${FFTW_LIBRARY})
