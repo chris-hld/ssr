@@ -113,9 +113,9 @@ template<typename interface_policy, typename native_handle_type>
 struct thread_traits;  // definition in mimoprocessor.h
 
 template<>
-struct thread_traits<jack_policy, pthread_t>
+struct thread_traits<jack_policy, jack_native_thread_t>
 {
-  static void set_priority(const jack_policy& obj, pthread_t thread_id)
+  static void set_priority(const jack_policy& obj, jack_native_thread_t thread_id)
   {
     if (obj.is_realtime())
     {
