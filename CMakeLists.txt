@@ -14,7 +14,11 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 
 # Set the output folder where your program will be created
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/_build)
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/src)
+IF (WIN32)
+  set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
+ELSE()
+  set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/src)
+ENDIF()
 
 # Set the compiler
 #set(CMAKE_CXX_COMPILER g++)
@@ -226,3 +230,6 @@ if(GUI)
   target_link_libraries(ssr-binaural Qt5::Widgets Qt5::OpenGL)
   target_link_libraries(ssr-wfs Qt5::Widgets Qt5::OpenGL)
 endif(GUI)
+IF (WIN32)
+set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++ -static")
+ENDIF()
