@@ -41,6 +41,8 @@
 #include <sys/stat.h> // for stat and mkdir (on Mac OSX)
 #include <unistd.h>  // for chdir(), fchdir(), close()
 
+#include "ssr_global.h"
+
 /** helper functions for filename and path manipulation.
  *
  * @warning Code in this file is highly platform dependent!
@@ -50,9 +52,6 @@
  * things.
  **/
 
-#ifdef _WIN32
-extern int fchdir(int fildes);
-#endif
 
 namespace posixpathtools
 {
@@ -140,7 +139,11 @@ inline bool getcwd(std::string& path)
           if (path == "") path = "/";
           success = true;
         }
+        #ifndef _WIN32
         fchdir(start_fd);
+        #else
+        WARNING("fchdir() not available on Windows.");
+        #endif
       }
     }
     close(start_fd);
