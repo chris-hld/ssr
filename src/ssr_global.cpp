@@ -31,7 +31,7 @@
 
 int ssr::verbose = 0;
 float ssr::c = 340.0f;                    // meters/second
-float ssr::c_inverse = 1.0f/c;
+float ssr::c_inverse = 1.0f/ssr::c;
 unsigned int ssr::usleeptime = 1000000; // micro-seconds
 //unsigned int ssr::usleeptime = 350000; // micro-seconds
 

@@ -35,7 +35,13 @@
 #endif
 
 #include <cassert>      // for assert()
+#ifndef _WIN32
 #include <getopt.h>     // for getopt_long()
+#else
+#include "getopt_port.h"
+#define strcasecmp _stricmp
+#endif // !_WIN32
+
 #include <cstdlib>      // for getenv(), ...
 #include <cstring>
 #include <stdio.h>
@@ -64,7 +70,11 @@ namespace // anonymous
     {
       std::cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
         "It's ... " << std::flush;
+#ifndef _WIN32
       sleep(3);
+#else
+	  Sleep(3000);
+#endif // !_WIN32
       std::cout << "the ";
     }
     std::cout << PACKAGE_STRING "\n" SSR_COPYRIGHT << std::endl;
