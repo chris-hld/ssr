@@ -121,10 +121,14 @@ struct thread_traits<jack_policy, pthread_t>
     {
       struct sched_param param;
       param.sched_priority = obj.get_real_time_priority();
+      #ifndef _WIN32
       if (pthread_setschedparam(thread_id, SCHED_FIFO, &param))
       {
         throw std::runtime_error("Can't set scheduling priority for thread!");
       }
+      #else
+      // TODO: Windows scheduling
+      #endif
     }
     else
     {

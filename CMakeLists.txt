@@ -69,21 +69,7 @@ ENDIF()
 IF (WIN32)
   find_library(XML2_LIBRARY NAMES libxml2)
   list(APPEND LINKLIBS ${XML2_LIBRARY})
-  #find_library(ICONV_LIBRARY NAMES libiconv)
-  #list(APPEND LINKLIBS ${ICONV_LIBRARY})
-  #find_library(Z_LIBRARY NAMES libz)
-  #list(APPEND LINKLIBS ${Z_LIBRARY})
-  # Seems unnecessary:
-  #find_library(CHARSET_LIBRARY NAMES libcharset)
-  #list(APPEND LINKLIBS ${CHARSET_LIBRARY})
-
-  list(APPEND LINKLIBS "-lws2_32")
-
-  add_definitions(-DLIBXML_STATIC)
-  add_definitions(-DLIBXML_STATIC_FOR_DLL)
-
   message(STATUS "Found XML2: " ${XML2_LIBRARY} )
-  message(STATUS "Found XML2 friends: " ${ICONV_LIBRARY} ${Z_LIBRARY})
 ELSE()
 	find_package(LibXml2 REQUIRED)
 	include_directories(${LIBXML2_INCLUDE_DIR})

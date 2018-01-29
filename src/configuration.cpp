@@ -179,6 +179,8 @@ ssr::conf_struct ssr::configuration(int& argc, char* argv[])
 
   conf.loop = false; // temporary solution!
 
+
+#ifndef _WIN32
   // load system-wide config file (Mac)
   load_config_file("/Library/SoundScapeRenderer/ssr.conf",conf);
   // load system-wide config file (Linux et al.)
@@ -191,6 +193,9 @@ ssr::conf_struct ssr::configuration(int& argc, char* argv[])
   filename = getenv("HOME");
   filename += "/.ssr/ssr.conf";
   load_config_file(filename.c_str(),conf);
+#else
+  // TODO: Load Windows paths here
+#endif
 
   const std::string usage_string =
 "Usage: " + std::string(argv[0]) + " [OPTIONS] <scene-file>\n";
