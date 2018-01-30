@@ -50,7 +50,7 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  *
  * extra version information, used to show a CVS compilation
  */
-#define LIBXML_VERSION_EXTRA ""
+#define LIBXML_VERSION_EXTRA "-GITv2.9.8-rc1-1-g707ad08"
 
 /**
  * LIBXML_TEST_VERSION:
@@ -273,7 +273,7 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  *
  * Whether iconv support is available
  */
-#if 1
+#if 0
 #define LIBXML_ICONV_ENABLED
 #endif
 
@@ -291,7 +291,7 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  *
  * Whether ISO-8859-* support is made available in case iconv is not
  */
-#if 0
+#if 1
 #define LIBXML_ISO8859X_ENABLED
 #endif
 
@@ -396,7 +396,7 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  *
  * Whether the Zlib support is compiled in
  */
-#if 1
+#if 0
 #define LIBXML_ZLIB_ENABLED
 #endif
 
@@ -410,9 +410,6 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
 #endif
 
 #ifdef __GNUC__
-#ifdef HAVE_ANSIDECL_H
-#include <ansidecl.h>
-#endif
 
 /**
  * ATTRIBUTE_UNUSED:
