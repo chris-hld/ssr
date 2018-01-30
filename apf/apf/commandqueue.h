@@ -30,7 +30,12 @@
 #ifndef APF_COMMANDQUEUE_H
 #define APF_COMMANDQUEUE_H
 
+#ifndef _WIN32
 #include <unistd.h> // for usleep()
+#else
+#include <windows.h>  //for Sleep()
+#endif // !_WIN32
+
 #include <cassert>  // for assert()
 
 #include "apf/lockfreefifo.h"
@@ -208,7 +213,12 @@ void CommandQueue::push(Command* cmd)
     // We don't really know if that ever happens, so we abort in debug-mode:
     assert(false && "Error in _in_fifo.push()!");
     // TODO: avoid this usleep()?
-    usleep(50);
+#ifndef _WIN32
+	usleep(50);
+#else
+	Sleep((unsigned long)0.05);
+#endif // !_WIN32
+
   }
 }
 
@@ -224,8 +234,12 @@ void CommandQueue::wait()
   while (!done)
   {
     // TODO: avoid this usleep()?
-    usleep(50);
-    this->cleanup_commands();
+#ifndef _WIN32
+	usleep(50);
+#else
+	Sleep((unsigned long)0.05);
+#endif // !_WIN32
+	this->cleanup_commands();
   }
 }
 

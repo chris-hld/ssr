@@ -38,6 +38,7 @@
 #ifndef _WIN32
 #include <getopt.h>     // for getopt_long()
 #else
+#include <windows.h>	// for Sleep()
 #include "getopt_port.h"
 #define strcasecmp _stricmp
 #endif // !_WIN32

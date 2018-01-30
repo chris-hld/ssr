@@ -112,28 +112,30 @@ class jack_policy : public JackClient
 template<typename interface_policy, typename native_handle_type>
 struct thread_traits;  // definition in mimoprocessor.h
 
+#ifndef _WIN32
 template<>
 struct thread_traits<jack_policy, pthread_t>
 {
-  static void set_priority(const jack_policy& obj, pthread_t thread_id)
-  {
-    if (obj.is_realtime())
-    {
-      struct sched_param param;
-      param.sched_priority = obj.get_real_time_priority();
-      #ifndef _WIN32
-      if (pthread_setschedparam(thread_id, SCHED_FIFO, &param))
-      {
-        throw std::runtime_error("Can't set scheduling priority for thread!");
-      }
-      #else
-      // TODO: Windows scheduling
-      #endif
-    }
-    else
-    {
-      // do nothing
-    }
+	static void set_priority(const jack_policy& obj, pthread_t thread_id)
+	{
+		if (obj.is_realtime())
+		{
+			struct sched_param param;
+			param.sched_priority = obj.get_real_time_priority();
+#ifndef _WIN32
+			if (pthread_setschedparam(thread_id, SCHED_FIFO, &param))
+			{
+				throw std::runtime_error("Can't set scheduling priority for thread!");
+			}
+#else
+			// TODO: Windows scheduling
+#endif
+		}
+		else
+		{
+			// do nothing
+		}
+
 #ifdef APF_JACK_POLICY_DEBUG
     struct sched_param param;
     int policy;
@@ -147,6 +149,8 @@ struct thread_traits<jack_policy, pthread_t>
 #endif
   }
 };
+#endif // !_WIN32
+
 
 // Helper class to avoid code duplication in Input and Output
 template<typename X>
