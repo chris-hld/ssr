@@ -543,11 +543,11 @@ class APF_MIMOPROCESSOR_BASE::Input : public Xput
 
 /// %Input class with begin() and end().
 APF_MIMOPROCESSOR_TEMPLATES
-class APF_MIMOPROCESSOR_BASE::DefaultInput : public Input
+class APF_MIMOPROCESSOR_BASE::DefaultInput : public APF_MIMOPROCESSOR_BASE::Input
 {
   public:
-    using typename Input::Params;
-    using typename Input::iterator;
+	using Params = typename Input::Params;
+	using iterator = typename Input::iterator;
 
     explicit DefaultInput(const Params& p) : Input(p) {}
 
@@ -585,11 +585,11 @@ class APF_MIMOPROCESSOR_BASE::Output : public Xput
 
 /// %Output class with begin() and end().
 APF_MIMOPROCESSOR_TEMPLATES
-class APF_MIMOPROCESSOR_BASE::DefaultOutput : public Output
+class APF_MIMOPROCESSOR_BASE::DefaultOutput : public APF_MIMOPROCESSOR_BASE::Output
 {
   public:
-    using typename Output::Params;
-    using typename Output::iterator;
+    using Params = typename Output::Params;
+    using iterator = typename Output::iterator;
 
     DefaultOutput(const Params& p) : Output(p) {}
 
