@@ -900,6 +900,7 @@ class transform_iterator
     /// and return the result.
     /// @note This is non-const because _f might have state
     reference operator*() { return _f(*_base_iterator); }
+    reference operator*() const { return _f(*_base_iterator); }
 
     /// Arrow operator.
     /// Dereference the base iterator, use it as argument to the stored function
