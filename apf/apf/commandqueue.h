@@ -33,6 +33,9 @@
 #ifndef _WIN32
 #include <unistd.h> // for usleep()
 #else
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
 #include <windows.h>  //for Sleep()
 #endif // !_WIN32
 

@@ -38,6 +38,9 @@
 #ifndef _WIN32
 #include <getopt.h>     // for getopt_long()
 #else
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
 #include <windows.h>	// for Sleep()
 #include "getopt_port.h"
 #define strcasecmp _stricmp

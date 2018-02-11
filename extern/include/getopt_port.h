@@ -67,6 +67,9 @@
 #include <string.h>
 #include <stdarg.h>
 #include <stdio.h>
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
 #include <windows.h>
 
 #ifdef __cplusplus
