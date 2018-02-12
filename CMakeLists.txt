@@ -1,7 +1,7 @@
-# run: mkdir -p _build && cd _build && cmake -DCMAKE_BUILD_TYPE=RELEASE .. && make -j3 && cd ..
+# run e.g.: mkdir -p _build && cd _build && cmake -DCMAKE_BUILD_TYPE=RELEASE .. && make -j3 && cd ..
 # Specify the minimum version for CMake
-MESSAGE( STATUS "CMAKE_VERSION: " ${CMAKE_VERSION} )
-cmake_minimum_required (VERSION 3.8)
+message(STATUS "CMAKE_VERSION: " ${CMAKE_VERSION})
+cmake_minimum_required(VERSION 3.8)
 
 # Project's name
 project(SSR)
@@ -14,17 +14,17 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 
 # Set the output folder where your program will be created
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/_build)
-IF (WIN32)
+if(WIN32)
   set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-ELSE()
+else(WIN32)
   set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/src)
-ENDIF()
+endif(WIN32)
 
-# Set the compiler
-message (STATUS "Compiler ID: " ${CMAKE_CXX_COMPILER_ID})
+# Show the compiler
+message(STATUS "Compiler ID: " ${CMAKE_CXX_COMPILER_ID})
 
 # Enable C++11
-set (CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 11)
 
 # The following folders will be included
 include_directories(${PROJECT_SOURCE_DIR}/src)
@@ -56,7 +56,7 @@ set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 find_package(Threads REQUIRED)
 
-IF (WIN32)
+if(WIN32)
   # Set Path to extern headers and libraries for Windows builds
   set(EXTERN_PATH ${PROJECT_SOURCE_DIR}/extern)
 	set(CMAKE_PREFIX_PATH ${EXTERN_PATH})
@@ -65,10 +65,11 @@ IF (WIN32)
   # Include extern headers
   include_directories(${EXTERN_PATH}/include)
 	message(STATUS "WINDOWS Included: " ${EXTERN_PATH}/include)
-ENDIF()
+endif(WIN32)
 
-IF (WIN32)
-  if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+if(WIN32)
+  # Use custom static libxml2 build for MSVC
+  if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     find_library(XML2_LIBRARY NAMES libxml2_msvc)
   else()
     find_library(XML2_LIBRARY NAMES libxml2)
@@ -77,11 +78,11 @@ IF (WIN32)
   add_definitions(-DLIBXML_STATIC)
   list(APPEND LINKLIBS "-lws2_32")
    message(STATUS "Found XML2: " ${XML2_LIBRARY} )
-ELSE()
+else(WIN32)
 	find_package(LibXml2 REQUIRED)
 	include_directories(${LIBXML2_INCLUDE_DIR})
 	list(APPEND LINKLIBS ${LIBXML2_LIBRARIES})
-ENDIF()
+endif(WIN32)
 
 find_library(LIBSNDFILE_LIBRARY NAMES sndfile libsndfile-1)
 list(APPEND LINKLIBS ${LIBSNDFILE_LIBRARY})
@@ -98,17 +99,19 @@ if(ENABLE_ECASOUND)
   find_library(ECASOUND_LIBRARY NAMES ecasoundc)
   list(APPEND LINKLIBS ${ECASOUND_LIBRARY})
   message(STATUS "Found ECASOUND: " ${ECASOUND_LIBRARY})
+else(ENABLE_ECASOUND)
+  message(WARNING "ECASOUND disabled.")
 endif(ENABLE_ECASOUND)
 
 find_library(JACK_LIBRARY NAMES jack libjack64)
 list(APPEND LINKLIBS ${JACK_LIBRARY})
 message(STATUS "Found JACK :" ${JACK_LIBRARY})
 
-IF (WIN32)
+if(WIN32)
   find_library(JACKSERVER_LIBRARY NAMES libjackserver64)
   list(APPEND LINKLIBS ${JACKSERVER_LIBRARY})
   message(STATUS "Found JACK :" ${JACKSERVER_LIBRARY})
-ENDIF()
+endif(WIN32)
 
 find_library(FFTW_LIBRARY NAMES fftw3 libfftw3-3)
 list(APPEND LINKLIBS ${FFTW_LIBRARY})
@@ -164,7 +167,7 @@ if(GUI)
 
   message(STATUS "Build GUI")
 
-else()
+else(GUI)
   message(WARNING "GUI disabled. Switch on with 'cmake .. -DGUI=ON'")
 endif(GUI)
 
@@ -180,6 +183,9 @@ if(ENABLE_IP_INTERFACE)
   include_directories(${PROJECT_SOURCE_DIR}/src/network)
   add_definitions(-DASIO_STANDALONE)
   message(STATUS "Enabled network interface")
+
+  else(ENABLE_IP_INTERFACE)
+  message(WARNING "IP_INTERFACE disabled.")
 endif(ENABLE_IP_INTERFACE)
 
 # Head tracker
@@ -193,7 +199,10 @@ if(HEAD_TRACKER)
   set(ENABLE_RAZOR ON)
   set(ENABLE_POLHEMUS ON)
   message(STATUS "Basic head tracker support")
+else(HEAD_TRACKER)
+  message(WARNING "HEAD_TRACKER disabled.")
 endif(HEAD_TRACKER)
+
 
 # Preprocessor symbols
 add_definitions(-DSSR_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
@@ -207,26 +216,27 @@ configure_file (
   "${PROJECT_SOURCE_DIR}/src/config.h"
   )
 
-# Compiler flags
-# Add a few for release builds (MAKE_BUILD_TYPE=RELEASE)
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall -fomit-frame-pointer -ffast-math -funroll-loops -march=k8 -mmmx -msse -mfpmath=sse -msse2 -mfpmath=sse")
-
 if(WIN32)
   add_definitions(-D_REENTRANT)
 endif(WIN32)
 
+# Compiler flags
+# Add a few for release builds (MAKE_BUILD_TYPE=RELEASE)
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall -fomit-frame-pointer -ffast-math -funroll-loops -march=k8 -mmmx -msse -mfpmath=sse -msse2 -mfpmath=sse")
 
 # Compile
 add_executable(ssr-binaural src/ssr_binaural.cpp ${SOURCE_FILES})
 # add_executable(ssr-wfs src/ssr_wfs.cpp ${SOURCE_FILES})
 
 # Link
+if(WIN32)
+  set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++ -static")
+endif(WIN32)
+
 target_link_libraries(ssr-binaural Threads::Threads ${LINKLIBS})
 #target_link_libraries(ssr-wfs Threads::Threads ${LINKLIBS})
 if(GUI)
   target_link_libraries(ssr-binaural Qt5::Widgets Qt5::OpenGL)
 #  target_link_libraries(ssr-wfs Qt5::Widgets Qt5::OpenGL)
 endif(GUI)
-IF (WIN32)
-set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++ -static")
-ENDIF()
+
