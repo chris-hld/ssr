@@ -21,7 +21,8 @@ ELSE()
 ENDIF()
 
 # Set the compiler
-#set(CMAKE_CXX_COMPILER g++)
+message (STATUS "Compiler ID: " ${CMAKE_CXX_COMPILER_ID})
+
 # Enable C++11
 set (CMAKE_CXX_STANDARD 11)
 
@@ -67,9 +68,13 @@ IF (WIN32)
 ENDIF()
 
 IF (WIN32)
-  find_library(XML2_LIBRARY NAMES libxml2)
+  if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+    find_library(XML2_LIBRARY NAMES libxml2_msvc)
+  else()
+    find_library(XML2_LIBRARY NAMES libxml2)
+    list(APPEND LINKLIBS "-lws2_32")
+  endif()
   list(APPEND LINKLIBS ${XML2_LIBRARY})
-  list(APPEND LINKLIBS "-lws2_32")
   add_definitions(-DLIBXML_STATIC)
    message(STATUS "Found XML2: " ${XML2_LIBRARY} )
 ELSE()
@@ -206,17 +211,21 @@ configure_file (
 # Add a few for release builds (MAKE_BUILD_TYPE=RELEASE)
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall -fomit-frame-pointer -ffast-math -funroll-loops -march=k8 -mmmx -msse -mfpmath=sse -msse2 -mfpmath=sse")
 
+if(WIN32)
+  add_definitions(-D_REENTRANT)
+endif(WIN32)
+
 
 # Compile
 add_executable(ssr-binaural src/ssr_binaural.cpp ${SOURCE_FILES})
-add_executable(ssr-wfs src/ssr_wfs.cpp ${SOURCE_FILES})
+# add_executable(ssr-wfs src/ssr_wfs.cpp ${SOURCE_FILES})
 
 # Link
 target_link_libraries(ssr-binaural Threads::Threads ${LINKLIBS})
-target_link_libraries(ssr-wfs Threads::Threads ${LINKLIBS})
+#target_link_libraries(ssr-wfs Threads::Threads ${LINKLIBS})
 if(GUI)
   target_link_libraries(ssr-binaural Qt5::Widgets Qt5::OpenGL)
-  target_link_libraries(ssr-wfs Qt5::Widgets Qt5::OpenGL)
+#  target_link_libraries(ssr-wfs Qt5::Widgets Qt5::OpenGL)
 endif(GUI)
 IF (WIN32)
 set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++ -static")
