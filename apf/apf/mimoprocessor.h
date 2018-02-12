@@ -515,12 +515,12 @@ class APF_MIMOPROCESSOR_BASE::Xput : public Item
 
 /// %Input class.
 APF_MIMOPROCESSOR_TEMPLATES
-class APF_MIMOPROCESSOR_BASE::Input : public Xput
+class APF_MIMOPROCESSOR_BASE::Input : public APF_MIMOPROCESSOR_BASE::Xput
                                     , public interface_policy::Input
                                     , public CRTP<typename Derived::Input>
 {
   public:
-    struct Params : Xput::Params
+    struct Params : APF_MIMOPROCESSOR_BASE::Xput::Params
     {
       using Xput::Params::operator=;
       using outer = typename Derived::Input;  // see add()
@@ -557,12 +557,12 @@ class APF_MIMOPROCESSOR_BASE::DefaultInput : public APF_MIMOPROCESSOR_BASE::Inpu
 
 /// %Output class.
 APF_MIMOPROCESSOR_TEMPLATES
-class APF_MIMOPROCESSOR_BASE::Output : public Xput
+class APF_MIMOPROCESSOR_BASE::Output : public APF_MIMOPROCESSOR_BASE::Xput
                                      , public interface_policy::Output
                                      , public CRTP<typename Derived::Output>
 {
   public:
-    struct Params : Xput::Params
+    struct Params : APF_MIMOPROCESSOR_BASE::Xput::Params
     {
       using Xput::Params::operator=;
       using outer = typename Derived::Output;  // see add()
