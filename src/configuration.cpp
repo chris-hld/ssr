@@ -35,7 +35,7 @@
 #endif
 
 #include <cassert>      // for assert()
-#ifndef _WIN32
+#ifndef _MSC_VER
 #include <getopt.h>     // for getopt_long()
 #else
 #ifndef NOMINMAX
@@ -44,7 +44,7 @@
 #include <windows.h>	// for Sleep()
 #include "getopt_port.h"
 #define strcasecmp _stricmp
-#endif // !_WIN32
+#endif // !_MSC_VER
 
 #include <cstdlib>      // for getenv(), ...
 #include <cstring>
@@ -74,11 +74,11 @@ namespace // anonymous
     {
       std::cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
         "It's ... " << std::flush;
-#ifndef _WIN32
+#ifndef _MSC_VER
       sleep(3);
 #else
 	  Sleep(3000);
-#endif // !_WIN32
+#endif // !_MSC_VER
       std::cout << "the ";
     }
     std::cout << PACKAGE_STRING "\n" SSR_COPYRIGHT << std::endl;

@@ -36,17 +36,19 @@
 #include <iterator> // for ostream_iterator
 #include <cstring>  // for strcmp()
 #include <fcntl.h>  // for O_RDONLY, dev_t, ino_t
-#ifndef _WIN32
+
+#ifndef _MSC_VER
 #include <unistd.h>  // for chdir(), fchdir(), close()
 #include <dirent.h> // for DIR, opendir()
 #else
-#include "dirent_port.h"
-#include <direct.h>
+#include "dirent_port.h"  // for DIR, opendir() ...
+#include <direct.h>  // for _chdir()
 #define chdir _chdir
 #include <io.h>
 #define	open _open
 #define close _close
-#endif // !_WIN32
+#endif // !_MSC_VER
+
 
 #include <cassert>  // for assert()
 #include <sys/stat.h> // for stat and mkdir (on Mac OSX)
