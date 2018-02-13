@@ -286,7 +286,7 @@ void BinauralRenderer::Source::_process()
   _interp_factor = interp_factor;  // Assign (once!) to BlockParameter
   _weight = this->weighting_factor;  // ... same here
 
-  float angles = (float)_input.parent._angles;
+  auto angles = static_cast<float>(_input.parent._angles);
 
   // calculate relative orientation of sound source
   auto rel_ori = -ref_ori;
