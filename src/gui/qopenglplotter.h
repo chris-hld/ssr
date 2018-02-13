@@ -36,15 +36,15 @@
 #include <GL/glu.h>
 #endif
 
-#include <QGLWidget>
-#include <QAction>
-#include <QString>
-#include <QWidget>
-#include <QImage>
-#include <QMouseEvent>
-#include <QKeyEvent>
-#include <QCloseEvent>
-#include <QLabel>
+#include <QtOpenGL/QGLWidget>
+#include <QtWidgets/QAction>
+#include <QtCore/QString>
+#include <QtWidgets/QWidget>
+#include <QtGui/QImage>
+#include <QtGui/QMouseEvent>
+#include <QtGui/QKeyEvent>
+#include <QtGui/QCloseEvent>
+#include <QtWidgets/QLabel>
 #include <vector>
 #include <list>
 #include <map>
@@ -226,4 +226,3 @@ class QOpenGLPlotter : public QGLWidget
 
 // Settings for Vim (http://www.vim.org/), please do not remove:
 // vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent
-// vim:fdm=expr:foldexpr=getline(v\:lnum)=~'/\\*\\*'&&getline(v\:lnum)!~'\\*\\*/'?'a1'\:getline(v\:lnum)=~'\\*\\*/'&&getline(v\:lnum)!~'/\\*\\*'?'s1'\:'='

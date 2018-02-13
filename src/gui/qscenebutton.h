@@ -30,8 +30,8 @@
 #ifndef SSR_QSCENEBUTTON_H
 #define SSR_QSCENEBUTTON_H
 
-#include <QPushButton>
-#include <QMouseEvent>
+#include <QtGui/QMouseEvent>
+#include <QtWidgets/QPushButton>
 
 /// QSceneButton
 class QSceneButton : public QPushButton
@@ -58,4 +58,3 @@ class QSceneButton : public QPushButton
 
 // Settings for Vim (http://www.vim.org/), please do not remove:
 // vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent
-// vim:fdm=expr:foldexpr=getline(v\:lnum)=~'/\\*\\*'&&getline(v\:lnum)!~'\\*\\*/'?'a1'\:getline(v\:lnum)=~'\\*\\*/'&&getline(v\:lnum)!~'/\\*\\*'?'s1'\:'='

@@ -30,8 +30,9 @@
 #ifndef SSR_QFILEMENULABEL_H
 #define SSR_QFILEMENULABEL_H
 
+#include <QtGui/QMouseEvent>
+
 #include "qclicktextlabel.h"
-#include <QMouseEvent>
 
 /// QFileMenuLabel
 class QFileMenuLabel : public QClickTextLabel
@@ -49,4 +50,3 @@ class QFileMenuLabel : public QClickTextLabel
 
 // Settings for Vim (http://www.vim.org/), please do not remove:
 // vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent
-// vim:fdm=expr:foldexpr=getline(v\:lnum)=~'/\\*\\*'&&getline(v\:lnum)!~'\\*\\*/'?'a1'\:getline(v\:lnum)=~'\\*\\*/'&&getline(v\:lnum)!~'/\\*\\*'?'s1'\:'='

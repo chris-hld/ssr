@@ -27,10 +27,11 @@
 /// @file
 /// TODO: add description
 
-#include <QPainter>
-#include <QTimer>
 #include <algorithm>
 #include <cmath>
+
+#include <QtCore/QTimer>
+#include <QtGui/QPainter>
 
 #include "qssrtimeline.h"
 #include "ssr_global.h"
@@ -285,4 +286,3 @@ void QSSRTimeLine::hide_time_edit()
 
 // Settings for Vim (http://www.vim.org/), please do not remove:
 // vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent
-// vim:fdm=expr:foldexpr=getline(v\:lnum)=~'/\\*\\*'&&getline(v\:lnum)!~'\\*\\*/'?'a1'\:getline(v\:lnum)=~'\\*\\*/'&&getline(v\:lnum)!~'/\\*\\*'?'s1'\:'='

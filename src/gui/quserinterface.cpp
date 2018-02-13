@@ -26,20 +26,20 @@
 
 /// @file
 /// TODO: add description
-
-#include <QResizeEvent>
-#include <QMouseEvent>
-#include <QFileDialog>
-#include <QMessageBox>
-#include <QHBoxLayout>
-#include <QVBoxLayout>
-#include <QMenu>
-#include <QTimer>
-#include <QApplication>
-#include <QDesktopWidget>
 #include <string>
 #include <fstream>
 #include <cmath>
+
+#include <QtCore/QTimer>
+#include <QtGui/QMouseEvent>
+#include <QtGui/QResizeEvent>
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QDesktopWidget>
+#include <QtWidgets/QFileDialog>
+#include <QtWidgets/QHBoxLayout>
+#include <QtWidgets/QMenu>
+#include <QtWidgets/QMessageBox>
+#include <QtWidgets/QVBoxLayout>
 
 #include "quserinterface.h"
 #include "apf/math.h"
@@ -610,7 +610,7 @@ void ssr::QUserInterface::_load_scene(const QString& path_to_scene)
     }
   }
 
-  _controller.load_scene(std::string(path_to_scene.toAscii()));
+  _controller.load_scene(std::string(path_to_scene.toUtf8()));
 
   // clear mouse cursor
   setCursor(Qt::ArrowCursor);
@@ -1107,11 +1107,7 @@ void ssr::QUserInterface::_update_source_properties_position()
   _get_pixel_pos(source_position->x, source_position->y,
 		 0,&x, &y);
 
-#ifdef __APPLE__
   _source_properties->move(QPoint(this->x() + x + 100, this->y() + y));
-#else
-  _source_properties->move(QPoint(x + 100, y));
-#endif
 
 }
 
@@ -1484,4 +1480,3 @@ void ssr::QUserInterface::_toggle_fixation_state_of_selected_sources()
 
 // Settings for Vim (http://www.vim.org/), please do not remove:
 // vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent
-// vim:fdm=expr:foldexpr=getline(v\:lnum)=~'/\\*\\*'&&getline(v\:lnum)!~'\\*\\*/'?'a1'\:getline(v\:lnum)=~'\\*\\*/'&&getline(v\:lnum)!~'/\\*\\*'?'s1'\:'='

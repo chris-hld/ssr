@@ -30,10 +30,10 @@
 #ifndef SSR_QZOOMLABEL_H
 #define SSR_QZOOMLABEL_H
 
-#include <QLabel>
-#include <QMouseEvent>
-#include <QPaintEvent>
-#include <QPoint>
+#include <QtCore/QPoint>
+#include <QtGui/QMouseEvent>
+#include <QtGui/QPaintEvent>
+#include <QtWidgets/QLabel>
 
 /// QZoomLabel
 class QZoomLabel : public QLabel
@@ -67,4 +67,3 @@ class QZoomLabel : public QLabel
 
 // Settings for Vim (http://www.vim.org/), please do not remove:
 // vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent
-// vim:fdm=expr:foldexpr=getline(v\:lnum)=~'/\\*\\*'&&getline(v\:lnum)!~'\\*\\*/'?'a1'\:getline(v\:lnum)=~'\\*\\*/'&&getline(v\:lnum)!~'/\\*\\*'?'s1'\:'='

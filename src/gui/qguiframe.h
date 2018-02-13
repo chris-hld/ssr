@@ -30,10 +30,10 @@
 #ifndef SSR_QGUIFRAME_H
 #define SSR_QGUIFRAME_H
 
-#include <QWidget>
-#include <QTimer>
-#include <QLabel>
-#include <QMouseEvent>
+#include <QtCore/QTimer>
+#include <QtGui/QMouseEvent>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QWidget>
 
 //#include "qclicktextlabel.h"
 
@@ -73,4 +73,3 @@ class QGUIFrame : public QWidget
 
 // Settings for Vim (http://www.vim.org/), please do not remove:
 // vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent
-// vim:fdm=expr:foldexpr=getline(v\:lnum)=~'/\\*\\*'&&getline(v\:lnum)!~'\\*\\*/'?'a1'\:getline(v\:lnum)=~'\\*\\*/'&&getline(v\:lnum)!~'/\\*\\*'?'s1'\:'='

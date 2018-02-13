@@ -30,9 +30,9 @@
 #ifndef SSR_QGUI_H
 #define SSR_QGUI_H
 
-#include <QObject>
-#include <QApplication>
-#include <QGLFormat>
+#include <QtCore/QObject>
+#include <QtOpenGL/QGLFormat>
+#include <QtWidgets/QApplication>
 
 #include "quserinterface.h"
 #include "publisher.h"
@@ -70,4 +70,3 @@ class QGUI : public QObject
 
 // Settings for Vim (http://www.vim.org/), please do not remove:
 // vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent
-// vim:fdm=expr:foldexpr=getline(v\:lnum)=~'/\\*\\*'&&getline(v\:lnum)!~'\\*\\*/'?'a1'\:getline(v\:lnum)=~'\\*\\*/'&&getline(v\:lnum)!~'/\\*\\*'?'s1'\:'='
