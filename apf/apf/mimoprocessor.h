@@ -484,7 +484,7 @@ APF_MIMOPROCESSOR_BASE::_process_current_list_in_main_thread()
 }
 
 APF_MIMOPROCESSOR_TEMPLATES
-class APF_MIMOPROCESSOR_BASE::Xput : public Item
+class APF_MIMOPROCESSOR_BASE::Xput : public APF_MIMOPROCESSOR_BASE::Item
 {
   public:
     // Parameters for an Input or Output.
