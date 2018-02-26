@@ -29,21 +29,21 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  *
  * the version string like "1.2.3"
  */
-#define LIBXML_DOTTED_VERSION "2.9.7"
+#define LIBXML_DOTTED_VERSION "2.9.4"
 
 /**
  * LIBXML_VERSION:
  *
  * the version number: 1.2.3 value is 10203
  */
-#define LIBXML_VERSION 20907
+#define LIBXML_VERSION 20904
 
 /**
  * LIBXML_VERSION_STRING:
  *
  * the version number string, 1.2.3 value is "10203"
  */
-#define LIBXML_VERSION_STRING "20907"
+#define LIBXML_VERSION_STRING "20904"
 
 /**
  * LIBXML_VERSION_EXTRA:
@@ -58,7 +58,7 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  * Macro to check that the libxml version in use is compatible with
  * the version the software has been compiled against
  */
-#define LIBXML_TEST_VERSION xmlCheckVersion(20907);
+#define LIBXML_TEST_VERSION xmlCheckVersion(20904);
 
 #ifndef VMS
 #if 0
@@ -90,7 +90,7 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  *
  * Whether the thread support is configured in
  */
-#if 1
+#if 0
 #if defined(_REENTRANT) || defined(__MT__) || \
     (defined(_POSIX_C_SOURCE) && (_POSIX_C_SOURCE - 0 >= 199506L))
 #define LIBXML_THREAD_ENABLED
@@ -210,7 +210,7 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  *
  * Whether the deprecated APIs are compiled in for compatibility
  */
-#if 0
+#if 1
 #define LIBXML_LEGACY_ENABLED
 #endif
 
@@ -291,7 +291,7 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  *
  * Whether ISO-8859-* support is made available in case iconv is not
  */
-#if 0
+#if 1
 #define LIBXML_ISO8859X_ENABLED
 #endif
 
@@ -300,7 +300,7 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  *
  * Whether Debugging module is configured in
  */
-#if 1
+#if 0
 #define LIBXML_DEBUG_ENABLED
 #endif
 
@@ -396,7 +396,7 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  *
  * Whether the Zlib support is compiled in
  */
-#if 0
+#if 1
 #define LIBXML_ZLIB_ENABLED
 #endif
 
@@ -405,11 +405,14 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  *
  * Whether the Lzma support is compiled in
  */
-#if 0
+#if 1
 #define LIBXML_LZMA_ENABLED
 #endif
 
 #ifdef __GNUC__
+#ifdef HAVE_ANSIDECL_H
+#include <ansidecl.h>
+#endif
 
 /**
  * ATTRIBUTE_UNUSED:

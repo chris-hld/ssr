@@ -56,15 +56,22 @@ set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 find_package(Threads REQUIRED)
 
+# TODO
+find_package(PkgConfig REQUIRED)
+
 if(WIN32)
   # Set Path to extern headers and libraries for Windows builds
   set(EXTERN_PATH ${PROJECT_SOURCE_DIR}/extern)
   set(CMAKE_PREFIX_PATH ${EXTERN_PATH})
   message(STATUS "WINDOWS Prefix: " ${CMAKE_PREFIX_PATH})
-  
+
   # Include extern headers
   include_directories(${EXTERN_PATH}/include)
   message(STATUS "WINDOWS Included: " ${EXTERN_PATH}/include)
+
+  # here is the target environment located
+  set (USER_ROOT_PATH ${PROJECT_SOURCE_DIR}/extern)
+  set (CMAKE_FIND_ROOT_PATH ${CMAKE_FIND_ROOT_PATH} ${EXTERN_PATH})
 endif(WIN32)
 
 if(WIN32)
@@ -74,18 +81,21 @@ if(WIN32)
   else()
     find_library(XML2_LIBRARY NAMES libxml2)
   endif()
+  include_directories(${LIBXML2_INCLUDE_DIR})
   list(APPEND LINKLIBS ${XML2_LIBRARY})
   add_definitions(-DLIBXML_STATIC)
-  list(APPEND LINKLIBS "-lws2_32")
+  #list(APPEND LINKLIBS "-lxml2 -lz -llzma -lws2_32")
+  list(APPEND LINKLIBS "-llzma")
   message(STATUS "Found XML2: " ${XML2_LIBRARY})
 else(WIN32)
   find_package(LibXml2 REQUIRED)
   include_directories(${LIBXML2_INCLUDE_DIR})
-  list(APPEND LINKLIBS ${LIBXML2_LIBRARIES})
+  list(APPEND LINKLIBS ${LIBXML2_LIBRARY})
 endif(WIN32)
 
 find_library(LIBSNDFILE_LIBRARY NAMES sndfile libsndfile-1)
 list(APPEND LINKLIBS ${LIBSNDFILE_LIBRARY})
+list(APPEND LINKLIBS -lFLAC -lvorbisenc -lvorbis -logg)
 message(STATUS "Found SNDFILE: " ${LIBSNDFILE_LIBRARY})
 
 option(ENABLE_ECASOUND "Ecasound soundfile playback/recording" OFF)
@@ -122,12 +132,12 @@ list(APPEND LINKLIBS ${FFTWF_LIBRARY})
 message(STATUS "Found FFTWF: " ${FFTWF_LIBRARY})
 
 # GUI
-option(GUI "Build GUI" OFF)
+option(GUI "Build GUI" ON)
 if(GUI)
-  # Tell CMake to run moc when necessary:
-  set(CMAKE_AUTOMOC ON)
-  # As moc files are generated in the binary dir, always look for includes there:
+  # Find includes in corresponding build directories
   set(CMAKE_INCLUDE_CURRENT_DIR ON)
+  # Instruct CMake to run moc automatically when needed.
+  set(CMAKE_AUTOMOC ON)
 
   include_directories(${PROJECT_SOURCE_DIR}/src/gui)  # necessary?
   set(GUI_SOURCE_FILES
@@ -154,10 +164,12 @@ if(GUI)
   include_directories(${Qt5Widgets_INCLUDE_DIRS})
   # We need add -DQT_WIDGETS_LIB when using QtWidgets in Qt 5.
   add_definitions(${Qt5Widgets_DEFINITIONS})
+  message(STATUS "Found QT5: " ${Qt5Widgets_INCLUDE_DIRS})
 
   find_package(Qt5OpenGL REQUIRED)
   find_package(OpenGL REQUIRED)
-  include_directories(${OPENGL_INCLUDE_DIR})
+  #include_directories(${OPENGL_INCLUDE_DIR})
+  #message(STATUS "Found OpenGL: " ${OPENGL_INCLUDE_DIR})
 
   list(APPEND LINKLIBS ${OPENGL_gl_LIBRARY})
   list(APPEND LINKLIBS ${OPENGL_glu_LIBRARY})
@@ -228,6 +240,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall -fomit-frame-point
 add_executable(ssr-binaural src/ssr_binaural.cpp ${SOURCE_FILES})
 # add_executable(ssr-wfs src/ssr_wfs.cpp ${SOURCE_FILES})
 
+
 # Link
 if(WIN32)
   set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++ -static")
@@ -239,4 +252,3 @@ if(GUI)
   target_link_libraries(ssr-binaural Qt5::Widgets Qt5::OpenGL)
 # target_link_libraries(ssr-wfs Qt5::Widgets Qt5::OpenGL)
 endif(GUI)
-

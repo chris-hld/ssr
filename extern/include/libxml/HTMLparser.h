@@ -115,12 +115,12 @@ XMLPUBFUN htmlParserCtxtPtr XMLCALL
 XMLPUBFUN int XMLCALL
 			htmlParseDocument(htmlParserCtxtPtr ctxt);
 XMLPUBFUN htmlDocPtr XMLCALL
-			htmlSAXParseDoc	(const xmlChar *cur,
+			htmlSAXParseDoc	(xmlChar *cur,
 					 const char *encoding,
 					 htmlSAXHandlerPtr sax,
 					 void *userData);
 XMLPUBFUN htmlDocPtr XMLCALL
-			htmlParseDoc	(const xmlChar *cur,
+			htmlParseDoc	(xmlChar *cur,
 					 const char *encoding);
 XMLPUBFUN htmlDocPtr XMLCALL
 			htmlSAXParseFile(const char *filename,
