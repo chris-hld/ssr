@@ -38,6 +38,11 @@
 #include "publisher.h"
 #include "scene.h"
 
+#ifdef _WIN32
+#include <QtCore/QtPlugin>
+Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin)
+#endif
+
 namespace ssr
 {
 

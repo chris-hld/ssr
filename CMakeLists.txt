@@ -136,8 +136,13 @@ option(GUI "Build GUI" ON)
 if(GUI)
   # Find includes in corresponding build directories
   set(CMAKE_INCLUDE_CURRENT_DIR ON)
-  # Instruct CMake to run moc automatically when needed.
+  # Turn on automatic invocation of the MOC
   set(CMAKE_AUTOMOC ON)
+  #set(CMAKE_AUTOUIC ON)
+  #set(CMAKE_AUTORCC ON)
+
+  #add_definitions(-DQT_STATICPLUGIN)
+  #add_definitions(-DNON_QMAKE_BUILD)
 
   include_directories(${PROJECT_SOURCE_DIR}/src/gui)  # necessary?
   set(GUI_SOURCE_FILES
@@ -157,25 +162,48 @@ if(GUI)
   )
   list(APPEND SOURCE_FILES ${GUI_SOURCE_FILES})
 
-  # Widgets finds its own dependencies (QtGui and QtCore).
-  find_package(Qt5Widgets REQUIRED)
-  # The Qt5Widgets_INCLUDES also includes the include directories for
-  # dependencies QtCore and QtGui
-  include_directories(${Qt5Widgets_INCLUDE_DIRS})
-  # We need add -DQT_WIDGETS_LIB when using QtWidgets in Qt 5.
-  add_definitions(${Qt5Widgets_DEFINITIONS})
-  message(STATUS "Found QT5: " ${Qt5Widgets_INCLUDE_DIRS})
-
-  find_package(Qt5OpenGL REQUIRED)
-  find_package(OpenGL REQUIRED)
-  #include_directories(${OPENGL_INCLUDE_DIR})
-  #message(STATUS "Found OpenGL: " ${OPENGL_INCLUDE_DIR})
-
-  list(APPEND LINKLIBS ${OPENGL_gl_LIBRARY})
-  list(APPEND LINKLIBS ${OPENGL_glu_LIBRARY})
-
   option(ENABLE_GUI "graphical user interface (using Qt)" ON)
   option(ENABLE_FLOATING_CONTROL_PANEL "separate control window" ON)
+  option(STATIC_QT "Use static Qt5 libraries" ON)
+
+  find_package(Qt5 COMPONENTS Core Gui Widgets OpenGL REQUIRED)
+  #include_directories(${Qt5_DIR})
+  message(STATUS "Found QT5: " ${Qt5_DIR})
+  
+  # We need add -DQT_WIDGETS_LIB when using QtWidgets in Qt 5.
+  #add_definitions(${Qt5Widgets_DEFINITIONS})
+
+  #Get platform support libs
+  if(STATIC_QT)
+    set(QT5PLATFORMSUPPORT_LIBS
+        Qt5::QWindowsIntegrationPlugin)
+
+    find_library(Qt5ThemeSupport_LIBRARY Qt5ThemeSupport)
+    list(APPEND QT5PLATFORMSUPPORT_LIBS ${Qt5ThemeSupport_LIBRARY})
+    message(STATUS "Found Qt5ThemeSupport :" ${Qt5ThemeSupport_LIBRARY})
+
+    find_library(Qt5FontDatabaseSupport_LIBRARY Qt5FontDatabaseSupport)
+    list(APPEND QT5PLATFORMSUPPORT_LIBS ${Qt5FontDatabaseSupport_LIBRARY})
+    message(STATUS "Found Qt5FontDatabaseSupport :" ${Qt5FontDatabaseSupport_LIBRARY})
+
+    find_library(Qt5EventDispatcherSupport_LIBRARY Qt5EventDispatcherSupport)
+    list(APPEND QT5PLATFORMSUPPORT_LIBS ${Qt5EventDispatcherSupport_LIBRARY})
+    message(STATUS "Found Qt5EventDispatcherSupport :" ${Qt5EventDispatcherSupport_LIBRARY})
+
+    find_library(Qt5AccessibilitySupport_LIBRARY Qt5AccessibilitySupport)
+    list(APPEND QT5PLATFORMSUPPORT_LIBS ${Qt5AccessibilitySupport_LIBRARY})
+    message(STATUS "Found Qt5AccessibilitySupport :" ${Qt5AccessibilitySupport_LIBRARY})
+
+    find_package(Freetype REQUIRED)
+    list(APPEND QT5PLATFORMSUPPORT_LIBS ${FREETYPE_LIBRARIES})
+
+  endif(STATIC_QT)
+
+  # OpenGL
+  find_package(OpenGL REQUIRED)
+  include_directories(${OPENGL_INCLUDE_DIR})
+  list(APPEND LINKLIBS ${OPENGL_gl_LIBRARY})
+  list(APPEND LINKLIBS ${OPENGL_glu_LIBRARY})
 
   message(STATUS "Build GUI")
 
@@ -243,12 +271,14 @@ add_executable(ssr-binaural src/ssr_binaural.cpp ${SOURCE_FILES})
 
 # Link
 if(WIN32)
-  set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++ -static")
+  set(CMAKE_EXE_LINKER_FLAGS "-static -static-libgcc -static-libstdc++")
 endif(WIN32)
+
+message(STATUS "Linking: "  ${LINKLIBS} ${QT5PLATFORMSUPPORT_LIBS})
 
 target_link_libraries(ssr-binaural Threads::Threads ${LINKLIBS})
 # target_link_libraries(ssr-wfs Threads::Threads ${LINKLIBS})
 if(GUI)
-  target_link_libraries(ssr-binaural Qt5::Widgets Qt5::OpenGL)
+  target_link_libraries(ssr-binaural Qt5::Gui Qt5::Core Qt5::Widgets Qt5::OpenGL ${QT5PLATFORMSUPPORT_LIBS})
 # target_link_libraries(ssr-wfs Qt5::Widgets Qt5::OpenGL)
 endif(GUI)
