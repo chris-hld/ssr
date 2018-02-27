@@ -169,14 +169,15 @@ if(GUI)
   find_package(Qt5 COMPONENTS Core Gui Widgets OpenGL REQUIRED)
   #include_directories(${Qt5_DIR})
   message(STATUS "Found QT5: " ${Qt5_DIR})
-  
+
   # We need add -DQT_WIDGETS_LIB when using QtWidgets in Qt 5.
   #add_definitions(${Qt5Widgets_DEFINITIONS})
 
   #Get platform support libs
   if(STATIC_QT)
     set(QT5PLATFORMSUPPORT_LIBS
-        Qt5::QWindowsIntegrationPlugin)
+        Qt5::QWindowsIntegrationPlugin
+        )
 
     find_library(Qt5ThemeSupport_LIBRARY Qt5ThemeSupport)
     list(APPEND QT5PLATFORMSUPPORT_LIBS ${Qt5ThemeSupport_LIBRARY})

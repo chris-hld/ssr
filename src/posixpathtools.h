@@ -309,6 +309,7 @@ void remove_last_component(T& tokens)
 template<typename T>
 void make_absolute(T& path)
 {
+  #ifndef _WIN32
   // if path is relative, prepend cwd
   if (!path.empty() && path.front() != "")
   {
@@ -325,6 +326,7 @@ void make_absolute(T& path)
     tokenize(cwd, cwd_tokens);
     path.splice(path.begin(), cwd_tokens);
   }
+  #endif
 }
 
 /** Make one list of path components relative to another.
@@ -388,7 +390,11 @@ void make_relative(T& path, const T& directory = T())
 inline std::string make_path_relative_to_file(const std::string& path
     , const std::string& filename)
 {
+  #ifndef _WIN32
   if (path != "" && path[0] != '/')
+  #else
+  if (path != "" && path[0] != '/' && path[1] != ':')
+  #endif
   {
     // path components will be stored in lists p1 and p2:
     std::list<std::string> p1, p2;
@@ -426,7 +432,11 @@ inline std::string make_path_relative_to_file(const std::string& path
 inline std::string make_path_relative_to_current_dir(const std::string& path
     , const std::string& filename)
 {
+  #ifndef _WIN32
   if (path != "" && path[0] != '/')
+  #else
+  if (path != "" && path[0] != '/' && path[1] != ':')
+  #endif
   {
     auto result = std::list<std::string>();
 
