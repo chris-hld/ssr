@@ -141,8 +141,7 @@ if(GUI)
   #set(CMAKE_AUTOUIC ON)
   #set(CMAKE_AUTORCC ON)
 
-  #add_definitions(-DQT_STATICPLUGIN)
-  #add_definitions(-DNON_QMAKE_BUILD)
+  add_definitions(-DQT_STATICPLUGIN)
 
   include_directories(${PROJECT_SOURCE_DIR}/src/gui)  # necessary?
   set(GUI_SOURCE_FILES
@@ -213,7 +212,7 @@ else(GUI)
 endif(GUI)
 
 # Network
-option(ENABLE_IP_INTERFACE "network (TCP/IP) interface" OFF)
+option(ENABLE_IP_INTERFACE "network (TCP/IP) interface" ON)
 if(ENABLE_IP_INTERFACE)
   list(APPEND SOURCE_FILES
     src/network/commandparser.cpp
@@ -223,6 +222,8 @@ if(ENABLE_IP_INTERFACE)
   )
   include_directories(${PROJECT_SOURCE_DIR}/src/network)
   add_definitions(-DASIO_STANDALONE)
+  add_definitions(-D_WIN32_WINNT=0x0601)
+  list(APPEND LINKLIBS "-lws2_32 -lmswsock")
   message(STATUS "Enabled network interface")
 
   else(ENABLE_IP_INTERFACE)

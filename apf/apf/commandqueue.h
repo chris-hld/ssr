@@ -31,12 +31,15 @@
 #define APF_COMMANDQUEUE_H
 
 #ifndef _WIN32
-#include <unistd.h> // for usleep()
+#include <unistd.h>  // for usleep()
 #else
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
-#include <windows.h>  //for Sleep()
+#include <windows.h>  // for Sleep()
 #endif // !_WIN32
 
 #include <cassert>  // for assert()

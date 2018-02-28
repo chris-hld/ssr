@@ -39,6 +39,7 @@
 #endif
 #include <asio.hpp>
 
+#include <functional>
 #include <thread>
 #include <iostream>
 
