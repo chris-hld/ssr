@@ -397,9 +397,11 @@ Controller<Renderer>::Controller(int argc, char* argv[])
     VERBOSE("Starting IP Server with port " << _conf.server_port
         << " and with end-of-message character with ASCII code " << 
         _conf.end_of_message_character << ".");
-
-    _network_interface.reset(new Server(*this, _conf.server_port
-        , static_cast<char>(_conf.end_of_message_character)));
+    auto _Server = new Server(*this, _conf.server_port
+        , static_cast<char>(_conf.end_of_message_character));
+    assert(_Server);
+    VERBOSE2("Start network interface...");
+    _network_interface.reset(_Server);
     _network_interface->start();
   }
 #endif // ENABLE_IP_INTERFACE

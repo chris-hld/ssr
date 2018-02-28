@@ -70,6 +70,7 @@ void
 ssr::Server::start()
 {
   _network_thread = new std::thread(std::bind(&Server::run, this));
+  VERBOSE2("Created network thread.");
 }
 
 void
@@ -87,6 +88,7 @@ ssr::Server::stop()
 void
 ssr::Server::run()
 {
+  VERBOSE2("Created network thread.");
   start_accept();
   _io_service.run();
 }

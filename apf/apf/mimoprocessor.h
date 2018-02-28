@@ -546,8 +546,8 @@ APF_MIMOPROCESSOR_TEMPLATES
 class APF_MIMOPROCESSOR_BASE::DefaultInput : public APF_MIMOPROCESSOR_BASE::Input
 {
   public:
-	using Params = typename Input::Params;
-	using iterator = typename Input::iterator;
+    using Params = typename Input::Params;
+    using iterator = typename Input::iterator;
 
     explicit DefaultInput(const Params& p) : Input(p) {}
 
