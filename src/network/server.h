@@ -34,13 +34,14 @@
 #include <config.h> // for ENABLE_*
 #endif
 
+#include <functional>
+#include <thread>
+#include <iostream>
+
 #if !defined(ASIO_STANDALONE)
 #define ASIO_STANDALONE
 #endif
 #include <asio.hpp>
-
-#include <thread>
-#include <iostream>
 
 #include "connection.h"
 
