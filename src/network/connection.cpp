@@ -59,6 +59,7 @@ ssr::Connection::pointer
 ssr::Connection::create(asio::io_service &io_service
     , Publisher& controller, char end_of_message_character)
 {
+  VERBOSE2("New network connection ...");
   return pointer(new Connection(io_service, controller
       , end_of_message_character));
 }

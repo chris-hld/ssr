@@ -53,6 +53,7 @@ ssr::Server::start_accept()
   _acceptor.async_accept(new_connection->socket()
       , std::bind(&Server::handle_accept, this, new_connection
       , std::placeholders::_1));
+  VERBOSE2("Network connection accepted.");
 }
 
 void
