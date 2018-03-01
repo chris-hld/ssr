@@ -34,14 +34,16 @@
 #include <config.h> // for ENABLE_*
 #endif
 
+#include <functional>
+#include <iostream>
+#include <chrono>
+#include <thread>
+#include <memory>
+
 #if !defined(ASIO_STANDALONE)
 #define ASIO_STANDALONE
 #endif
 #include <asio.hpp>
-
-#include <functional>
-#include <iostream>
-#include <memory>
 
 #include "networksubscriber.h"
 #include "commandparser.h"
