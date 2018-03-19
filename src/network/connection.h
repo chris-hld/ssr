@@ -40,9 +40,6 @@
 #include <thread>
 #include <memory>
 
-#if !defined(ASIO_STANDALONE)
-#define ASIO_STANDALONE
-#endif
 #include <asio.hpp>
 
 #include "networksubscriber.h"
@@ -85,7 +82,7 @@ class Connection : public std::enable_shared_from_this<Connection>
 
     /// TCP/IP socket
     socket_t _socket;
-    /// Buffer for incoming messages.  
+    /// Buffer for incoming messages.
     asio::streambuf _streambuf;
     /// @see Connection::timeout_handler
     asio::steady_timer _timer;
@@ -94,7 +91,7 @@ class Connection : public std::enable_shared_from_this<Connection>
     Publisher &_controller;
     /// Subscriber obj
     NetworkSubscriber _subscriber;
-    /// Commandparser obj 
+    /// Commandparser obj
     CommandParser _commandparser;
 
     bool _is_subscribed;

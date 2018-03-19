@@ -138,10 +138,6 @@ if(GUI)
   set(CMAKE_INCLUDE_CURRENT_DIR ON)
   # Turn on automatic invocation of the MOC
   set(CMAKE_AUTOMOC ON)
-  #set(CMAKE_AUTOUIC ON)
-  #set(CMAKE_AUTORCC ON)
-
-  add_definitions(-DQT_STATICPLUGIN)
 
   include_directories(${PROJECT_SOURCE_DIR}/src/gui)  # necessary?
   set(GUI_SOURCE_FILES
@@ -174,9 +170,11 @@ if(GUI)
 
   #Get platform support libs
   if(STATIC_QT)
+    add_definitions(-DQT_STATICPLUGIN)
+
     set(QT5PLATFORMSUPPORT_LIBS
         Qt5::QWindowsIntegrationPlugin
-        )
+    )
 
     find_library(Qt5ThemeSupport_LIBRARY Qt5ThemeSupport)
     list(APPEND QT5PLATFORMSUPPORT_LIBS ${Qt5ThemeSupport_LIBRARY})
@@ -258,9 +256,6 @@ configure_file (
   "${PROJECT_SOURCE_DIR}/src/config.h"
   )
 
-if(WIN32)
-  add_definitions(-D_REENTRANT)
-endif(WIN32)
 
 # Compiler flags
 # Add a few for release builds (MAKE_BUILD_TYPE=RELEASE)

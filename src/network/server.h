@@ -25,7 +25,7 @@
  ******************************************************************************/
 
 /// @file
-/// Server class (definition). 
+/// Server class (definition).
 
 #ifndef SSR_SERVER_H
 #define SSR_SERVER_H
@@ -38,9 +38,6 @@
 #include <thread>
 #include <iostream>
 
-#if !defined(ASIO_STANDALONE)
-#define ASIO_STANDALONE
-#endif
 #include <asio.hpp>
 
 #include "connection.h"
@@ -50,7 +47,7 @@ namespace ssr
 
 struct Publisher;
 
-/// Server class. 
+/// Server class.
 class Server
 {
   public:
