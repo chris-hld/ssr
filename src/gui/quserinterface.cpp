@@ -120,7 +120,7 @@ ssr::QUserInterface::QUserInterface(Publisher& controller, const Scene& scene
   setGeometry(200, 70, 900, 700);
   _controlsParent = new QLabel(this, Qt::Window | Qt::CustomizeWindowHint | Qt::WindowTitleHint);
   _controlsParent->setFixedSize(900, 75);
-  _controlsParent->move(200, 780);
+  //_controlsParent->move(200, 780);
   _controlsParent->setWindowTitle("Controls");
   _controlsParent->installEventFilter(this);
   _controlsParent->show();

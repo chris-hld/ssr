@@ -103,7 +103,7 @@ QString qt_style_sheet =
   "                                                        \n"
   // define style of other labels
   "QSceneButton {                                          \n"
-  "   border-image: url(images/scene_menu_item.png)0;       \n"
+  "   border-image: url(images/scene_menu_item.png)0;      \n"
   "   }                                                    \n"
   "                                                        \n"
   "QSceneButton:pressed {                                  \n"
@@ -203,7 +203,9 @@ ssr::QGUI::QGUI(Publisher& controller, const Scene& scene, int &argc, char *argv
     , path_to_gui_images, path_to_scene_menu)
 {
   // this is a quick hack to allow dynamic specification of path
-  qt_style_sheet.replace(QString("images"), QString( path_to_gui_images.c_str() ));
+  std::string _path_to_style_images = path_to_gui_images;
+  std::replace(_path_to_style_images.begin(), _path_to_style_images.end(), '\\', '/');  // Helper for Windows
+  qt_style_sheet.replace(QString("images"), QString( _path_to_style_images.c_str() ));
 
   // set stylesheet
   _qt_app.setStyleSheet(qt_style_sheet);
