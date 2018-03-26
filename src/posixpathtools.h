@@ -174,9 +174,15 @@ template<typename T>
 void tokenize(const std::string& path, T& tokens)
 {
   // add another slash to get an empty string if there is a trailing slash
+  #ifndef _WIN32
   std::istringstream ss(path + "/");
   std::string s;
   while (std::getline(ss, s, '/')) tokens.push_back(s);
+  #else
+  std::istringstream ss(path + "\\");
+  std::string s;
+  while (std::getline(ss, s, '\\')) tokens.push_back(s);
+  #endif
 }
 
 /** Turn a sequence of path components into a path.
@@ -309,7 +315,6 @@ void remove_last_component(T& tokens)
 template<typename T>
 void make_absolute(T& path)
 {
-  #ifndef _WIN32
   // if path is relative, prepend cwd
   if (!path.empty() && path.front() != "")
   {
@@ -326,7 +331,6 @@ void make_absolute(T& path)
     tokenize(cwd, cwd_tokens);
     path.splice(path.begin(), cwd_tokens);
   }
-  #endif
 }
 
 /** Make one list of path components relative to another.
@@ -393,7 +397,7 @@ inline std::string make_path_relative_to_file(const std::string& path
   #ifndef _WIN32
   if (path != "" && path[0] != '/')
   #else
-  if (path != "" && path[0] != '/' && path[1] != ':')
+  if (path != "" && path[1] != ':')
   #endif
   {
     // path components will be stored in lists p1 and p2:
@@ -435,7 +439,7 @@ inline std::string make_path_relative_to_current_dir(const std::string& path
   #ifndef _WIN32
   if (path != "" && path[0] != '/')
   #else
-  if (path != "" && path[0] != '/' && path[1] != ':')
+  if (path != "" && path[1] != ':')
   #endif
   {
     auto result = std::list<std::string>();
