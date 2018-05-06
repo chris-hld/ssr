@@ -246,7 +246,7 @@ class Controller : public Publisher
     query_state _query_state;
 #ifdef ENABLE_ECASOUND
     AudioRecorder::ptr_t    _audio_recorder; ///< pointer to audio recorder
-    AudioPlayer::ptr_t      _audio_player;   ///< pointer to audio player
+    AudioPlayerRTA::ptr_t      _audio_player;   ///< pointer to audio player
 #endif
     std::string _schema_file_name;           ///< XML Schema
     std::string _input_port_prefix;          ///< e.g. alsa_pcm:capture
@@ -1004,8 +1004,10 @@ Controller<Renderer>::_create_spontaneous_scene(const std::string& audio_file_na
         << "\"! Ecasound was disabled at compile time.");
   return false;
 #else
-  size_t no_of_audio_channels;
-  AudioPlayer::Soundfile::get_format(audio_file_name, no_of_audio_channels);
+  
+  size_t no_of_audio_channels = 0;
+  no_of_audio_channels = AudioPlayerRTA::Soundfile::init_channels(audio_file_name);
+  //AudioPlayerRTA::Soundfile::get_format(audio_file_name);
 
   if (no_of_audio_channels == 0)
   {
@@ -1385,7 +1387,7 @@ Controller<Renderer>::new_source(const std::string& name
     // if not already running, start AudioPlayer
     if (!_audio_player)
     {
-      _audio_player = AudioPlayer::ptr_t(new AudioPlayer);
+      _audio_player = AudioPlayerRTA::ptr_t(new AudioPlayerRTA);
     }
     port_name = _audio_player->get_port_name(file_name_or_port_number, channel
     // the thing with _loop is a temporary hack, should be removed some time:
