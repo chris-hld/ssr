@@ -37,8 +37,7 @@
 #include "apf/sndfiletools.h"
 #include "posixpathtools.h"
 
-#include <sndfile.hh>
-//#include <RtAudio.h>
+
 
 using maptools::get_item;
 
@@ -350,22 +349,13 @@ AudioPlayerRTA::~AudioPlayerRTA()
 }
 
 
-std::string AudioPlayerRTA::get_port_name(const std::string& audio_file_name,
-    int channel, bool loop)
+void AudioPlayerRTA::open_audio_file(const std::string& audio_file_name, bool loop)
 {
-  assert(channel >= 0);
-
   auto registered_file = get_item(_file_map, audio_file_name);
   if (registered_file != nullptr)
   {
     VERBOSE2("AudioPlayer: Input file '" + audio_file_name
         + "' already registered.");
-    if (channel > registered_file->get_channels())
-    {
-      ERROR("AudioPlayer: Channel " << channel << " doesn't exist in '"
-          + audio_file_name + "'!");
-      return "";
-    }
   }
   else // file not yet registered
   {
@@ -374,18 +364,30 @@ std::string AudioPlayerRTA::get_port_name(const std::string& audio_file_name,
     {
       WARNING("AudioPlayer: Initialization of soundfile '" + audio_file_name
           + "' failed!");
-      return "";
     }
-    if (channel > temp->get_channels())
-    {
-      ERROR("AudioPlayer: Channel " << channel << " doesn't exist in '"
-          + audio_file_name + "'!");
-      // if wrong channel is requested, audiofile is not registered.
-      return "";
-    }
-    registered_file = temp.get();
+
+    // Memory Leak?
     _file_map[audio_file_name] = temp.release();
   }
+}
+
+
+std::string AudioPlayerRTA::get_port_name(const std::string& audio_file_name,
+    int channel, bool loop)
+{
+  assert(channel >= 0);
+
+  open_audio_file(audio_file_name, loop);
+
+  auto registered_file = get_item(_file_map, audio_file_name);
+
+  if (channel > registered_file->get_channels())
+  {
+    ERROR("AudioPlayer: Channel " << channel << " doesn't exist in '"
+        + audio_file_name + "'!");
+    return "";
+  }
+
   return registered_file->get_client_name() + ":"
     + registered_file->get_output_prefix() + "_" + apf::str::A2S(channel);
 }
@@ -400,6 +402,11 @@ long int AudioPlayerRTA::get_file_length(const std::string& audio_file_name) con
   return file ? file->get_length() : 0;
 }
 
+int AudioPlayerRTA::get_channel_no(const std::string& audio_file_name) const
+{
+  const Soundfile* const file = get_item(_file_map, audio_file_name);
+  return file ? file->get_channels() : 0;
+}
 
 
 AudioPlayerRTA::Soundfile::ptr_t AudioPlayerRTA::Soundfile::create(
@@ -424,20 +431,23 @@ AudioPlayerRTA::Soundfile::Soundfile(const std::string& filename, bool loop) thr
   _channels(0)
 {
   // TODO.
-  SndfileHandle sndfile = SndfileHandle (_filename) ;
+  _sndfile = SndfileHandle (_filename) ;
 
   // Show some info
   std::cout << "Reading file: " << _filename << std::endl;
-  std::cout << "File format: " << sndfile.format() << std::endl;
+  std::cout << "File format: " << _sndfile.format() << std::endl;
   std::cout << "PCM 16 BIT: " << (SF_FORMAT_WAV | SF_FORMAT_PCM_16) << std::endl;
-  std::cout << "Samples in file: " << sndfile.frames() << std::endl;
-  std::cout << "Samplerate " << sndfile.samplerate() << std::endl;
-  std::cout << "Channels: " << sndfile.channels() << std::endl;
+  std::cout << "Samples in file: " << _sndfile.frames() << std::endl;
+  std::cout << "Samplerate " << _sndfile.samplerate() << std::endl;
+  std::cout << "Channels: " << _sndfile.channels() << std::endl;
 
-  _channels = sndfile.channels();
-  _sample_rate = sndfile.samplerate();
-  _length_samples = sndfile.frames();
-  _sample_format = sndfile.format();
+  _channels = _sndfile.channels();
+  _sample_rate = _sndfile.samplerate();
+  _length_samples = _sndfile.frames();
+  _sample_format = _sndfile.format();
+
+  bool is_RTA_stream;
+  is_RTA_stream = init_RTA_stream();
 }
 
 AudioPlayerRTA::Soundfile::~Soundfile()
@@ -467,11 +477,11 @@ long int AudioPlayerRTA::Soundfile::get_length() const
 }
 
 
-int AudioPlayerRTA::Soundfile::init_channels(const std::string& filename)
-{
-  AudioPlayerRTA::Soundfile tmp_file(filename, false);
-  return tmp_file._channels;
-}
+// int AudioPlayerRTA::Soundfile::init_channels(const std::string& filename)
+// {
+//   AudioPlayerRTA::Soundfile tmp_file(filename, false);
+//   return tmp_file._channels;
+// }
 
 // std::string AudioPlayerRTA::Soundfile::init_format(const std::string& filename)
 // {
@@ -479,6 +489,65 @@ int AudioPlayerRTA::Soundfile::init_channels(const std::string& filename)
 //   return tmp_file._sample_format;
 // }
 
+
+
+// Call
+int fplay( void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
+         double streamTime, RtAudioStreamStatus status, void *userData )
+{
+
+
+  int16_t *buffer = (int16_t *) outputBuffer;
+
+  // ok, i know this is not the best way to do file i/o in the audio thread, but 
+  // this is just for demonstration purposes ... 
+  SndfileHandle *sndfile = reinterpret_cast<SndfileHandle*>(userData);
+
+  // Error handling !
+  if ( status ){
+    std::cout << "Stream underflow detected!" << std::endl;
+  }
+
+
+  // 'readf()' frames
+  // 'read()' Samples !
+  // ! Frames != Samples
+  // Frame = Samples all channels
+  // |Samples| = Kanäle * Frames !
+  sndfile->readf(buffer, nBufferFrames);
+
+  return 0;
+}
+
+
+bool AudioPlayerRTA::Soundfile::init_RTA_stream()
+{
+  if ( _rta.getDeviceCount() < 1 ) {
+    std::cout << "\nNo audio devices found!\n";
+    return 0;
+  }
+
+  // Output params
+  RtAudio::StreamParameters parameters;
+  parameters.deviceId = _rta.getDefaultOutputDevice();
+  parameters.nChannels = _channels;
+  parameters.firstChannel = 0;
+  unsigned int sampleRate = _sample_rate;
+
+  unsigned int bufferFrames = 1024;
+
+  try {
+    _rta.openStream( &parameters, NULL, RTAUDIO_SINT16,
+                    sampleRate, &bufferFrames, &fplay, (void *)&_sndfile);
+
+    _rta.startStream();
+  }
+  catch ( RtAudioError& e ) {
+    e.printMessage();
+    return 0;
+  }
+
+}
 
 // Settings for Vim (http://www.vim.org/), please do not remove:
 // vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent

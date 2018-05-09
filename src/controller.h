@@ -1006,8 +1006,14 @@ Controller<Renderer>::_create_spontaneous_scene(const std::string& audio_file_na
 #else
   
   size_t no_of_audio_channels = 0;
-  no_of_audio_channels = AudioPlayerRTA::Soundfile::init_channels(audio_file_name);
-  //AudioPlayerRTA::Soundfile::get_format(audio_file_name);
+
+  if (!_audio_player)
+  {
+    _audio_player = AudioPlayerRTA::ptr_t(new AudioPlayerRTA);
+  }
+
+  _audio_player->open_audio_file(audio_file_name);
+  no_of_audio_channels = _audio_player->get_channel_no(audio_file_name);
 
   if (no_of_audio_channels == 0)
   {

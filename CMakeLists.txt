@@ -58,6 +58,11 @@ find_library(LIBSNDFILE_LIBRARY NAMES sndfile)
 list(APPEND LINKLIBS ${LIBSNDFILE_LIBRARY})
 message(STATUS "Found SNDFILE: " ${LIBSNDFILE_LIBRARY})
 
+find_library(RTAUDIO_LIBRARY NAMES rtaudio)
+list(APPEND LINKLIBS ${RTAUDIO_LIBRARY})
+message(STATUS "Found RTAUDIO: " ${RTAUDIO_LIBRARY})
+
+
 option(ENABLE_ECASOUND "Ecasound soundfile playback/recording" ON)
 if(ENABLE_ECASOUND)
   list(APPEND SOURCE_FILES

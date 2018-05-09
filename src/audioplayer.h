@@ -30,12 +30,13 @@
 #ifndef SSR_AUDIOPLAYER_H
 #define SSR_AUDIOPLAYER_H
 
-// #include <eca-control-interface.h>
 #include <map>
 #include <string>
 #include <stdexcept> // for std::runtime_error
 #include <memory>
 
+#include <sndfile.hh>
+#include <RtAudio.h>
 #include "apf/misc.h"  // for NonCopyable
 
 /** Loads audiofiles for playback using ecasound (with JACK transport).
@@ -141,12 +142,15 @@ class AudioPlayerRTA : apf::NonCopyable
 
     virtual ~AudioPlayerRTA();
 
+    /// Open audio file to _file_map
+    void open_audio_file(const std::string& audio_file_name, bool loop = false);
     /// Open audio file and return corresponding JACK port.
     std::string get_port_name(const std::string& audio_file_name,
         int channel, bool loop);
     /// get length (in samples) of given audio file.
     long int get_file_length(const std::string& audio_file_name) const;
-
+    /// get channels no of given audio file.
+    int get_channel_no(const std::string& audio_file_name) const;
   private:
     /// map of Soundfiles, indexed by strings.
     using soundfile_map_t = std::map<std::string, Soundfile*>;
@@ -177,7 +181,7 @@ class AudioPlayerRTA::Soundfile : apf::NonCopyable
     ~Soundfile();
 
 
-    static int init_channels(const std::string& filename);
+    //static int init_channels(const std::string& filename);
     //static std::string init_format(const std::string& filename);
 
     int get_channels() const;            ///< get number of channels
@@ -185,7 +189,13 @@ class AudioPlayerRTA::Soundfile : apf::NonCopyable
     std::string get_output_prefix() const; ///< get name of JACK client
     long int get_length() const;         ///< get length (in samples)
 
+    // RTA stream
+    bool init_RTA_stream();
+
   private:
+    RtAudio _rta;    ///< interface to the ecasound library
+    SndfileHandle _sndfile;
+    
     const std::string _filename;          ///< name of input sound file
     const std::string _escaped_filename;  ///< name of input sound file with escaped white spaces
     std::string _client_name;             ///< name of JACK client used by ecasound
