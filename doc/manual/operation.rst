@@ -28,9 +28,7 @@ Compiling and Running the SSR
 =============================
 
 The following sections describe how to build and/or install the SSR on your
-computer. The SSR can be used on GNU/Linux  and Mac OS X.
-There is no MS Windows version of the SSR (yet?). If you feel inclined to port
-the SSR to Windows, let us know!
+computer. The SSR can be used on GNU/Linux and Mac OS X. The MS Windows version of SSR is experimental at this stage.
 
 Choosing the Operating System
 -----------------------------
@@ -594,6 +592,15 @@ sort of adds applications placed in the ``/Applications`` folder to the
 environment, so lets assume you put the SSR there (This also works for
 ``$HOME/Applications``).
 
+Under new versions of Mac OS (Sierra and up) the SoundScapeRenderer executable might be stuck in quarantine resulting in files not being loaded properly. The corresponding error message might look like this::
+
+/private/var/folders/_t/67rf88lx507btn91x6g_vfk40000gp/T/AppTranslocation/42F7F94E-AED9-4F39-8647-41D898CCE032/d/SoundScapeRenderer.app/Contents/MacOS/ssr: line 48: 36804 Abort trap: 6           $SSR_EXECUTABLE "${OPTIONS[@]}"
+
+You can allow the SoundScapeRender to run from its original location by running::
+
+  xattr -d com.apple.quarantine SoundScapeRenderer.app
+
+
 Building from Source
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -1015,6 +1022,11 @@ Add these lines to a config file::
 
 It's recommended to use the config file approach - best use a global
 :ref:`config file<ssr_configuration_file>`.
+
+MS Windows
+----------
+
+The MS Windows version of SSR is experimental at this stage. Find the pre-release of the executables at https://github.com/chris-hld/ssr/releases. Note that this SSR version only works with live inputs currently (it cannot play audio files). It has no limitation otherwise. 
 
 Using the SSR with DAWs
 -----------------------

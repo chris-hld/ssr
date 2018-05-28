@@ -42,6 +42,8 @@
 #include <windows.h>  // for Sleep()
 #endif // !_WIN32
 
+#include <thread>   // std::this_thread::sleep_for
+#include <chrono>   // std::chrono::microseconds
 #include <cassert>  // for assert()
 
 #include "apf/lockfreefifo.h"
@@ -218,13 +220,8 @@ void CommandQueue::push(Command* cmd)
   {
     // We don't really know if that ever happens, so we abort in debug-mode:
     assert(false && "Error in _in_fifo.push()!");
-    // TODO: avoid this usleep()?
-#ifndef _WIN32
-	usleep(50);
-#else
-	Sleep((unsigned long)0.05);
-#endif // !_WIN32
-
+    // TODO: avoid this sleep?
+    std::this_thread::sleep_for(std::chrono::microseconds(50));
   }
 }
 
@@ -239,13 +236,9 @@ void CommandQueue::wait()
   this->cleanup_commands();
   while (!done)
   {
-    // TODO: avoid this usleep()?
-#ifndef _WIN32
-	usleep(50);
-#else
-	Sleep((unsigned long)0.05);
-#endif // !_WIN32
-	this->cleanup_commands();
+    // TODO: avoid this sleep?
+    std::this_thread::sleep_for(std::chrono::microseconds(50));
+    this->cleanup_commands();
   }
 }
 
