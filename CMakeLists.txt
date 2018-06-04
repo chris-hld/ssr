@@ -234,11 +234,11 @@ if(HEAD_TRACKER)
   list(APPEND SOURCE_FILES
     src/trackerrazor.cpp
     src/razor-ahrs/RazorAHRS.cpp
-    #src/trackerpolhemus.cpp
+    src/trackerpolhemus.cpp
   )
   set(ENABLE_RAZOR ON)
-  add_definitions(-DENABLE_O_NDELAY_WORKAROUND)
-  #set(ENABLE_POLHEMUS ON)
+  add_definitions(-DENABLE_O_NDELAY_WORKAROUND)  # bits/fcntl2.h
+  set(ENABLE_POLHEMUS ON)
   message(STATUS "Basic head tracker support")
 else(HEAD_TRACKER)
   message(WARNING "HEAD_TRACKER disabled.")
