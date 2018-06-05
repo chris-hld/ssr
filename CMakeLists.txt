@@ -46,7 +46,12 @@ set(SOURCE_FILES
 
 set(MAIN_SOURCE_FILES
     src/ssr_binaural
-    src/ssr_wfs)
+    src/ssr_brs
+    src/ssr_generic
+    src/ssr_nfc_hoa
+    src/ssr_vbap
+    src/ssr_wfs
+)
 
 # Libraries
 # Add libraries to LINKLIBS
@@ -159,47 +164,37 @@ if(GUI)
 
   option(ENABLE_GUI "graphical user interface (using Qt)" ON)
   option(ENABLE_FLOATING_CONTROL_PANEL "separate control window" ON)
-  option(STATIC_QT "Use static Qt5 libraries" ON)
+  option(STATIC_QT "Use static Qt5 libraries (Windows)" ON)
 
   find_package(Qt5 COMPONENTS Core Gui Widgets OpenGL REQUIRED)
-  #include_directories(${Qt5_DIR})
   message(STATUS "Found QT5: " ${Qt5_DIR})
 
-  # We need add -DQT_WIDGETS_LIB when using QtWidgets in Qt 5.
-  #add_definitions(${Qt5Widgets_DEFINITIONS})
+  if(WIN32)
+    if(STATIC_QT)
+      add_definitions(-DQT_STATICPLUGIN)
+    endif(STATIC_QT)
 
-  #Get platform support libs
-  if(STATIC_QT)
-    add_definitions(-DQT_STATICPLUGIN)
-
+    # Platform support libs for Windows
     set(QT5PLATFORMSUPPORT_LIBS
         Qt5::QWindowsIntegrationPlugin
     )
 
+    # Qt5PlatformSupport modules
     find_library(Qt5ThemeSupport_LIBRARY Qt5ThemeSupport)
     list(APPEND QT5PLATFORMSUPPORT_LIBS ${Qt5ThemeSupport_LIBRARY})
-    message(STATUS "Found Qt5ThemeSupport :" ${Qt5ThemeSupport_LIBRARY})
-
     find_library(Qt5FontDatabaseSupport_LIBRARY Qt5FontDatabaseSupport)
     list(APPEND QT5PLATFORMSUPPORT_LIBS ${Qt5FontDatabaseSupport_LIBRARY})
-    message(STATUS "Found Qt5FontDatabaseSupport :" ${Qt5FontDatabaseSupport_LIBRARY})
-
     find_library(Qt5EventDispatcherSupport_LIBRARY Qt5EventDispatcherSupport)
     list(APPEND QT5PLATFORMSUPPORT_LIBS ${Qt5EventDispatcherSupport_LIBRARY})
-    message(STATUS "Found Qt5EventDispatcherSupport :" ${Qt5EventDispatcherSupport_LIBRARY})
-
     find_library(Qt5AccessibilitySupport_LIBRARY Qt5AccessibilitySupport)
     list(APPEND QT5PLATFORMSUPPORT_LIBS ${Qt5AccessibilitySupport_LIBRARY})
-    message(STATUS "Found Qt5AccessibilitySupport :" ${Qt5AccessibilitySupport_LIBRARY})
-
     find_library(Qt5WindowsUIAutomationSupport_LIBRARY Qt5WindowsUIAutomationSupport)
     list(APPEND QT5PLATFORMSUPPORT_LIBS ${Qt5WindowsUIAutomationSupport_LIBRARY})
-    message(STATUS "Found Qt5WindowsUIAutomationSupport :" ${Qt5WindowsUIAutomationSupport_LIBRARY})
-
     find_package(Freetype REQUIRED)
     list(APPEND QT5PLATFORMSUPPORT_LIBS ${FREETYPE_LIBRARIES})
 
-  endif(STATIC_QT)
+    message(STATUS "Found Qt5PlatformSupport :" ${QT5PLATFORMSUPPORT_LIBS})
+  endif(WIN32)
 
   # OpenGL
   find_package(OpenGL REQUIRED)
@@ -224,11 +219,11 @@ if(ENABLE_IP_INTERFACE)
   )
   include_directories(${PROJECT_SOURCE_DIR}/src/network)
   add_definitions(-DASIO_STANDALONE)
-  add_definitions(-D_WIN32_WINNT=0x0601)
+  add_definitions(-D_WIN32_WINNT=0x0601)  # Windows 7
   list(APPEND LINKLIBS "-lws2_32 -lmswsock")
   message(STATUS "Enabled network interface")
 
-  else(ENABLE_IP_INTERFACE)
+else(ENABLE_IP_INTERFACE)
   message(WARNING "IP_INTERFACE disabled.")
 endif(ENABLE_IP_INTERFACE)
 
@@ -241,8 +236,8 @@ if(HEAD_TRACKER)
     src/trackerpolhemus.cpp
   )
   set(ENABLE_RAZOR ON)
-  add_definitions(-DENABLE_O_NDELAY_WORKAROUND)  # bits/fcntl2.h
   set(ENABLE_POLHEMUS ON)
+  add_definitions(-DENABLE_O_NDELAY_WORKAROUND)  # bits/fcntl2.h
   message(STATUS "Basic head tracker support")
 else(HEAD_TRACKER)
   message(WARNING "HEAD_TRACKER disabled.")
@@ -266,8 +261,16 @@ configure_file (
 # Add a few for release builds (MAKE_BUILD_TYPE=RELEASE)
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall -fomit-frame-pointer -ffast-math -funroll-loops -march=k8 -mmmx -msse -mfpmath=sse -msse2 -mfpmath=sse")
 
-# Compile
+# Compile executables
+set(EXECUTABLES
+    ssr-binaural
+    ssr-brs
+    ssr-generic
+    ssr-wfs
+)
 add_executable(ssr-binaural src/ssr_binaural.cpp ${SOURCE_FILES})
+add_executable(ssr-brs src/ssr_brs.cpp ${SOURCE_FILES})
+add_executable(ssr-generic src/ssr_generic.cpp ${SOURCE_FILES})
 add_executable(ssr-wfs src/ssr_wfs.cpp ${SOURCE_FILES})
 
 
@@ -278,9 +281,11 @@ endif(WIN32)
 
 message(STATUS "Linking: "  ${LINKLIBS} ${QT5PLATFORMSUPPORT_LIBS})
 
-target_link_libraries(ssr-binaural Threads::Threads ${LINKLIBS})
-target_link_libraries(ssr-wfs Threads::Threads ${LINKLIBS})
-if(GUI)
-  target_link_libraries(ssr-binaural Qt5::Gui Qt5::Core Qt5::Widgets Qt5::OpenGL ${QT5PLATFORMSUPPORT_LIBS})
-  target_link_libraries(ssr-wfs Qt5::Gui Qt5::Core Qt5::Widgets Qt5::OpenGL ${QT5PLATFORMSUPPORT_LIBS})
-endif(GUI)
+foreach(executable ${EXECUTABLES})
+  target_link_libraries(${executable} Threads::Threads ${LINKLIBS})
+  target_link_libraries(${executable} Threads::Threads ${LINKLIBS})
+  if(GUI)
+    target_link_libraries(${executable} Qt5::Gui Qt5::Core Qt5::Widgets Qt5::OpenGL ${QT5PLATFORMSUPPORT_LIBS})
+    target_link_libraries(${executable} Qt5::Gui Qt5::Core Qt5::Widgets Qt5::OpenGL ${QT5PLATFORMSUPPORT_LIBS})
+  endif(GUI)
+endforeach(executable ${EXECUTABLES})

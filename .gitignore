@@ -2,5 +2,6 @@ ssr_scene_autosave.asd
 _build
 .vs
 *.o
+*_moc.cpp
 src/config.h
 *.exe
