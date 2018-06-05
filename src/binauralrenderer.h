@@ -157,7 +157,7 @@ BinauralRenderer::_load_hrtfs(const std::string& filename, size_t size)
     = std::max_element(transpose.slices.begin()->begin()
       , transpose.slices.begin()->end(), _cmp_abs);
 
-  int index = std::distance(transpose.slices.begin()->begin(), maximum);
+  int index = static_cast<int>(std::distance(transpose.slices.begin()->begin(), maximum));
 
   auto impulse = apf::fixed_vector<sample_type>(index + 1);
   impulse.back() = 1;
