@@ -29,10 +29,28 @@
 
 #include <unistd.h>  // for write(), fsync(), close(), ...
 #include <termios.h> // for cfsetispeed(), ...
-#include <fcntl.h>   // for open(), ...
 #include <sstream>   // for std::stringstream
-#include <poll.h>    // for poll(), pollfd, ...
 #include <cassert>   // for assert()
+#include <thread>    // std::this_thread::sleep_for
+#include <chrono>    // std::chrono::milliseconds
+
+#ifndef _WIN32
+#include <fcntl.h>   // for open(), ...
+#include <poll.h>    // for poll(), pollfd, ...
+#else
+#include <bits/fcntl2.h>   // for open(), ...
+// Since open(), close(), read(), write() functions already exist on Windows but with a
+// limited compatibility with Linux, we need to replace them with other versions...
+#define open open_linux
+
+// Prevent Winsock.h from being included by the Windows.h header.
+// This must be done if we plan to include Winsock2.h in other files.
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif // WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <winsock2.h>
+#endif  // !_WIN32
 
 #include "trackerpolhemus.h"
 #include "publisher.h"
@@ -133,12 +151,16 @@ ssr::TrackerPolhemus::TrackerPolhemus(Publisher& controller
     assert(false);
   }
 
+  #ifndef _WIN32
   fsync(_tracker_port);
+  #else
+  FlushFileBuffers(&_tracker_port);
+  #endif
 
   _start();
 
   // wait until tracker has started
-  usleep(50000);
+  std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
   this->calibrate();
 }
@@ -224,6 +246,11 @@ ssr::TrackerPolhemus::thread(void *arg)
   char c;
   std::string line;
 
+  struct pollfd fds;
+  int error;
+  fds.fd = _tracker_port;
+  fds.events = POLLRDNORM;
+
   while (!_stopped)
   {
     c = 0;
@@ -231,12 +258,11 @@ ssr::TrackerPolhemus::thread(void *arg)
 
     while (c != '\n')
     {
-      struct pollfd fds;
-      int error;
-
-      fds.fd = _tracker_port;
-      fds.events = POLLRDNORM;
+      #ifndef _WIN32
       error = poll(&fds, 1, 100);
+      #else
+      error = WSAPoll(&fds, 1, 100);
+      #endif
 
       if (error < 1)
       {

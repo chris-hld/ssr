@@ -238,11 +238,11 @@ if(HEAD_TRACKER)
   list(APPEND SOURCE_FILES
     src/trackerrazor.cpp
     src/razor-ahrs/RazorAHRS.cpp
-    #src/trackerpolhemus.cpp
+    src/trackerpolhemus.cpp
   )
   set(ENABLE_RAZOR ON)
-  add_definitions(-DENABLE_O_NDELAY_WORKAROUND)
-  #set(ENABLE_POLHEMUS ON)
+  add_definitions(-DENABLE_O_NDELAY_WORKAROUND)  # bits/fcntl2.h
+  set(ENABLE_POLHEMUS ON)
   message(STATUS "Basic head tracker support")
 else(HEAD_TRACKER)
   message(WARNING "HEAD_TRACKER disabled.")
@@ -268,7 +268,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall -fomit-frame-point
 
 # Compile
 add_executable(ssr-binaural src/ssr_binaural.cpp ${SOURCE_FILES})
-# add_executable(ssr-wfs src/ssr_wfs.cpp ${SOURCE_FILES})
+add_executable(ssr-wfs src/ssr_wfs.cpp ${SOURCE_FILES})
 
 
 # Link
@@ -279,8 +279,8 @@ endif(WIN32)
 message(STATUS "Linking: "  ${LINKLIBS} ${QT5PLATFORMSUPPORT_LIBS})
 
 target_link_libraries(ssr-binaural Threads::Threads ${LINKLIBS})
-# target_link_libraries(ssr-wfs Threads::Threads ${LINKLIBS})
+target_link_libraries(ssr-wfs Threads::Threads ${LINKLIBS})
 if(GUI)
   target_link_libraries(ssr-binaural Qt5::Gui Qt5::Core Qt5::Widgets Qt5::OpenGL ${QT5PLATFORMSUPPORT_LIBS})
-# target_link_libraries(ssr-wfs Qt5::Widgets Qt5::OpenGL)
+  target_link_libraries(ssr-wfs Qt5::Gui Qt5::Core Qt5::Widgets Qt5::OpenGL ${QT5PLATFORMSUPPORT_LIBS})
 endif(GUI)

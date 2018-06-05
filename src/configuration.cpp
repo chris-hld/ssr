@@ -30,9 +30,6 @@
 #ifdef HAVE_CONFIG_H
 #include <config.h> // for ENABLE_*, HAVE_*, WITH_*
 #endif
-#ifdef ENABLE_ISATTY
-#include <unistd.h>
-#endif
 
 #include <cassert>      // for assert()
 #ifndef _MSC_VER
@@ -52,6 +49,9 @@
 #include <cstdlib>      // for getenv(), ...
 #include <cstring>
 #include <stdio.h>
+#include <thread>   // std::this_thread::sleep_for
+#include <chrono>   // std::chrono::seconds
+
 #include "configuration.h"
 #include "posixpathtools.h"
 #include "apf/stringtools.h"
@@ -77,11 +77,7 @@ namespace // anonymous
     {
       std::cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
         "It's ... " << std::flush;
-#ifndef _MSC_VER
-      sleep(3);
-#else
-	  Sleep(3000);
-#endif // !_MSC_VER
+      std::this_thread::sleep_for(std::chrono::seconds(3));
       std::cout << "the ";
     }
     std::cout << PACKAGE_STRING "\n" SSR_COPYRIGHT << std::endl;

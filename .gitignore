@@ -1,5 +1,6 @@
 ssr_scene_autosave.asd
 _build
 .vs
+*.o
 src/config.h
 *.exe
