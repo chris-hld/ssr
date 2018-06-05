@@ -192,6 +192,10 @@ if(GUI)
     list(APPEND QT5PLATFORMSUPPORT_LIBS ${Qt5AccessibilitySupport_LIBRARY})
     message(STATUS "Found Qt5AccessibilitySupport :" ${Qt5AccessibilitySupport_LIBRARY})
 
+    find_library(Qt5WindowsUIAutomationSupport_LIBRARY Qt5WindowsUIAutomationSupport)
+    list(APPEND QT5PLATFORMSUPPORT_LIBS ${Qt5WindowsUIAutomationSupport_LIBRARY})
+    message(STATUS "Found Qt5WindowsUIAutomationSupport :" ${Qt5WindowsUIAutomationSupport_LIBRARY})
+
     find_package(Freetype REQUIRED)
     list(APPEND QT5PLATFORMSUPPORT_LIBS ${FREETYPE_LIBRARIES})
 
