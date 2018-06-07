@@ -3,7 +3,7 @@ This is a fork of the SoundScape Renderer (SSR), which aims at porting the sourc
 The basic idea is to cross-compile on a linux machine an executable (.exe) for Windows.
 We use the M cross environment ([MXE](http://mxe.cc/)), which provides cross-compilation scripts for the dependencies and the MinGW64 (GCC) compiler.
 
-Pre-compiled binaries for Windows currently include:
+Pre-compiled binaries for Windows currently include:   
  `ssr-binaural.exe`, `ssr-brs.exe`, `ssr-wfs.exe` and `ssr-generic.exe`.
 
 
