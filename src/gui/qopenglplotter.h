@@ -131,6 +131,8 @@ class QOpenGLPlotter : public QGLWidget
     // type for vector with possible source colors
     typedef std::vector<QColor> color_vector_t;
 
+    void set_device_pixel_ratio();
+
   protected:
     Publisher& _controller;
     const Scene& _scene;
@@ -181,6 +183,7 @@ class QOpenGLPlotter : public QGLWidget
     void _deselect_all_sources();
 
   private:
+    qreal _devicePixelRatio;
     GLuint _ssr_logo_texture;
     GLuint _source_shadow_texture;
     GLuint _listener_texture;

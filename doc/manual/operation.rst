@@ -183,6 +183,11 @@ If you encounter problems configuring the SSR these hints could help:
    devel-package (``devel`` or ``dev``, where available) mentioned in
    Section :ref:`Dependencies <dependencies>`.
 
+-  If your QT5 library cannot be found during configuration,
+   try running ``export QT_SELECT=qt5``.
+   If there are problems with qt5's ``moc`` during the build, you might need to add
+   the corresponding folder (like ``/usr/local/opt/qt/bin``) to your ``PATH``.
+
 -  It may be necessary to run ``ldconfig`` after installing new
    libraries.
 
@@ -1324,7 +1329,7 @@ and as a result, the GUI buttons are not shown in newer Qt versions.
 To overcome this limitation, we provide two GUI variants:
 
 - Traditional GUI, can be used up to Qt 4.6.x
-- Floating control panel, should be used with Qt 4.7 and above
+- Floating control panel, which is used with Qt 4.7 and above
 
 The floating control panel is the default setting on Mac OS X, for Linux it
 can be activated with::
