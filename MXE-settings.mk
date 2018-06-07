@@ -17,7 +17,7 @@ MXE_TARGETS := x86_64-w64-mingw32.static.posix
 # This variable controls which plugins are in use.
 # See plugins/README.md for further information.
 #override MXE_PLUGIN_DIRS += plugins/apps plugins/native
-override MXE_PLUGIN_DIRS += plugins/gcc7
+override MXE_PLUGIN_DIRS += plugins/gcc8
 
 # This variable controls the download mirror for SourceForge,
 # when it is used. Enabling the value below means auto.

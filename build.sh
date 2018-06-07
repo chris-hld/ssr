@@ -1,4 +1,8 @@
-export PATH=/home/chris/git/mxe/usr/bin:$PATH
+# Configure MXE path:
+MXE_PATH=/home/chris/git/mxe
+
+
+export PATH=$MXE_PATH/usr/bin:$PATH
 
 rm -r _build
 mkdir -p _build && cd _build

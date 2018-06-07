@@ -3,21 +3,26 @@ This is a fork of the SoundScape Renderer (SSR), which aims at porting the sourc
 The basic idea is to cross-compile on a linux machine an executable (.exe) for Windows.
 We use the M cross environment ([MXE](http://mxe.cc/)), which provides cross-compilation scripts for the dependencies and the MinGW64 (GCC) compiler.
 
+Pre-compiled binaries for Windows currently include:   
+ `ssr-binaural.exe`, `ssr-brs.exe`, `ssr-wfs.exe` and `ssr-generic.exe`.
+
+
 Getting started
 ---------------
-* Install Jack Audio for Windows (64bit) from [Jack Audio Downloads](http://www.jackaudio.org/downloads/)
+* Install Jack Audio for Windows (64bit) from [Jack Audio Downloads](http://www.jackaudio.org/downloads/).
 * Get it running by following the [Installation and Configuration](http://jackaudio.org/faq/jack_on_windows.html).
-  Hint: If you plan on using other (ASIO) Audio-software with Jack, don't forget to register the 64-bit JackRouter.
-* Download and extract the latest [Release](https://github.com/chris-hld/ssr/releases). It contains everything you need, including the cross-compiled executables `ssr-binaural.exe` and `ssr-wfs.exe`.
-* Adapt the configuration file `ssr.conf.windows` to your needs. Replace the paths (`Z:\SSR`) to yours. For now, please only use absolute paths.
+  Hint: If you plan on using other (ASIO) Audio-software with Jack Audio, don't forget to register the 64-bit JackRouter.
+* Download and extract the latest [Release](https://github.com/chris-hld/ssr/releases).
+It contains everything you need, including the cross-compiled executables.
+* Adapt the configuration file `ssr.conf.windows` to your needs. Replace the paths (`Z:\SSR`) to yours. For now, please use absolute paths.
 
 Running the SSR on Windows
 --------------------------
-* Have a look at the (Documentation)[http://ssr.readthedocs.io/en/latest/operation.html#running-the-ssr]
-* First, start Jack audio, e.g. with the `qjackctl.exe`.
+* Have a look at the [Documentation](http://ssr.readthedocs.io/en/latest/operation.html#running-the-ssr)
+* First, start the Jack Audio Server, e.g. with `qjackctl.exe`.
 * Start the SSR. There is a simple example script `start-ssr.cmd`.
 * Optional: Start your ASIO playback Software.
-* Connect everything using Jack Connection.
+* Connect everything using Jack Audio Connection.
 
 This could look like this:
 
@@ -36,11 +41,12 @@ installation instructions can be found in the file INSTALL.
 
 For questions, bug reports and feature requests:
 
-Contact: ssr@spatialaudio.net
-Website: http://spatialaudio.net/ssr/
+Contact:       ssr@spatialaudio.net
+Website:       http://spatialaudio.net/ssr/
+Documentation: http://ssr.readthedocs.io/en/latest/
 
-Copyright (c) 2016 Division of Applied Acoustics
-                   Chalmers University of Technology
+Copyright (c) 2016-2018 Division of Applied Acoustics
+                        Chalmers University of Technology
 
 Copyright (c) 2012-2014 Institut für Nachrichtentechnik, Universität Rostock
 
