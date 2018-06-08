@@ -259,7 +259,8 @@ configure_file (
 
 # Compiler flags
 # Add a few for release builds (MAKE_BUILD_TYPE=RELEASE)
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall -fomit-frame-pointer -ffast-math -funroll-loops -march=k8 -mmmx -msse -mfpmath=sse -msse2 -mfpmath=sse")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -pipe -Wall -fomit-frame-pointer -ffast-math -funroll-loops -march=native -mmmx -m3dnow -msse -msse2 -msse3 -mfpmath=sse")
+message(STATUS "CMAKE Release Flags: " ${CMAKE_CXX_FLAGS_RELEASE})
 
 # Compile executables
 set(EXECUTABLES
