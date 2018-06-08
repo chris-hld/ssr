@@ -28,7 +28,12 @@
 /// Server class (implementation).
 
 #include <functional>
+#include <thread>
+#include <mutex>
 #include "server.h"
+
+std::mutex accept_mutex;  // protects ssr::Server::start_accept()
+
 
 ssr::Server::Server(Publisher& controller, int port
     , char end_of_message_character)
@@ -48,6 +53,9 @@ ssr::Server::~Server()
 void
 ssr::Server::start_accept()
 {
+  // lock accept_mutex
+  std::lock_guard<std::mutex> lock(accept_mutex);
+
   Connection::pointer new_connection = Connection::create(_io_service
       , _controller, _end_of_message_character);
 
@@ -55,6 +63,8 @@ ssr::Server::start_accept()
       , std::bind(&Server::handle_accept, this, new_connection
       , std::placeholders::_1));
   VERBOSE2("Network connection accepted.");
+
+  // accept_mutex released when lock goes out of scope
 }
 
 void
