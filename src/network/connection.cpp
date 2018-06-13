@@ -61,7 +61,6 @@ ssr::Connection::create(asio::io_service &io_service
     , Publisher& controller, char end_of_message_character)
 {
   VERBOSE2("New network connection ...");
-  std::this_thread::sleep_for(std::chrono::milliseconds(100));
   return pointer(new Connection(io_service, controller
       , end_of_message_character));
 }
