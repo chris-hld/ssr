@@ -62,7 +62,6 @@ ssr::Server::start_accept()
   _acceptor.async_accept(new_connection->socket()
       , std::bind(&Server::handle_accept, this, new_connection
       , std::placeholders::_1));
-  VERBOSE2("Network connection accepted.");
 
   // accept_mutex released when lock goes out of scope
 }
@@ -74,6 +73,8 @@ ssr::Server::handle_accept(Connection::pointer new_connection
   if (!error)
   {
     new_connection->start();
+    VERBOSE2("Network connection accepted.");
+
     start_accept();
   }
 }
