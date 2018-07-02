@@ -512,8 +512,6 @@ int fplay( void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
   // 'readf()' frames
   // 'read()' Samples !
   // ! Frames != Samples
-  // Frame = Samples all channels
-  // |Samples| = Kanäle * Frames !
   sndfile->readf(buffer, nBufferFrames);
 
   return 0;
@@ -540,7 +538,7 @@ bool AudioPlayerRTA::Soundfile::init_RTA_stream()
     _rta.openStream( &parameters, NULL, RTAUDIO_SINT16,
                     sampleRate, &bufferFrames, &fplay, (void *)&_sndfile);
 
-    _rta.startStream();
+    this->start();
   }
   catch ( RtAudioError& e ) {
     e.printMessage();
@@ -548,6 +546,27 @@ bool AudioPlayerRTA::Soundfile::init_RTA_stream()
   }
 
 }
+
+void AudioPlayerRTA::Soundfile::start()
+{
+  _rta.startStream();
+}
+
+void AudioPlayerRTA::Soundfile::stop()
+{
+  _rta.stopStream();
+}
+
+double AudioPlayerRTA::Soundfile::get_time()
+{
+  return _rta.getStreamTime();
+}
+
+void AudioPlayerRTA::Soundfile::set_time(double time)
+{
+  _rta.setStreamTime(time);
+}
+
 
 // Settings for Vim (http://www.vim.org/), please do not remove:
 // vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent

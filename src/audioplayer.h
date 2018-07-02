@@ -180,6 +180,14 @@ class AudioPlayerRTA::Soundfile : apf::NonCopyable
 
     ~Soundfile();
 
+    // start the playback stream
+    void start();
+    // stop the playback stram
+    void stop();
+    // get playback time
+    double get_time();
+    // set playback time
+    void set_time(double time);
 
     //static int init_channels(const std::string& filename);
     //static std::string init_format(const std::string& filename);
