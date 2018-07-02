@@ -1339,6 +1339,7 @@ void
 Controller<Renderer>::transport_start()
 {
   _renderer.transport_start();
+  _audio_player->start_all_streams();
 }
 
 // non-const because audioplayer could be started
@@ -1347,6 +1348,7 @@ void
 Controller<Renderer>::transport_stop()
 {
   _renderer.transport_stop();
+  _audio_player->stop_all_streams();
 }
 
 /** Skips the scene to a specified instant of time
@@ -1399,6 +1401,7 @@ Controller<Renderer>::new_source(const std::string& name
     // the thing with _loop is a temporary hack, should be removed some time:
         , _loop);
     file_length = _audio_player->get_file_length(file_name_or_port_number);
+
 #else
     ERROR("Couldn't open audio file \"" << file_name_or_port_number
         << "\"! Ecasound was disabled at compile time.");

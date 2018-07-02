@@ -537,8 +537,7 @@ bool AudioPlayerRTA::Soundfile::init_RTA_stream()
   try {
     _rta.openStream( &parameters, NULL, RTAUDIO_SINT16,
                     sampleRate, &bufferFrames, &fplay, (void *)&_sndfile);
-
-    this->start();
+    VERBOSE2("Audio file stream opened.");
   }
   catch ( RtAudioError& e ) {
     e.printMessage();
@@ -549,6 +548,7 @@ bool AudioPlayerRTA::Soundfile::init_RTA_stream()
 
 void AudioPlayerRTA::Soundfile::start()
 {
+  // TODO : Connect with Jack port
   _rta.startStream();
 }
 
@@ -567,6 +567,23 @@ void AudioPlayerRTA::Soundfile::set_time(double time)
   _rta.setStreamTime(time);
 }
 
+
+void AudioPlayerRTA::start_all_streams(){
+  // TODO: Check if empty!! segfault
+  for(auto it : _file_map)  // const & ?
+  {
+    VERBOSE2("START file: " + it.first);
+    it.second->start();
+  }
+}
+
+void AudioPlayerRTA::stop_all_streams(){
+  for(auto it : _file_map)  // const & ?
+  {
+    VERBOSE2("STOP file: " + it.first);
+    it.second->stop();
+  }
+}
 
 // Settings for Vim (http://www.vim.org/), please do not remove:
 // vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent

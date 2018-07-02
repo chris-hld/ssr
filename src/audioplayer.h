@@ -151,6 +151,11 @@ class AudioPlayerRTA : apf::NonCopyable
     long int get_file_length(const std::string& audio_file_name) const;
     /// get channels no of given audio file.
     int get_channel_no(const std::string& audio_file_name) const;
+
+    // start all Audio soundfile streams
+    void start_all_streams();
+    // stop all Audio soundfile streams
+    void stop_all_streams();
   private:
     /// map of Soundfiles, indexed by strings.
     using soundfile_map_t = std::map<std::string, Soundfile*>;
