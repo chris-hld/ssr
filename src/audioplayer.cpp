@@ -570,18 +570,18 @@ void AudioPlayerRTA::Soundfile::set_time(double time)
 
 void AudioPlayerRTA::start_all_streams(){
   // TODO: Check if empty!! segfault
-  for(auto it : _file_map)  // const & ?
+  for(const auto& fileIt : _file_map)
   {
-    VERBOSE2("START file: " + it.first);
-    it.second->start();
+    VERBOSE2("START file: " + fileIt.first);
+    fileIt.second->start();
   }
 }
 
 void AudioPlayerRTA::stop_all_streams(){
-  for(auto it : _file_map)  // const & ?
+  for(const auto& fileIt : _file_map)
   {
-    VERBOSE2("STOP file: " + it.first);
-    it.second->stop();
+    VERBOSE2("STOP file: " + fileIt.first);
+    fileIt.second->stop();
   }
 }
 

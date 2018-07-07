@@ -211,6 +211,8 @@ class Controller : public Publisher
   private:
     using output_list_t
       = typename Renderer::template rtlist_proxy<typename Renderer::Output>;
+    using input_list_t
+      = typename Renderer::template rtlist_proxy<typename Renderer::Input>;
 
     class query_state;
 
@@ -1340,6 +1342,15 @@ Controller<Renderer>::transport_start()
 {
   _renderer.transport_start();
   _audio_player->start_all_streams();
+
+  // Connect Audio files
+  input_list_t input_list = _renderer.get_input_list();
+  size_t channel = 1;
+  for (const auto& in: input_list)
+  {
+    std::cout<< "DEBUG"<< in.port_name()<< std::endl;
+    _renderer.connect_ports("RtApiJack:outport 0", in.port_name());
+  }
 }
 
 // non-const because audioplayer could be started
