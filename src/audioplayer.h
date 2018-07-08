@@ -36,7 +36,7 @@
 #include <memory>
 
 #include <sndfile.hh>
-#include <RtAudio.h>
+#include <rtaudio/RtAudio.h>
 #include "apf/misc.h"  // for NonCopyable
 
 /** Loads audiofiles for playback using ecasound (with JACK transport).

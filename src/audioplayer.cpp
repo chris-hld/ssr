@@ -526,17 +526,22 @@ bool AudioPlayerRTA::Soundfile::init_RTA_stream()
   }
 
   // Output params
-  RtAudio::StreamParameters parameters;
-  parameters.deviceId = _rta.getDefaultOutputDevice();
-  parameters.nChannels = _channels;
-  parameters.firstChannel = 0;
-  unsigned int sampleRate = _sample_rate;
+  RtAudio::StreamParameters rtaParameters;
+  rtaParameters.deviceId = _rta.getDefaultOutputDevice();
+  rtaParameters.nChannels = _channels;
+  rtaParameters.firstChannel = 0;
 
+  RtAudio::StreamOptions rtaOptions;
+  rtaOptions.flags = RTAUDIO_JACK_DONT_CONNECT;
+  rtaOptions.streamName = "RTAUDIO";
+  unsigned int sampleRate = _sample_rate;
   unsigned int bufferFrames = 1024;
 
+
+
   try {
-    _rta.openStream( &parameters, NULL, RTAUDIO_SINT16,
-                    sampleRate, &bufferFrames, &fplay, (void *)&_sndfile);
+    _rta.openStream( &rtaParameters, NULL, RTAUDIO_SINT16,
+                    sampleRate, &bufferFrames, &fplay, (void *)&_sndfile, &rtaOptions);
     VERBOSE2("Audio file stream opened.");
   }
   catch ( RtAudioError& e ) {

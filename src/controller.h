@@ -1349,7 +1349,7 @@ Controller<Renderer>::transport_start()
   for (const auto& in: input_list)
   {
     std::cout<< "DEBUG"<< in.port_name()<< std::endl;
-    _renderer.connect_ports("RtApiJack:outport 0", in.port_name());
+    _renderer.connect_ports("RTAUDIO:outport 0", in.port_name());
   }
 }
 
