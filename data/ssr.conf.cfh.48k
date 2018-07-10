@@ -105,7 +105,7 @@ END_OF_MESSAGE_CHARACTER = 10
 # Level 3: Even messages which can repeat many times per second are shown.
 #	    This is a lot of messages!
 #
-VERBOSE = "2"
+VERBOSE = "3"
 
 ################################################################################
 

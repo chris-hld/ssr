@@ -1340,16 +1340,18 @@ template<typename Renderer>
 void
 Controller<Renderer>::transport_start()
 {
-  _renderer.transport_start();
   _audio_player->start_all_streams();
+  _renderer.transport_start();
 
-  // Connect Audio files
+  // Connect Audio Channels
   input_list_t input_list = _renderer.get_input_list();
-  size_t channel = 1;
+  size_t channelNo = 0;
   for (const auto& in: input_list)
   {
-    std::cout<< "DEBUG"<< in.port_name()<< std::endl;
-    _renderer.connect_ports("RTAUDIO:outport 0", in.port_name());
+    std::cout<< "DEBUG: "<< in.port_name()<< std::endl;
+    _renderer.connect_ports("RTAUDIO:outport " + apf::str::A2S(channelNo),
+                            in.port_name());
+    channelNo++;
   }
 }
 
@@ -1408,9 +1410,11 @@ Controller<Renderer>::new_source(const std::string& name
     {
       _audio_player = AudioPlayerRTA::ptr_t(new AudioPlayerRTA);
     }
+    _audio_player->open_audio_file(file_name_or_port_number);
     port_name = _audio_player->get_port_name(file_name_or_port_number, channel
     // the thing with _loop is a temporary hack, should be removed some time:
         , _loop);
+    VERBOSE2("port: " + port_name);
     file_length = _audio_player->get_file_length(file_name_or_port_number);
 
 #else

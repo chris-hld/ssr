@@ -376,13 +376,11 @@ std::string AudioPlayerRTA::get_port_name(const std::string& audio_file_name,
     int channel, bool loop)
 {
   assert(channel >= 0);
-
-  open_audio_file(audio_file_name, loop);
-
   auto registered_file = get_item(_file_map, audio_file_name);
 
   if (channel > registered_file->get_channels())
   {
+  //try: open_audio_file(audio_file_name, loop);
     ERROR("AudioPlayer: Channel " << channel << " doesn't exist in '"
         + audio_file_name + "'!");
     return "";
@@ -446,8 +444,8 @@ AudioPlayerRTA::Soundfile::Soundfile(const std::string& filename, bool loop) thr
   _length_samples = _sndfile.frames();
   _sample_format = _sndfile.format();
 
-  bool is_RTA_stream;
-  is_RTA_stream = init_RTA_stream();
+  _client_name = _filename;
+
 }
 
 AudioPlayerRTA::Soundfile::~Soundfile()
@@ -525,9 +523,24 @@ bool AudioPlayerRTA::Soundfile::init_RTA_stream()
     return 0;
   }
 
+  // Determine the number of devices available
+  unsigned int devices = _rta.getDeviceCount();
+  // Scan through devices for various capabilities
+  RtAudio::DeviceInfo info;
+  std::string RendererName =  "BinauralRenderer";
+  int rendererID = -1;
+  for ( unsigned int i=0; i<devices; i++ ) {
+    info = _rta.getDeviceInfo( i );
+    if ( info.probed == true ) {
+      VERBOSE3("Probing device = " + info.name);
+      // Search for Renderer and set rendererID
+      rendererID = info.name == RendererName ? i : -1;
+    }
+  }
+
   // Output params
   RtAudio::StreamParameters rtaParameters;
-  rtaParameters.deviceId = _rta.getDefaultOutputDevice();
+  rtaParameters.deviceId = rendererID;
   rtaParameters.nChannels = _channels;
   rtaParameters.firstChannel = 0;
 
@@ -536,7 +549,6 @@ bool AudioPlayerRTA::Soundfile::init_RTA_stream()
   rtaOptions.streamName = "RTAUDIO";
   unsigned int sampleRate = _sample_rate;
   unsigned int bufferFrames = 1024;
-
 
 
   try {
@@ -553,8 +565,9 @@ bool AudioPlayerRTA::Soundfile::init_RTA_stream()
 
 void AudioPlayerRTA::Soundfile::start()
 {
-  // TODO : Connect with Jack port
-  _rta.startStream();
+    bool is_RTA_stream;
+    is_RTA_stream = init_RTA_stream();
+    _rta.startStream();
 }
 
 void AudioPlayerRTA::Soundfile::stop()
