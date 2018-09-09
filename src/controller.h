@@ -1336,29 +1336,42 @@ Controller<Renderer>::set_auto_rotation(bool auto_rotate_sources)
 }
 
 // non-const because audioplayer could be started
-template<typename Renderer>
-void
-Controller<Renderer>::transport_start()
+template <typename Renderer>
+void Controller<Renderer>::transport_start()
 {
   _audio_player->start_all_streams();
-  _renderer.transport_start();
 
   // Connect Audio Channels
   input_list_t input_list = _renderer.get_input_list();
-  size_t channelNo = 0;
-  for (const auto& in: input_list)
+  auto _file_map = _audio_player->get_file_map();
+
+  std::string input_name = " ";
+  for (const auto &fileIt : _file_map)
   {
-    std::cout<< "DEBUG: "<< in.port_name()<< std::endl;
-    _renderer.connect_ports("RTAUDIO:outport " + apf::str::A2S(channelNo),
-                            in.port_name());
-    channelNo++;
+    size_t file_channels = fileIt.second->get_channels();
+    for (size_t channelIt = 0; channelIt < file_channels; channelIt++)
+    {
+      size_t inputNo = 0;
+      for (const auto &in : input_list)
+      {
+        if (channelIt == inputNo)
+        {
+          input_name = in.port_name();
+        }
+        inputNo++;
+      }
+      _renderer.connect_ports(fileIt.second->get_client_name() + ":" +
+                                  fileIt.second->get_output_prefix() + " " + apf::str::A2S(channelIt),
+                              input_name);
+    }
   }
+
+  _renderer.transport_start();
 }
 
 // non-const because audioplayer could be started
-template<typename Renderer>
-void
-Controller<Renderer>::transport_stop()
+template <typename Renderer>
+void Controller<Renderer>::transport_stop()
 {
   _renderer.transport_stop();
   _audio_player->stop_all_streams();

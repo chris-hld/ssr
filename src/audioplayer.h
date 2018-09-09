@@ -38,6 +38,7 @@
 #include <sndfile.hh>
 #include <rtaudio/RtAudio.h>
 #include "apf/misc.h"  // for NonCopyable
+#include "apf/apf/jackclient.h"
 
 /** Loads audiofiles for playback using ecasound (with JACK transport).
  * For each (multichannel) soundfile an ecasound instance is opened.
@@ -156,18 +157,22 @@ class AudioPlayerRTA : apf::NonCopyable
     void start_all_streams();
     // stop all Audio soundfile streams
     void stop_all_streams();
-  private:
+    //void connect_all_streams(const input_list_t input_list);
+//  private:
     /// map of Soundfiles, indexed by strings.
     using soundfile_map_t = std::map<std::string, Soundfile*>;
     /// map to associate an ecasound instance with a filename
     soundfile_map_t _file_map;
+
+    const soundfile_map_t get_file_map() const;
+
 };
 
 
 /** Plays a single (possibly multichannel) audio file.
  * Playback can be started using JACK transport.
  **/
-class AudioPlayerRTA::Soundfile : apf::NonCopyable
+class AudioPlayerRTA::Soundfile : apf::NonCopyable, apf::JackClient
 {
   public:
     using ptr_t = std::unique_ptr<Soundfile>; ///< unique_ptr to Soundfile
@@ -193,7 +198,8 @@ class AudioPlayerRTA::Soundfile : apf::NonCopyable
     double get_time();
     // set playback time
     void set_time(double time);
-
+    // connect
+    //void connect(const std::string& port_name);
     //static int init_channels(const std::string& filename);
     //static std::string init_format(const std::string& filename);
 
@@ -217,6 +223,7 @@ class AudioPlayerRTA::Soundfile : apf::NonCopyable
     size_t _sample_rate;                     ///< sample rate of input sound file
     long int _length_samples;             ///< length of soundfile (in samples)
     std::string _sample_format;
+    bool _is_RTA_stream = false;
 };
 
 
