@@ -94,7 +94,7 @@ std::string AudioPlayerRTA::get_port_name(const std::string& audio_file_name,
   }
 
   return registered_file->get_client_name() + ":"
-    + registered_file->get_output_prefix() + "_" + apf::str::A2S(channel);
+    + registered_file->get_output_prefix() + " " + apf::str::A2S(channel);
 }
 
 /** _.
@@ -121,6 +121,9 @@ AudioPlayerRTA::Soundfile::ptr_t AudioPlayerRTA::Soundfile::create(
   try
   {
     sndfile_ptr.reset(new Soundfile(filename, loop));
+    if (!sndfile_ptr->_is_RTA_stream){
+      sndfile_ptr->_is_RTA_stream = sndfile_ptr->init_RTA_stream();
+    }
   }
   catch(soundfile_error& e)
   {
@@ -153,6 +156,8 @@ AudioPlayerRTA::Soundfile::Soundfile(const std::string& filename, bool loop) thr
 
   _client_name = _filename;
 
+  // TODO.
+  RtAudio _rta(RtAudio::UNIX_JACK);
 }
 
 AudioPlayerRTA::Soundfile::~Soundfile()
@@ -200,19 +205,27 @@ long int AudioPlayerRTA::Soundfile::get_length() const
 int fplay( void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
          double streamTime, RtAudioStreamStatus status, void *userData )
 {
-
-
   int16_t *buffer = (int16_t *) outputBuffer;
   // TODO
   // ok, i know this is not the best way to do file i/o in the audio thread, but 
   // this is just for demonstration purposes ... 
   SndfileHandle *sndfile = reinterpret_cast<SndfileHandle*>(userData);
 
+  // Read Audio file at new streamtime if necessary
+  sf_count_t sf_position;  // samples
+  sf_position = sf_seek(sndfile->rawHandle(), 0, SEEK_CUR);
+
+  int streamTime_smpl = (int)(streamTime * sndfile->samplerate());
+  if (std::abs(sf_position - streamTime_smpl) > 10){
+    VERBOSE2(streamTime);
+    VERBOSE2(sf_position);
+    sf_seek ( sndfile->rawHandle() , streamTime_smpl , SEEK_SET );
+  }
+
   // Error handling !
   if ( status ){
     std::cout << "Stream underflow detected!" << std::endl;
   }
-
 
   // 'readf()' frames
   // 'read()' Samples !
@@ -230,28 +243,11 @@ bool AudioPlayerRTA::Soundfile::init_RTA_stream()
     return 0;
   }
 
-  // Determine the number of devices available
-  unsigned int devices = _rta.getDeviceCount();
-  // Scan through devices for various capabilities
-  RtAudio::DeviceInfo info;
-  std::string renderer_name =  "BinauralRenderer";
-  int rendererID = -1;
-  for ( unsigned int i=0; i<devices; i++ ) {
-    info = _rta.getDeviceInfo( i );
-    if ( info.probed == true ) {
-      VERBOSE3("Probing device = " + info.name);
-      // Search for Renderer and set rendererID
-      rendererID = info.name == renderer_name ? i : -1;
-    }
-  }
-  if (rendererID == -1)
-    ERROR("No renderer found");
-
   // Output params
   RtAudio::StreamParameters rtaParameters;
-  rtaParameters.deviceId = rendererID;
+  //rtaParameters.deviceId = rendererID;
   rtaParameters.nChannels = _channels;
-  rtaParameters.firstChannel = 0;
+  //rtaParameters.firstChannel = 1;
 
   RtAudio::StreamOptions rtaOptions;
   rtaOptions.flags = RTAUDIO_JACK_DONT_CONNECT;
@@ -265,7 +261,6 @@ bool AudioPlayerRTA::Soundfile::init_RTA_stream()
     _rta.openStream( &rtaParameters, NULL, RTAUDIO_SINT16,
                     sampleRate, &bufferFrames, &fplay, (void *)&_sndfile, &rtaOptions);
     VERBOSE2("Audio file stream opened.");
-    //JackClient::connect_ports(_client_name, renderer_name);
   }
   catch ( RtAudioError& e ) {
     e.printMessage();
@@ -293,18 +288,35 @@ double AudioPlayerRTA::Soundfile::get_time()
   return _rta.getStreamTime();
 }
 
-void AudioPlayerRTA::Soundfile::set_time(double time)
+void AudioPlayerRTA::Soundfile::set_time(float time)
 {  // TODO
-  _rta.setStreamTime(time);
+  _rta.setStreamTime(static_cast<double>(time));
 }
 
 
+// The AudioPlayerRTA can control all soundfile streams
 void AudioPlayerRTA::start_all_streams(){
   // TODO: Check if empty!! segfault
   for(const auto& fileIt : _file_map)
   {
     VERBOSE2("START file: " + fileIt.first);
     fileIt.second->start();
+  }
+}
+
+void AudioPlayerRTA::stop_all_streams(){
+  for(const auto& fileIt : _file_map)
+  {
+    VERBOSE2("STOP file: " + fileIt.first);
+    fileIt.second->stop();
+  }
+}
+
+void AudioPlayerRTA::set_all_time(float time){
+  for(const auto& fileIt : _file_map)
+  {
+    VERBOSE2("SET TIME file: " + fileIt.first);
+    fileIt.second->set_time(time);
   }
 }
 
@@ -317,14 +329,6 @@ const AudioPlayerRTA::soundfile_map_t AudioPlayerRTA::get_file_map() const {
 }
 
 
-
-void AudioPlayerRTA::stop_all_streams(){
-  for(const auto& fileIt : _file_map)
-  {
-    VERBOSE2("STOP file: " + fileIt.first);
-    fileIt.second->stop();
-  }
-}
 
 
 // Settings for Vim (http://www.vim.org/), please do not remove:

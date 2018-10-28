@@ -157,6 +157,8 @@ class AudioPlayerRTA : apf::NonCopyable
     void start_all_streams();
     // stop all Audio soundfile streams
     void stop_all_streams();
+    // set time all Audio streams
+    void set_all_time(float time);
     //void connect_all_streams(const input_list_t input_list);
 //  private:
     /// map of Soundfiles, indexed by strings.
@@ -197,7 +199,7 @@ class AudioPlayerRTA::Soundfile : apf::NonCopyable, apf::JackClient
     // get playback time
     double get_time();
     // set playback time
-    void set_time(double time);
+    void set_time(float time);
     // connect
     //void connect(const std::string& port_name);
     //static int init_channels(const std::string& filename);
@@ -212,7 +214,7 @@ class AudioPlayerRTA::Soundfile : apf::NonCopyable, apf::JackClient
     bool init_RTA_stream();
 
   private:
-    RtAudio _rta;    ///< interface to the ecasound library
+    RtAudio _rta;                         ///< interface to the ecasound library
     SndfileHandle _sndfile;
     
     const std::string _filename;          ///< name of input sound file

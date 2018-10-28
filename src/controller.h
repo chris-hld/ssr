@@ -1343,26 +1343,28 @@ void Controller<Renderer>::transport_start()
 
   // Connect Audio Channels
   input_list_t input_list = _renderer.get_input_list();
+  size_t input_channels = input_list.size();
   auto _file_map = _audio_player->get_file_map();
 
-  std::string input_name = " ";
+
+  // Iterate over files and connect to inputs
+  int input_no = 0;
+  std::string input_name = "";
   for (const auto &fileIt : _file_map)
   {
     size_t file_channels = fileIt.second->get_channels();
-    for (size_t channelIt = 0; channelIt < file_channels; channelIt++)
+    for (int channel_no = 0; channel_no < file_channels; channel_no++)
     {
-      size_t inputNo = 0;
-      for (const auto &in : input_list)
+      // Access renderer input from list
+      if (input_no > input_channels)
       {
-        if (channelIt == inputNo)
-        {
-          input_name = in.port_name();
-        }
-        inputNo++;
+        ERROR("Channel mismatch.");
       }
+      const auto &input_it = std::next(input_list.begin(), input_no++);
+
       _renderer.connect_ports(fileIt.second->get_client_name() + ":" +
-                                  fileIt.second->get_output_prefix() + " " + apf::str::A2S(channelIt),
-                              input_name);
+                                  fileIt.second->get_output_prefix() + " " + apf::str::A2S(channel_no),
+                              input_it->port_name());
     }
   }
 
@@ -1384,6 +1386,7 @@ template<typename Renderer>
 bool
 Controller<Renderer>::transport_locate(float time)
 {
+  _audio_player->set_all_time(time);
   // convert time to samples (cut decimal part)
   return _renderer.transport_locate(
       static_cast<jack_nframes_t>(time * _renderer.sample_rate()));
