@@ -175,10 +175,10 @@ ENABLE_AUTO([generic], [generic renderer],
     [SSR_executables="$SSR_executables ssr-generic"])
 ])
 
-ENABLE_AUTO([nfc-hoa],[Near-Field-Compensated Higher-Order-Ambisonics renderer],
+ENABLE_AUTO([dca],[Distance-coded Ambisonics renderer],
 [
-  AS_IF([test x$enable_nfc_hoa = xyes -o x$have_all = xyes],
-    [SSR_executables="$SSR_executables ssr-nfc-hoa"])
+  AS_IF([test x$enable_dca = xyes -o x$have_all = xyes],
+    [SSR_executables="$SSR_executables ssr-dca"])
 ])
 
 dnl Note: For what happens with SSR_executables see src/Makefile.am
@@ -250,7 +250,7 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
 ])
 
 dnl NOTE: -pthread works on GCC, other compilers may need differnt flags!
-AS_IF([test x$GCC = xyes -a x$usercxxflags = xno],
+AS_IF([test x$GCC = xyes],
       [CXXFLAGS="$CXXFLAGS -pthread"])
 
 ENABLE_AUTO([optimization], [code optimization],
@@ -515,7 +515,7 @@ AS_IF([test x$have_gui = xyes],
   AC_SUBST(MOCFLAGS)
 ])
 
-ENABLE_FORCED([ip-interface], [network (TCP/IP) interface],
+ENABLE_FORCED([ip-interface], [network (TCP/IP) interface (needs Asio, https://think-async.com/)],
 [
   CPPFLAGS="$CPPFLAGS -DASIO_STANDALONE"
   AC_CHECK_HEADER([asio.hpp], , [have_ip_interface=no])
@@ -581,6 +581,7 @@ ENABLE_AUTO([vrpn], [VRPN tracker support],
   AC_MSG_CHECKING([various header files for VRPN tracker support])
   AC_MSG_RESULT([see below])
   AC_CHECK_HEADER([vrpn_Tracker.h],   , [have_vrpn=no])
+  AC_SEARCH_LIBS([q_from_axis_angle], [quat], , [have_vrpn=no])
   AC_SEARCH_LIBS([vrpn_MAGIC], [vrpn], , [have_vrpn=no])
   AC_MSG_CHECKING([VRPN tracker support])
   AC_MSG_RESULT([$have_vrpn])

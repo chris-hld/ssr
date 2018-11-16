@@ -35,6 +35,8 @@ dist_noinst_DATA = \
 	doc/manual/images/ssr_logo_mac_30px.png \
 	doc/manual/images/screenshot_spd.png \
 	doc/manual/images/screenshot.png \
+	doc/manual/images/distance_attenuation.png \
+	doc/manual/images/hrir_comp_filters.png \
 	mex/README.md \
 	mex/COPYING \
 	mex/DESCRIPTION \
@@ -42,25 +44,30 @@ dist_noinst_DATA = \
 	mex/ssr_mex.h \
 	mex/ssr_aap.cpp \
 	mex/ssr_binaural.cpp \
-	mex/ssr_nfc_hoa.cpp \
+	mex/ssr_brs.cpp \
+	mex/ssr_dca.cpp \
+	mex/ssr_generic.cpp \
 	mex/ssr_vbap.cpp \
 	mex/ssr_wfs.cpp \
 	mex/ssr_helper.m \
 	mex/test_ssr.m \
+	flext/README.md \
 	flext/Makefile \
 	flext/package.txt \
 	flext/ssr_flext.h \
 	flext/ssr_aap.cpp \
 	flext/ssr_binaural.cpp \
-	flext/ssr_nfc_hoa.cpp \
+	flext/ssr_dca.cpp \
 	flext/ssr_vbap.cpp \
 	flext/ssr_wfs.cpp \
 	flext/ssr_messages.pd \
 	flext/ssr_aap~-help.pd \
 	flext/ssr_binaural~-help.pd \
-	flext/ssr_nfc_hoa~-help.pd \
+	flext/ssr_dca~-help.pd \
 	flext/ssr_vbap~-help.pd \
 	flext/ssr_wfs~-help.pd \
+	flext/virtual_aap.pd \
+	flext/virtual_dca.pd \
 	flext/virtual_vbap.pd \
 	flext/virtual_wfs.pd \
 	flext/8channels.asd \
@@ -69,13 +76,19 @@ dist_noinst_DATA = \
 	flext/hrirs_fabian_min_phase_eq.wav \
 	flext/hrirs_kemar.wav \
 	flext/hrirs_kemar_min_phase_eq.wav \
-	flext/wfs_prefilter_120_1500_44100.wav
+	flext/wfs_prefilter_120_1500_44100.wav \
+	pd/README.md \
+	pd/slaxml.lua \
+	pd/ssrclient-help.pd \
+	pd/ssrclient.pd_lua
 
 dist_noinst_SCRIPTS = flext/startpd.sh
 
 # these files are deleted on "make maintainer-clean":
 MAINTAINERCLEANFILES = aclocal.m4 stamp-h.in \
                        config.log config.cache config.status
+
+DISTCLEANFILES = $(SSR_MANUAL_DIST)
 
 ## TODO: find a way to actually use this location (see autogen.sh)
 ## # where we keep local rules for automake

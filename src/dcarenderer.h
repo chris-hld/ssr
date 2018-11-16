@@ -27,8 +27,8 @@
 /// @file
 /// Near Field Compensated Higher Order Ambisonics renderer.
 
-#ifndef SSR_NFCHOARENDERER_H
-#define SSR_NFCHOARENDERER_H
+#ifndef SSR_DCARENDERER_H
+#define SSR_DCARENDERER_H
 
 #include "apf/math.h"  // for apf::math::linear_interpolator
 #include "apf/fftwtools.h"  // for apf::fftw, apf::fftw_allocator
@@ -37,19 +37,19 @@
 
 #include "ssr_global.h"  // for ssr::c
 #include "loudspeakerrenderer.h"
-#include "hoacoefficients.h"
+#include "dcacoefficients.h"
 
 namespace ssr
 {
 
-class NfcHoaRenderer : public LoudspeakerRenderer<NfcHoaRenderer>
+class DcaRenderer : public LoudspeakerRenderer<DcaRenderer>
 {
   private:
-    using _base = LoudspeakerRenderer<NfcHoaRenderer>;
-    using coeff_t = HoaCoefficients<double>;
+    using _base = LoudspeakerRenderer<DcaRenderer>;
+    using coeff_t = DcaCoefficients<double>;
 
   public:
-    static const char* name() { return "NFC-HOA-Renderer"; }
+    static const char* name() { return "DCA-Renderer"; }
 
     using matrix_t = apf::fixed_matrix<sample_type>;
     using fft_matrix_t
@@ -65,14 +65,14 @@ class NfcHoaRenderer : public LoudspeakerRenderer<NfcHoaRenderer>
     class RenderFunction;
     struct Output;
 
-    NfcHoaRenderer(const apf::parameter_map& params)
+    DcaRenderer(const apf::parameter_map& params)
       : _base(params)
       , _mode_pair_list(_fifo)
       , _mode_accumulator_list(_fifo)
       , _fft_list(_fifo)
     {}
 
-    APF_PROCESS(NfcHoaRenderer, _base)
+    APF_PROCESS(DcaRenderer, _base)
     {
       this->_process_list(_source_list);
       this->_process_list(_mode_pair_list);
@@ -93,7 +93,7 @@ class NfcHoaRenderer : public LoudspeakerRenderer<NfcHoaRenderer>
     rtlist_t _mode_pair_list, _mode_accumulator_list, _fft_list;
 };
 
-class NfcHoaRenderer::Source : public _base::Source
+class DcaRenderer::Source : public _base::Source
 {
   public:
     Source(const Params& p);
@@ -131,7 +131,7 @@ class NfcHoaRenderer::Source : public _base::Source
           break;
       }
 
-      this->angle = apf::math::deg2rad(90 + (source_orientation
+      this->angle = apf::math::deg2rad(180 + (source_orientation
             - this->parent.state.reference_orientation).azimuth);
 
       // TODO: calculate delay
@@ -154,7 +154,7 @@ class NfcHoaRenderer::Source : public _base::Source
     std::list<ModePair*> _mode_pairs;
 };
 
-class NfcHoaRenderer::Mode : public ProcessItem<Mode>
+class DcaRenderer::Mode : public ProcessItem<Mode>
                            , public apf::fixed_vector<sample_type>
 {
   public:
@@ -190,7 +190,7 @@ class NfcHoaRenderer::Mode : public ProcessItem<Mode>
     coeff_t _coefficients, _old_coefficients;
 };
 
-void NfcHoaRenderer::Mode::_process()
+void DcaRenderer::Mode::_process()
 {
   // IIR filtering is not done in RenderFunction because workload would be
   // distributed very un-evenly between threads!
@@ -285,7 +285,7 @@ void NfcHoaRenderer::Mode::_process()
  * Mode%s in a way that each ModePair needs a similar amount of processing
  * power.
  **/
-class NfcHoaRenderer::ModePair : public ProcessItem<ModePair>
+class DcaRenderer::ModePair : public ProcessItem<ModePair>
 {
   public:
     ModePair(size_t mode_number, size_t order, const Source& source)
@@ -321,7 +321,7 @@ class NfcHoaRenderer::ModePair : public ProcessItem<ModePair>
     Mode _second;
 };
 
-NfcHoaRenderer::Source::Source(const Params& p)
+DcaRenderer::Source::Source(const Params& p)
   : _base::Source(p)
   // Set impossible values to force update in first cycle:
   , distance(-1.0f)
@@ -329,7 +329,7 @@ NfcHoaRenderer::Source::Source(const Params& p)
   , source_model(coeff_t::source_t(-1))
 {}
 
-class NfcHoaRenderer::RenderFunction
+class DcaRenderer::RenderFunction
 {
   public:
     using result_type = std::pair<sample_type, sample_type>;
@@ -365,11 +365,13 @@ class NfcHoaRenderer::RenderFunction
 
     result_type operator()(sample_type in)
     {
+      in *= _volume_correction;
       return std::make_pair(in * _rotation1, in * _rotation2);
     }
 
     result_type operator()(sample_type in, sample_type index)
     {
+      in *= _volume_correction;
       return std::make_pair(in * _interpolator1(index)
                           , in * _interpolator2(index));
     }
@@ -377,10 +379,13 @@ class NfcHoaRenderer::RenderFunction
   private:
     sample_type _rotation1, _rotation2;
     apf::math::linear_interpolator<sample_type> _interpolator1, _interpolator2;
+
+    // TODO: Come up with a less arbitrary factor
+    sample_type _volume_correction = 0.1;
 };
 
 // Template-free base class to be used in Source::connect()
-struct NfcHoaRenderer::ModeAccumulatorBase : Item
+struct DcaRenderer::ModeAccumulatorBase : Item
 {
   using mode_ptrs_t = std::list<const Mode*>;
 
@@ -393,7 +398,7 @@ struct NfcHoaRenderer::ModeAccumulatorBase : Item
 // Mode 0 has no negative mode, nor does the highest order if there is an even
 // number of loudspeakers.
 template<typename I1, typename I2>
-class NfcHoaRenderer::ModeAccumulator : public ModeAccumulatorBase
+class DcaRenderer::ModeAccumulator : public ModeAccumulatorBase
 {
   public:
     ModeAccumulator(I1 i1, I2 i2, size_t block_size)
@@ -439,14 +444,14 @@ class NfcHoaRenderer::ModeAccumulator : public ModeAccumulatorBase
 
 /// Helper function for automatic template type deduction
 template<typename I1, typename I2>
-NfcHoaRenderer::ModeAccumulator<I1, I2>*
+DcaRenderer::ModeAccumulator<I1, I2>*
 new_mode_accumulator(I1 i1, I2 i2, size_t block_size)
 {
-  return new NfcHoaRenderer::ModeAccumulator<I1, I2>(i1, i2, block_size);
+  return new DcaRenderer::ModeAccumulator<I1, I2>(i1, i2, block_size);
 }
 
 void
-NfcHoaRenderer::Source::connect()
+DcaRenderer::Source::connect()
 {
   size_t order = this->parent.order;
 
@@ -480,7 +485,7 @@ NfcHoaRenderer::Source::connect()
 }
 
 void
-NfcHoaRenderer::Source::disconnect()
+DcaRenderer::Source::disconnect()
 {
   // Note: everything is done in reverse order of connect()
 
@@ -496,12 +501,12 @@ NfcHoaRenderer::Source::disconnect()
   _mode_pairs.clear();
 }
 
-class NfcHoaRenderer::FftProcessor : public ProcessItem<FftProcessor>
+class DcaRenderer::FftProcessor : public ProcessItem<FftProcessor>
 {
   public:
     FftProcessor(size_t block_size, sample_type* first)
       : _fft_plan(apf::fftw<sample_type>::plan_r2r_1d, block_size, first, first
-            , FFTW_R2HC, FFTW_PATIENT)
+            , FFTW_HC2R, FFTW_PATIENT)
     {}
 
     APF_PROCESS(FftProcessor, ProcessItem<FftProcessor>)
@@ -514,7 +519,7 @@ class NfcHoaRenderer::FftProcessor : public ProcessItem<FftProcessor>
     apf::fftw<sample_type>::scoped_plan _fft_plan;
 };
 
-struct NfcHoaRenderer::Output : _base::Output
+struct DcaRenderer::Output : _base::Output
 {
   Output(const Params& p) : _base::Output(p) {}
 
@@ -527,7 +532,7 @@ struct NfcHoaRenderer::Output : _base::Output
 };
 
 void
-NfcHoaRenderer::load_reproduction_setup()
+DcaRenderer::load_reproduction_setup()
 {
   _base::load_reproduction_setup();
 
@@ -555,7 +560,7 @@ NfcHoaRenderer::load_reproduction_setup()
 
   this->array_radius = total / normal_loudspeakers;
 
-  std::cout << "\nWARNING: this is a preliminary implementation of the NFC-HOA "
+  std::cout << "\nWARNING: This is a preliminary implementation of the DCA "
     "renderer!\nLoading " << normal_loudspeakers << " loudspeakers with a mean "
     "distance of " << this->array_radius << " meters.\n"
     "Assuming circular (counterclockwise) setup!\n" << std::endl;
