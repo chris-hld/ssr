@@ -44,15 +44,6 @@ set(SOURCE_FILES
     src/xmlparser.cpp
 )
 
-set(MAIN_SOURCE_FILES
-    src/ssr_binaural
-    src/ssr_brs
-    src/ssr_generic
-    src/ssr_nfc_hoa
-    src/ssr_vbap
-    src/ssr_wfs
-)
-
 # Libraries
 # Add libraries to LINKLIBS
 set(LINKLIBS)
@@ -266,13 +257,17 @@ message(STATUS "CMAKE Release Flags: " ${CMAKE_CXX_FLAGS_RELEASE})
 set(EXECUTABLES
     ssr-binaural
     ssr-brs
-    ssr-generic
+    ssr-vbap
     ssr-wfs
+    ssr-aap
+    ssr-generic
 )
 add_executable(ssr-binaural src/ssr_binaural.cpp ${SOURCE_FILES})
 add_executable(ssr-brs src/ssr_brs.cpp ${SOURCE_FILES})
-add_executable(ssr-generic src/ssr_generic.cpp ${SOURCE_FILES})
+add_executable(ssr-vbap src/ssr_vbap.cpp ${SOURCE_FILES})
 add_executable(ssr-wfs src/ssr_wfs.cpp ${SOURCE_FILES})
+add_executable(ssr-aap src/ssr_aap.cpp ${SOURCE_FILES})
+add_executable(ssr-generic src/ssr_generic.cpp ${SOURCE_FILES})
 
 
 # Link
@@ -284,9 +279,7 @@ message(STATUS "Linking: "  ${LINKLIBS} ${QT5PLATFORMSUPPORT_LIBS})
 
 foreach(executable ${EXECUTABLES})
   target_link_libraries(${executable} Threads::Threads ${LINKLIBS})
-  target_link_libraries(${executable} Threads::Threads ${LINKLIBS})
   if(GUI)
-    target_link_libraries(${executable} Qt5::Gui Qt5::Core Qt5::Widgets Qt5::OpenGL ${QT5PLATFORMSUPPORT_LIBS})
     target_link_libraries(${executable} Qt5::Gui Qt5::Core Qt5::Widgets Qt5::OpenGL ${QT5PLATFORMSUPPORT_LIBS})
   endif(GUI)
 endforeach(executable ${EXECUTABLES})
