@@ -112,6 +112,7 @@ branches:
     - master
     - travis-integration
     - ssr-windows
+    - mxe
 
 notifications:
   email: false
