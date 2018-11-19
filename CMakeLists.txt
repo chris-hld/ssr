@@ -3,6 +3,10 @@
 message(STATUS "CMAKE_VERSION: " ${CMAKE_VERSION})
 cmake_minimum_required(VERSION 3.8)
 
+# Set the compiler
+set(CMAKE_C_COMPILER "gcc-8")
+set(CMAKE_CXX_COMPILER "g++-8")
+
 # Project's name
 project(SSR)
 
@@ -22,9 +26,9 @@ endif(WIN32)
 
 # Show the compiler
 message(STATUS "Compiler ID: " ${CMAKE_CXX_COMPILER_ID})
-
-# Enable C++11
-set(CMAKE_CXX_STANDARD 11)
+message(STATUS "Comiler: " ${CMAKE_CXX_COMPILER})
+# Enable C++17
+set(CMAKE_CXX_STANDARD 17)
 
 # The following folders will be included
 include_directories(${PROJECT_SOURCE_DIR}/src)
@@ -54,6 +58,11 @@ find_package(Threads REQUIRED)
 
 # TODO
 find_package(PkgConfig REQUIRED)
+
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  # std::filesystem
+  list(APPEND LINKLIBS "-lstdc++fs")
+endif()
 
 if(WIN32)
   # Set Path to extern headers and libraries for Windows builds
@@ -210,9 +219,11 @@ if(ENABLE_IP_INTERFACE)
   )
   include_directories(${PROJECT_SOURCE_DIR}/src/network)
   add_definitions(-DASIO_STANDALONE)
-  add_definitions(-D_WIN32_WINNT=0x0601)  # Windows 7
-  list(APPEND LINKLIBS "-lws2_32 -lmswsock")
-  message(STATUS "Enabled network interface")
+  if(WIN32)
+    add_definitions(-D_WIN32_WINNT=0x0601)  # Windows 7
+    list(APPEND LINKLIBS "-lws2_32 -lmswsock")
+  endif(WIN32)
+    message(STATUS "Enabled network interface")
 
 else(ENABLE_IP_INTERFACE)
   message(WARNING "IP_INTERFACE disabled.")
@@ -228,7 +239,9 @@ if(HEAD_TRACKER)
   )
   set(ENABLE_RAZOR ON)
   set(ENABLE_POLHEMUS ON)
-  add_definitions(-DENABLE_O_NDELAY_WORKAROUND)  # bits/fcntl2.h
+  if(WIN32)
+    add_definitions(-DENABLE_O_NDELAY_WORKAROUND)  # bits/fcntl2.h
+  endif(WIN32)
   message(STATUS "Basic head tracker support")
 else(HEAD_TRACKER)
   message(WARNING "HEAD_TRACKER disabled.")

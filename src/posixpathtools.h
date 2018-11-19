@@ -49,6 +49,7 @@
 #define close _close
 #endif // !_MSC_VER
 
+#include <filesystem>
 
 #include <cassert>  // for assert()
 #include <sys/stat.h> // for stat and mkdir (on Mac OSX)
@@ -82,6 +83,10 @@ namespace posixpathtools
  **/
 inline bool getcwd(std::string& path)
 {
+  path = std::filesystem::current_path();
+  return true;
+
+  #if 0
   using file_id = std::pair<dev_t, ino_t>;
 
   bool success = false;
@@ -152,7 +157,7 @@ inline bool getcwd(std::string& path)
           success = true;
         }
         #ifndef _WIN32
-        fchdir(start_fd);
+        if (!fchdir(start_fd)) WARNING("Couldn't change directory.");
         #else
         WARNING("fchdir() not available on Windows.");
         #endif
@@ -161,6 +166,8 @@ inline bool getcwd(std::string& path)
     close(start_fd);
   }
   return success;
+  #endif
+  
 }
 
 /** Turn a path into a sequence of path components.
