@@ -1,3 +1,5 @@
+![Check](https://travis-ci.com/chris-hld/ssr.svg?branch=ssr-windows)
+
 This is a fork of the SoundScape Renderer ([SSR](https://github.com/SoundScapeRenderer/ssr)), which aims at porting the source code to Windows.
 
 The basic idea is to cross-compile on a linux machine an executable (.exe) for Windows.

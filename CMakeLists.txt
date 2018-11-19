@@ -252,6 +252,9 @@ configure_file (
 # Add a few for release builds (MAKE_BUILD_TYPE=RELEASE)
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -pipe -Wall -fomit-frame-pointer -ffast-math -funroll-loops -march=x86-64 -mmmx -msse -msse2 -mfpmath=sse")
 message(STATUS "CMAKE Release Flags: " ${CMAKE_CXX_FLAGS_RELEASE})
+# And for debug builds (MAKE_BUILD_TYPE=DEBUG)
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -pipe -Wall -ffast-math -march=x86-64 -mmmx -msse -msse2 -mfpmath=sse -Weffc++")
+message(STATUS "CMAKE Debug Flags: " ${CMAKE_CXX_FLAGS_DEBUG})
 
 # Compile executables
 set(EXECUTABLES
