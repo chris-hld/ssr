@@ -28,6 +28,6 @@ override MXE_PLUGIN_DIRS += plugins/gcc8
 #LOCAL_PKG_LIST := boost curl file flac lzo pthreads vorbis wxwidgets
 #.DEFAULT_GOAL  := local-pkg-list
 #local-pkg-list: $(LOCAL_PKG_LIST)
-LOCAL_PKG_LIST := cc cmake pthreads fftw libsndfile jack libxml2 qt5
+LOCAL_PKG_LIST := cc cmake pthreads fftw libsndfile libxml2 qtbase
 .DEFAULT_GOAL  := local-pkg-list
 local-pkg-list: $(LOCAL_PKG_LIST)
