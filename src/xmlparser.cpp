@@ -240,7 +240,7 @@ XMLParser::xpath_t XMLParser::Document::eval_xpath(
 }
 
 XMLParser::Document::Document(const std::string& input, bool file)
-  throw (document_error) :
+  noexcept(false) :
   _doc(nullptr),
   _xpath_context(nullptr)
 {
@@ -335,14 +335,14 @@ std::string get_content(const XMLParser::Node& node)
 /* ._
  * @todo return pointer to the old node? or to the new node? or nothing?
  **/
-void XMLParser::Node::descend() throw (std::underflow_error)
+void XMLParser::Node::descend() noexcept(false)
 {
   if (!_node) throw std::underflow_error(
       "XMLParser::Node::descend(): empty node!");
   _node = _node->xmlChildrenNode;
 }
 
-XMLParser::Node XMLParser::Node::child() const throw (std::underflow_error)
+XMLParser::Node XMLParser::Node::child() const noexcept(false)
 {
   if (!_node) throw std::underflow_error(
       "XMLParser::Node::child(): empty node!");
@@ -417,7 +417,7 @@ std::string XMLParser::Node::to_string()
 */
 
 // preincrement
-XMLParser::Node& XMLParser::Node::operator++() throw (std::overflow_error)
+XMLParser::Node& XMLParser::Node::operator++() noexcept(false)
 {
   if (!_node) throw std::overflow_error(
       "XMLParser::Node::operator++: empty node!");

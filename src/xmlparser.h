@@ -79,7 +79,7 @@ class XMLParser::Document
     };
 
     explicit Document(const std::string& input, bool file = true)
-      throw (document_error);
+      noexcept(false);
 
     ~Document();
 
@@ -136,14 +136,14 @@ class XMLParser::Node
     /// get a named attribute from the current node.
     std::string get_attribute(const std::string& attr_name) const;
 
-    void descend() throw (std::underflow_error);     ///< go to the first child
-    Node child() const throw (std::underflow_error); ///< get the first child
+    void descend() noexcept(false);     ///< go to the first child
+    Node child() const noexcept(false); ///< get the first child
     Node child(const std::string& name) const; ///< get element named @a name
     xmlNodePtr get() const;
 
     std::string to_string();
 
-    Node&      operator++() throw (std::overflow_error);
+    Node&      operator++() noexcept(false);
     xmlNodePtr operator= (const xmlNodePtr);
     bool       operator! () const;
 

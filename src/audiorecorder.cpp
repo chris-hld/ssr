@@ -59,7 +59,7 @@
 AudioRecorder::AudioRecorder(const std::string& audio_file_name,
     const std::string& format_string, const std::string& record_source,
     const std::string& client_name_,  const std::string& input_prefix_)
-    throw (audiorecorder_error) :
+    noexcept(false) :
   client_name(client_name_),
   input_prefix(input_prefix_)
 {
