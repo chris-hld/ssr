@@ -1,4 +1,4 @@
-![Check](https://travis-ci.com/chris-hld/ssr.svg?branch=ssr-windows)
+[![Build Status](https://travis-ci.com/chris-hld/ssr.svg?branch=ssr-windows)](https://travis-ci.com/chris-hld/ssr)
 
 This is a fork of the SoundScape Renderer ([SSR](https://github.com/SoundScapeRenderer/ssr)), which aims at porting the source code to Windows.
 
