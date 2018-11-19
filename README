@@ -1,10 +1,13 @@
-This is a fork of the SoundScape Renderer (SSR), which aims at porting the source code to Windows.
+This is a fork of the SoundScape Renderer ([SSR](https://github.com/SoundScapeRenderer/ssr)), which aims at porting the source code to Windows.
 
 The basic idea is to cross-compile on a linux machine an executable (.exe) for Windows.
 We use the M cross environment ([MXE](http://mxe.cc/)), which provides cross-compilation scripts for the dependencies and the MinGW64 (GCC) compiler.
 
 Pre-compiled binaries for Windows currently include:   
- `ssr-binaural.exe`, `ssr-brs.exe`, `ssr-wfs.exe` and `ssr-generic.exe`.
+ `ssr-binaural.exe`, `ssr-brs.exe`, `ssr-vbap.exe`, `ssr-wfs.exe`, `ssr-aap.exe`, `ssr-dca.exe` and `ssr-generic.exe`.
+
+They should run on all x86-64 CPUs. 
+So far, only the Razor and Polhemus head-tracker are ported (and I can only test the recent Razor).
 
 
 Getting started
@@ -34,7 +37,7 @@ This could look like this:
 
 This is the source distribution of SoundScape Renderer (SSR) licensed under the
 GPLv3+. Please consult the file COPYING for more information about this license.
-
+ 
 The user manual in the doc/ directory contains relevant informations about the
 SSR, including installation instructions. Additional (very detailed)
 installation instructions can be found in the file INSTALL.
@@ -47,8 +50,9 @@ Documentation: http://ssr.readthedocs.io/en/latest/
 
 Copyright (c) 2016-2018 Division of Applied Acoustics
                         Chalmers University of Technology
-
+                        
 Copyright (c) 2012-2014 Institut für Nachrichtentechnik, Universität Rostock
 
 Copyright (c) 2006-2012 Quality & Usability Lab
-                        Deutsche Telekom Laboratories, TU Berlin
+Deutsche Telekom Laboratories, TU Berlin
+

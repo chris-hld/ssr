@@ -44,15 +44,6 @@ set(SOURCE_FILES
     src/xmlparser.cpp
 )
 
-set(MAIN_SOURCE_FILES
-    src/ssr_binaural
-    src/ssr_brs
-    src/ssr_generic
-    src/ssr_nfc_hoa
-    src/ssr_vbap
-    src/ssr_wfs
-)
-
 # Libraries
 # Add libraries to LINKLIBS
 set(LINKLIBS)
@@ -193,7 +184,7 @@ if(GUI)
     find_package(Freetype REQUIRED)
     list(APPEND QT5PLATFORMSUPPORT_LIBS ${FREETYPE_LIBRARIES})
 
-    message(STATUS "Found Qt5PlatformSupport :" ${QT5PLATFORMSUPPORT_LIBS})
+    message(STATUS "Found Qt5PlatformSupport: " ${QT5PLATFORMSUPPORT_LIBS})
   endif(WIN32)
 
   # OpenGL
@@ -259,20 +250,29 @@ configure_file (
 
 # Compiler flags
 # Add a few for release builds (MAKE_BUILD_TYPE=RELEASE)
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -pipe -Wall -fomit-frame-pointer -ffast-math -funroll-loops -march=native -mmmx -m3dnow -msse -msse2 -msse3 -mfpmath=sse")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -pipe -Wall -fomit-frame-pointer -ffast-math -funroll-loops -march=x86-64 -mmmx -msse -msse2 -mfpmath=sse")
 message(STATUS "CMAKE Release Flags: " ${CMAKE_CXX_FLAGS_RELEASE})
+# And for debug builds (MAKE_BUILD_TYPE=DEBUG)
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -pipe -Wall -ffast-math -march=x86-64 -mmmx -msse -msse2 -mfpmath=sse -Weffc++")
+message(STATUS "CMAKE Debug Flags: " ${CMAKE_CXX_FLAGS_DEBUG})
 
 # Compile executables
 set(EXECUTABLES
     ssr-binaural
     ssr-brs
-    ssr-generic
+    ssr-vbap
     ssr-wfs
+    ssr-aap
+    ssr-dca
+    ssr-generic
 )
 add_executable(ssr-binaural src/ssr_binaural.cpp ${SOURCE_FILES})
 add_executable(ssr-brs src/ssr_brs.cpp ${SOURCE_FILES})
-add_executable(ssr-generic src/ssr_generic.cpp ${SOURCE_FILES})
+add_executable(ssr-vbap src/ssr_vbap.cpp ${SOURCE_FILES})
 add_executable(ssr-wfs src/ssr_wfs.cpp ${SOURCE_FILES})
+add_executable(ssr-aap src/ssr_aap.cpp ${SOURCE_FILES})
+add_executable(ssr-dca src/ssr_dca.cpp ${SOURCE_FILES})
+add_executable(ssr-generic src/ssr_generic.cpp ${SOURCE_FILES})
 
 
 # Link
@@ -284,9 +284,7 @@ message(STATUS "Linking: "  ${LINKLIBS} ${QT5PLATFORMSUPPORT_LIBS})
 
 foreach(executable ${EXECUTABLES})
   target_link_libraries(${executable} Threads::Threads ${LINKLIBS})
-  target_link_libraries(${executable} Threads::Threads ${LINKLIBS})
   if(GUI)
-    target_link_libraries(${executable} Qt5::Gui Qt5::Core Qt5::Widgets Qt5::OpenGL ${QT5PLATFORMSUPPORT_LIBS})
     target_link_libraries(${executable} Qt5::Gui Qt5::Core Qt5::Widgets Qt5::OpenGL ${QT5PLATFORMSUPPORT_LIBS})
   endif(GUI)
 endforeach(executable ${EXECUTABLES})

@@ -6,3 +6,13 @@ bin
 *_moc.cpp
 src/config.h
 *.exe
+Makefile.in
+aclocal.m4
+autom4te.cache/
+autotools/
+configure
+data/MacOSX/Makefile.in
+data/Makefile.in
+man/Makefile.in
+src/Makefile.in
+src/config.h.in
