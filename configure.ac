@@ -255,7 +255,7 @@ AS_IF([test x$GCC = xyes],
 
 dnl NOTE: -lstdc++fs works on GCC8, other compilers may need different flags!
 AS_IF([test x$GCC = xyes],
-      [CXXFLAGS="$CXXFLAGS -lstdc++fs"])
+      LIBS="$LIBS -lstdc++fs")
 
 ENABLE_AUTO([optimization], [code optimization],
 [

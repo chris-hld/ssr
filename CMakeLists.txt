@@ -4,8 +4,8 @@ message(STATUS "CMAKE_VERSION: " ${CMAKE_VERSION})
 cmake_minimum_required(VERSION 3.8)
 
 # Set the compiler
-set(CMAKE_C_COMPILER "gcc-8")
-set(CMAKE_CXX_COMPILER "g++-8")
+#set(CMAKE_C_COMPILER "gcc-8")
+#set(CMAKE_CXX_COMPILER "g++-8")
 
 # Project's name
 project(SSR)
@@ -29,6 +29,8 @@ message(STATUS "Compiler ID: " ${CMAKE_CXX_COMPILER_ID})
 message(STATUS "Comiler: " ${CMAKE_CXX_COMPILER})
 # Enable C++17
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# set(CMAKE_CXX_EXTENSIONS OFF)
 
 # The following folders will be included
 include_directories(${PROJECT_SOURCE_DIR}/src)
@@ -59,10 +61,10 @@ find_package(Threads REQUIRED)
 # TODO
 find_package(PkgConfig REQUIRED)
 
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+#if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   # std::filesystem
-  list(APPEND LINKLIBS "-lstdc++fs")
-endif()
+#  list(APPEND LINKLIBS "-lstdc++fs")
+#endif()
 
 if(WIN32)
   # Set Path to extern headers and libraries for Windows builds
@@ -249,7 +251,8 @@ endif(HEAD_TRACKER)
 
 
 # Preprocessor symbols
-add_definitions(-DSSR_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+#add_definitions(-DSSR_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+add_definitions(-DSSR_DATA_DIR="./data")
 
 # Config definitions
 # configure a header file to pass some of the CMake settings
@@ -272,20 +275,20 @@ message(STATUS "CMAKE Debug Flags: " ${CMAKE_CXX_FLAGS_DEBUG})
 # Compile executables
 set(EXECUTABLES
     ssr-binaural
-    ssr-brs
-    ssr-vbap
-    ssr-wfs
-    ssr-aap
-    ssr-dca
-    ssr-generic
+#    ssr-brs
+#    ssr-vbap
+#    ssr-wfs
+#    ssr-aap
+#    ssr-dca
+#    ssr-generic
 )
 add_executable(ssr-binaural src/ssr_binaural.cpp ${SOURCE_FILES})
-add_executable(ssr-brs src/ssr_brs.cpp ${SOURCE_FILES})
-add_executable(ssr-vbap src/ssr_vbap.cpp ${SOURCE_FILES})
-add_executable(ssr-wfs src/ssr_wfs.cpp ${SOURCE_FILES})
-add_executable(ssr-aap src/ssr_aap.cpp ${SOURCE_FILES})
-add_executable(ssr-dca src/ssr_dca.cpp ${SOURCE_FILES})
-add_executable(ssr-generic src/ssr_generic.cpp ${SOURCE_FILES})
+#add_executable(ssr-brs src/ssr_brs.cpp ${SOURCE_FILES})
+#add_executable(ssr-vbap src/ssr_vbap.cpp ${SOURCE_FILES})
+#add_executable(ssr-wfs src/ssr_wfs.cpp ${SOURCE_FILES})
+#add_executable(ssr-aap src/ssr_aap.cpp ${SOURCE_FILES})
+#add_executable(ssr-dca src/ssr_dca.cpp ${SOURCE_FILES})
+#add_executable(ssr-generic src/ssr_generic.cpp ${SOURCE_FILES})
 
 
 # Link
@@ -297,6 +300,7 @@ message(STATUS "Linking: "  ${LINKLIBS} ${QT5PLATFORMSUPPORT_LIBS})
 
 foreach(executable ${EXECUTABLES})
   target_link_libraries(${executable} Threads::Threads ${LINKLIBS})
+  target_link_libraries(${executable} stdc++fs)
   if(GUI)
     target_link_libraries(${executable} Qt5::Gui Qt5::Core Qt5::Widgets Qt5::OpenGL ${QT5PLATFORMSUPPORT_LIBS})
   endif(GUI)

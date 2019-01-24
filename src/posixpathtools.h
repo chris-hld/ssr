@@ -83,10 +83,10 @@ namespace posixpathtools
  **/
 inline bool getcwd(std::string& path)
 {
-  path = std::filesystem::current_path();
-  return true;
+  //std::filesystem::path cpath(std::filesystem::current_path());
+  //return true;
 
-  #if 0
+  
   using file_id = std::pair<dev_t, ino_t>;
 
   bool success = false;
@@ -166,7 +166,7 @@ inline bool getcwd(std::string& path)
     close(start_fd);
   }
   return success;
-  #endif
+
   
 }
 

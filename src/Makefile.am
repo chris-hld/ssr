@@ -246,6 +246,8 @@ doc:
 	       	) \
 		| doxygen - > /dev/null # discard stdout, only display errors
 
+
+
 .PHONY: doc
 
 ## these links won't work on VPATH builds, but we don't care
