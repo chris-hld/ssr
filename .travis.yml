@@ -108,6 +108,7 @@ branches:
     - travis-integration
     - ssr-windows
     - mxe
+    - beta
 
 notifications:
   email: false
