@@ -21,6 +21,7 @@ else(WIN32)
 endif(WIN32)
 
 # Show the compiler
+message(STATUS "Comiler: " ${CMAKE_CXX_COMPILER})
 message(STATUS "Compiler ID: " ${CMAKE_CXX_COMPILER_ID})
 
 # Enable C++11
@@ -210,8 +211,10 @@ if(ENABLE_IP_INTERFACE)
   )
   include_directories(${PROJECT_SOURCE_DIR}/src/network)
   add_definitions(-DASIO_STANDALONE)
-  add_definitions(-D_WIN32_WINNT=0x0601)  # Windows 7
-  list(APPEND LINKLIBS "-lws2_32 -lmswsock")
+  if(WIN32)
+    add_definitions(-D_WIN32_WINNT=0x0601)  # Windows 7
+    list(APPEND LINKLIBS "-lws2_32 -lmswsock")
+  endif(WIN32)
   message(STATUS "Enabled network interface")
 
 else(ENABLE_IP_INTERFACE)
@@ -228,7 +231,9 @@ if(HEAD_TRACKER)
   )
   set(ENABLE_RAZOR ON)
   set(ENABLE_POLHEMUS ON)
-  add_definitions(-DENABLE_O_NDELAY_WORKAROUND)  # bits/fcntl2.h
+  if(WIN32)
+    add_definitions(-DENABLE_O_NDELAY_WORKAROUND)  # bits/fcntl2.h
+  endif(WIN32)
   message(STATUS "Basic head tracker support")
 else(HEAD_TRACKER)
   message(WARNING "HEAD_TRACKER disabled.")
@@ -236,7 +241,7 @@ endif(HEAD_TRACKER)
 
 
 # Preprocessor symbols
-add_definitions(-DSSR_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+add_definitions(-DSSR_DATA_DIR="./data")
 
 # Config definitions
 # configure a header file to pass some of the CMake settings
@@ -251,10 +256,10 @@ configure_file (
 # Compiler flags
 # Add a few for release builds (MAKE_BUILD_TYPE=RELEASE)
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -pipe -Wall -fomit-frame-pointer -ffast-math -funroll-loops -march=x86-64 -mmmx -msse -msse2 -mfpmath=sse")
-message(STATUS "CMAKE Release Flags: " ${CMAKE_CXX_FLAGS_RELEASE})
+message(STATUS "Release Flags: " ${CMAKE_CXX_FLAGS_RELEASE})
 # And for debug builds (MAKE_BUILD_TYPE=DEBUG)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -pipe -Wall -ffast-math -march=x86-64 -mmmx -msse -msse2 -mfpmath=sse -Weffc++")
-message(STATUS "CMAKE Debug Flags: " ${CMAKE_CXX_FLAGS_DEBUG})
+message(STATUS "Debug Flags: " ${CMAKE_CXX_FLAGS_DEBUG})
 
 # Compile executables
 set(EXECUTABLES
@@ -283,7 +288,8 @@ endif(WIN32)
 message(STATUS "Linking: "  ${LINKLIBS} ${QT5PLATFORMSUPPORT_LIBS})
 
 foreach(executable ${EXECUTABLES})
-  target_link_libraries(${executable} Threads::Threads ${LINKLIBS})
+  target_link_libraries(${executable} Threads::Threads)
+  target_link_libraries(${executable} ${LINKLIBS})
   if(GUI)
     target_link_libraries(${executable} Qt5::Gui Qt5::Core Qt5::Widgets Qt5::OpenGL ${QT5PLATFORMSUPPORT_LIBS})
   endif(GUI)
