@@ -23,6 +23,9 @@ AM_CPPFLAGS =
 ## Add Audio Processing Framework (APF) path
 AM_CPPFLAGS += -I$(srcdir)/../apf
 
+## Add GML path
+AM_CPPFLAGS += -I$(srcdir)/../gml/include
+
 if ENABLE_APP_BUNDLE
 AM_CPPFLAGS += -DSSR_DATA_DIR=\"SoundScapeRenderer.app/Contents/Resources\"
 else
@@ -41,7 +44,9 @@ DOXYGEN_DOC_DIR = ../doc/doxygen
 # files which should be distributed but not installed
 dist_noinst_DATA = Doxyfile coding_style.txt \
 	../apf/misc/Makefile.dependencies \
-	../apf/apf/mextools.h
+	../apf/apf/mextools.h \
+	../gml/README.md \
+	../gml/LICENSE.txt
 
 ssr_binaural_SOURCES = ssr_binaural.cpp binauralrenderer.h \
 	$(SSRSOURCES)
@@ -88,7 +93,7 @@ nodist_ssr_dca_SOURCES = $(SSRMOCFILES)
 
 LOUDSPEAKERSOURCES = \
 	loudspeakerrenderer.h \
-	loudspeaker.h
+	legacy_loudspeaker.h
 
 SSRSOURCES = \
 	../apf/apf/blockdelayline.h \
@@ -114,25 +119,29 @@ SSRSOURCES = \
 	../apf/apf/shareddata.h \
 	../apf/apf/sndfiletools.h \
 	../apf/apf/stringtools.h \
+	../gml/include/gml/vec.hpp \
+	../gml/include/gml/quaternion.hpp \
 	configuration.cpp \
 	configuration.h \
 	controller.h \
-	directionalpoint.cpp \
-	directionalpoint.h \
+	legacy_directionalpoint.cpp \
+	legacy_directionalpoint.h \
 	maptools.h \
-	orientation.cpp \
-	orientation.h \
-	position.cpp \
-	position.h \
+	legacy_orientation.cpp \
+	legacy_orientation.h \
+	legacy_position.cpp \
+	legacy_position.h \
 	posixpathtools.h \
-	publisher.h \
+	api.h \
+	geometry.h \
 	rendererbase.h \
-	scene.cpp \
+	legacy_scene.cpp \
+	legacy_scene.h \
+	legacy_xmlsceneprovider.h \
 	scene.h \
-	source.h \
+	legacy_source.h \
 	ssr_global.cpp \
 	ssr_global.h \
-	subscriber.h \
 	timetools.h \
 	tracker.h \
 	xmlparser.cpp \

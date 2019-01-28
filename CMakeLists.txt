@@ -24,8 +24,8 @@ endif(WIN32)
 message(STATUS "Comiler: " ${CMAKE_CXX_COMPILER})
 message(STATUS "Compiler ID: " ${CMAKE_CXX_COMPILER_ID})
 
-# Enable C++11
-set(CMAKE_CXX_STANDARD 11)
+# Enable C++17
+set(CMAKE_CXX_STANDARD 17)
 
 # The following folders will be included
 include_directories(${PROJECT_SOURCE_DIR}/src)
@@ -34,16 +34,20 @@ include_directories(${PROJECT_SOURCE_DIR}/src)
 set(APF_PATH ${PROJECT_SOURCE_DIR}/apf)
 include_directories(${APF_PATH})
 
+# Include GML
+set(GML_PATH ${PROJECT_SOURCE_DIR}/gml/include)
+include_directories(${GML_PATH})
+
 # Files
 set(SOURCE_FILES
     src/configuration.cpp
-    src/directionalpoint.cpp
-    src/orientation.cpp
-    src/position.cpp
-    src/scene.cpp
     src/ssr_global.cpp
     src/xmlparser.cpp
-)
+    src/legacy_directionalpoint.cpp
+    src/legacy_orientation.cpp
+    src/legacy_position.cpp
+    src/legacy_scene.cpp
+    )
 
 # Libraries
 # Add libraries to LINKLIBS
@@ -100,7 +104,7 @@ if(ENABLE_ECASOUND)
   list(APPEND SOURCE_FILES
     src/audioplayer.cpp
     src/audiorecorder.cpp
-  )
+    )
   find_path(ECASOUND_INCLUDE_DIR NAMES ecasoundc.h HINTS /usr/include/libecasoundc)
   include_directories(${ECASOUND_INCLUDE_DIR})
   find_library(ECASOUND_LIBRARY NAMES ecasoundc)
@@ -151,7 +155,7 @@ if(GUI)
       src/gui/quserinterface.cpp
       src/gui/qvolumeslider.cpp
       src/gui/qzoomlabel.cpp
-  )
+      )
   list(APPEND SOURCE_FILES ${GUI_SOURCE_FILES})
 
   option(ENABLE_GUI "graphical user interface (using Qt)" ON)
@@ -169,7 +173,7 @@ if(GUI)
     # Platform support libs for Windows
     set(QT5PLATFORMSUPPORT_LIBS
         Qt5::QWindowsIntegrationPlugin
-    )
+        )
 
     # Qt5PlatformSupport modules
     find_library(Qt5ThemeSupport_LIBRARY Qt5ThemeSupport)
@@ -208,7 +212,7 @@ if(ENABLE_IP_INTERFACE)
     src/network/connection.cpp
     src/network/networksubscriber.cpp
     src/network/server.cpp
-  )
+    )
   include_directories(${PROJECT_SOURCE_DIR}/src/network)
   add_definitions(-DASIO_STANDALONE)
   if(WIN32)
@@ -228,7 +232,7 @@ if(HEAD_TRACKER)
     src/trackerrazor.cpp
     src/razor-ahrs/RazorAHRS.cpp
     src/trackerpolhemus.cpp
-  )
+    )
   set(ENABLE_RAZOR ON)
   set(ENABLE_POLHEMUS ON)
   if(WIN32)
@@ -247,7 +251,7 @@ add_definitions(-DSSR_DATA_DIR="./data")
 # configure a header file to pass some of the CMake settings
 # to the source code
 add_definitions(-DHAVE_CONFIG_H)
-configure_file (
+configure_file(
   "${PROJECT_SOURCE_DIR}/generate_config.h.in"
   "${PROJECT_SOURCE_DIR}/src/config.h"
   )
@@ -270,7 +274,7 @@ set(EXECUTABLES
     ssr-aap
     ssr-dca
     ssr-generic
-)
+    )
 add_executable(ssr-binaural src/ssr_binaural.cpp ${SOURCE_FILES})
 add_executable(ssr-brs src/ssr_brs.cpp ${SOURCE_FILES})
 add_executable(ssr-vbap src/ssr_vbap.cpp ${SOURCE_FILES})

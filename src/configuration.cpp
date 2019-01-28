@@ -156,6 +156,8 @@ ssr::conf_struct ssr::configuration(int& argc, char* argv[])
 #endif
   conf.server_port = 4711;
 
+  conf.follow = false;
+
   conf.freewheeling = false;
   conf.scene_file_name = "";
   conf.renderer_params.set("reproduction_setup"
@@ -274,6 +276,8 @@ ssr::conf_struct ssr::configuration(int& argc, char* argv[])
 "  -i, --ip-server     Start IP server (not enabled at compile time!)\n"
 "  -I, --no-ip-server  Don't start IP server (default)\n"
 #endif
+"      --follow        Wait for another SSR instance to connect\n"
+"      --no-follow     Don't follow another SSR instance (default)\n"
 #ifdef ENABLE_GUI
 "  -g, --gui           Start GUI (default)\n"
 "  -G, --no-gui        Don't start GUI\n"
@@ -347,6 +351,8 @@ ssr::conf_struct ssr::configuration(int& argc, char* argv[])
     {"ip-server",    optional_argument, nullptr, 'i'},
     {"no-ip-server", no_argument,       nullptr, 'I'},
     {"end-of-message-character", required_argument, nullptr, 0},
+    {"follow",       no_argument,       nullptr,  0 },
+    {"no-follow",    no_argument,       nullptr,  0 },
     {"gui",          no_argument,       nullptr, 'g'},
     {"no-gui",       no_argument,       nullptr, 'G'},
     {"tracker",      required_argument, nullptr, 't'},
@@ -432,6 +438,14 @@ ssr::conf_struct ssr::configuration(int& argc, char* argv[])
           {
             ERROR("Invalid end-of-message character specified!");
           }
+        }
+        else if (strcmp("follow", longopts[longindex].name) == 0)
+        {
+          conf.follow = true;
+        }
+        else if (strcmp("no-follow", longopts[longindex].name) == 0)
+        {
+          conf.follow = false;
         }
         else if (strcmp("tracker-port", longopts[longindex].name) == 0)
         {
@@ -832,6 +846,17 @@ int ssr::load_config_file(const char *filename, conf_struct& conf){
         ERROR("Invalid end-of-message character specified!");
       }
       #endif
+    }
+    else if (!strcmp(key, "FOLLOW"))
+    {
+      if (!strcasecmp(value, "yes"))
+      {
+        conf.follow = true;
+      }
+      else
+      {
+        conf.follow = false;
+      }
     }
     else if (!strcmp(key, "VERBOSE"))
     {

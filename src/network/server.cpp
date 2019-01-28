@@ -28,16 +28,16 @@
 /// Server class (implementation).
 
 #include <functional>
-#include <thread>
-#include <mutex>
 #include "server.h"
+#include "ssr_global.h"  // for VERBOSE2()
+#include "legacy_xmlsceneprovider.h"  // for LegacyXmlSceneProvider
 
-std::mutex accept_mutex;  // protects ssr::Server::start_accept()
 
-
-ssr::Server::Server(Publisher& controller, int port
-    , char end_of_message_character)
+ssr::Server::Server(api::Publisher& controller
+    , LegacyXmlSceneProvider& scene_provider
+    , int port, char end_of_message_character)
   : _controller(controller)
+  , _scene_provider(scene_provider)
   , _io_service()
   , _acceptor(_io_service
       , asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port))
@@ -53,8 +53,8 @@ ssr::Server::~Server()
 void
 ssr::Server::start_accept()
 {
-  // lock accept_mutex
-  std::lock_guard<std::mutex> lock(accept_mutex);
+  // lock accept_mutex (not necessary)
+  // std::lock_guard<std::mutex> lock(accept_mutex);
 
   Connection::pointer new_connection = Connection::create(_io_service
       , _controller, _end_of_message_character);
@@ -72,6 +72,8 @@ ssr::Server::handle_accept(Connection::pointer new_connection
 {
   if (!error)
   {
+    // A hack to mimic the old behavior of the legacy network interface:
+    new_connection->write(_scene_provider.get_scene_as_XML());
     new_connection->start();
     VERBOSE2("Network connection accepted.");
 
