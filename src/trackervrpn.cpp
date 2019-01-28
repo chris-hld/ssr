@@ -74,7 +74,7 @@ ssr::TrackerVrpn::create(api::Publisher& controller, const std::string& ports)
   }
   catch(std::runtime_error& e)
   {
-    ERROR(e.what());
+    SSRERROR(e.what());
   }
   return temp;
 }

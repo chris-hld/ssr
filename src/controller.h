@@ -298,7 +298,7 @@ class Controller : public api::Publisher
       if (_leader)
       {
         try { (_leader->*member_function)(std::forward<Args>(args)...); }
-        catch (std::exception& e) { ERROR(e.what()); }
+        catch (std::exception& e) { SSRERROR(e.what()); }
       }
       else
       {
@@ -329,7 +329,7 @@ class Controller : public api::Publisher
         if (subscriber != initiator)
         {
           try { (subscriber->*f)(std::forward<Args>(args)...); }
-          catch (std::exception& e) { ERROR(e.what()); }
+          catch (std::exception& e) { SSRERROR(e.what()); }
         }
       }
     }
@@ -342,7 +342,7 @@ class Controller : public api::Publisher
     {
       assert(_conf.follow);
       try { _call_leader(f, std::forward<Args>(args)...); }
-      catch (std::exception& e) { ERROR(e.what()); }
+      catch (std::exception& e) { SSRERROR(e.what()); }
     }
 
     /// Overload for all events without options to suppress own messages.
@@ -362,7 +362,7 @@ class Controller : public api::Publisher
       for (C* subscriber: std::get<Subscribers<C>>(_subscribers))
       {
         try { (subscriber->*f)(std::forward<Args>(args)...); }
-        catch (std::exception& e) { ERROR(e.what()); }
+        catch (std::exception& e) { SSRERROR(e.what()); }
       }
     }
 
@@ -777,7 +777,7 @@ Controller<Renderer>::~Controller()
     // NB: Scene is save while holding the lock
     if (!_save_scene("ssr_scene_autosave.asd"))
     {
-      ERROR("Couldn't write XML scene! (It's an ugly hack anyway ...");
+      SSRERROR("Couldn't write XML scene! (It's an ugly hack anyway ...");
     }
   }
 }
@@ -837,7 +837,7 @@ get_position(const Node& node)
       }
       else
       {
-        ERROR("Invalid position!");
+        SSRERROR("Invalid position!");
         return temp; // return NULL
       } // if read operation successful
 
@@ -866,7 +866,7 @@ get_orientation(const Node& node)
       }
       else
       {
-        ERROR("Invalid orientation!");
+        SSRERROR("Invalid orientation!");
         return temp; // return NULL
       }
     }
@@ -1105,7 +1105,7 @@ public:
     }
     else
     {
-      ERROR("Amplitude reference distance cannot be smaller than 1.");
+      SSRERROR("Amplitude reference distance cannot be smaller than 1.");
     }
   }
 
@@ -1393,7 +1393,7 @@ Controller<Renderer>::_load_scene(const std::string& scene_file_name)
 
   if (file_extension == "")
   {
-    ERROR("File name '" << scene_file_name << "' does not have an extension.");
+    SSRERROR("File name '" << scene_file_name << "' does not have an extension.");
     return false;
   }
   else if (file_extension == "asd")
@@ -1402,13 +1402,13 @@ Controller<Renderer>::_load_scene(const std::string& scene_file_name)
     auto scene_file = xp.load_file(scene_file_name);
     if (!scene_file)
     {
-      ERROR("Unable to load scene setup file '" << scene_file_name << "'!");
+      SSRERROR("Unable to load scene setup file '" << scene_file_name << "'!");
       return false;
     }
 
     if (_conf.xml_schema == "")
     {
-      ERROR("No schema file specified!");
+      SSRERROR("No schema file specified!");
       // TODO: return true and continue anyway?
       return false;
     }
@@ -1418,7 +1418,7 @@ Controller<Renderer>::_load_scene(const std::string& scene_file_name)
     }
     else
     {
-      ERROR("Error validating '" << scene_file_name << "' with schema '"
+      SSRERROR("Error validating '" << scene_file_name << "' with schema '"
       << _conf.xml_schema << "'!");
       return false;
     }
@@ -1488,7 +1488,7 @@ Controller<Renderer>::_load_scene(const std::string& scene_file_name)
       // there should be only one result:
       if (xpath_result->size() != 1)
       {
-        ERROR("More than one reference found in scene setup! Aborting.");
+        SSRERROR("More than one reference found in scene setup! Aborting.");
         return false;
       }
       pos_ptr = internal::get_position   (xpath_result->node());
@@ -1545,7 +1545,7 @@ Controller<Renderer>::_load_scene(const std::string& scene_file_name)
 
         if (!pos_ptr || (!dir_ptr && !_scene.get_auto_rotation()))
         {
-          ERROR("Both position and orientation have to be specified for source"
+          SSRERROR("Both position and orientation have to be specified for source"
               << id_str << name_str << "! Not loaded");
           continue; // next source
         }
@@ -1582,7 +1582,7 @@ Controller<Renderer>::_load_scene(const std::string& scene_file_name)
     WARNING("Trying to open specified file as audio file.");
     if (!_create_spontaneous_scene(scene_file_name))
     {
-      ERROR("\"" << scene_file_name << "\" could not be loaded as audio file!");
+      SSRERROR("\"" << scene_file_name << "\" could not be loaded as audio file!");
       return false;
     }
   }
@@ -1598,7 +1598,7 @@ Controller<Renderer>::_create_spontaneous_scene(
   assert(!_conf.follow);
 
 #ifndef ENABLE_ECASOUND
-  ERROR("Couldn't create scene from file \"" << audio_file_name
+  SSRERROR("Couldn't create scene from file \"" << audio_file_name
         << "\"! Ecasound was disabled at compile time.");
   return false;
 #else
@@ -1753,7 +1753,7 @@ Controller<Renderer>::_start_tracker(const std::string& type, const std::string&
     _tracker = TrackerInterSense::create(*this, ports);
 
 #else
-    ERROR("The SSR was compiled without InterSense tracker support!");
+    SSRERROR("The SSR was compiled without InterSense tracker support!");
     (void)ports;  // avoid "unused parameter" warning
     return;
 #endif
@@ -1764,7 +1764,7 @@ Controller<Renderer>::_start_tracker(const std::string& type, const std::string&
 #if defined(ENABLE_POLHEMUS)
     _tracker = TrackerPolhemus::create(*this, type, ports);
 #else
-    ERROR("The SSR was compiled without Polhemus tracker support!");
+    SSRERROR("The SSR was compiled without Polhemus tracker support!");
     (void)ports;  // avoid "unused parameter" warning
     return;
 #endif
@@ -1774,7 +1774,7 @@ Controller<Renderer>::_start_tracker(const std::string& type, const std::string&
  #if defined(ENABLE_VRPN)
      _tracker = TrackerVrpn::create(*this, ports);
  #else
-     ERROR("The SSR was compiled without VRPN tracker support!");
+     SSRERROR("The SSR was compiled without VRPN tracker support!");
      (void)ports;  // avoid "unused parameter" warning
      return;
  #endif
@@ -1784,14 +1784,14 @@ Controller<Renderer>::_start_tracker(const std::string& type, const std::string&
 #if defined(ENABLE_RAZOR)
     _tracker = TrackerRazor::create(*this, ports);
 #else
-    ERROR("The SSR was compiled without Razor AHRS tracker support!");
+    SSRERROR("The SSR was compiled without Razor AHRS tracker support!");
     (void)ports;  // avoid "unused parameter" warning
     return;
 #endif
   }
   else
   {
-    ERROR("Unknown tracker type \"" << type << "\"!");
+    SSRERROR("Unknown tracker type \"" << type << "\"!");
     return;
   }
 
@@ -1901,7 +1901,7 @@ Controller<Renderer>::_new_source(id_t requested_id, const std::string& name
         , _loop);
     file_length = _audio_player->get_file_length(file_name_or_port_number);
 #else
-    ERROR("Couldn't open audio file \"" << file_name_or_port_number
+    SSRERROR("Couldn't open audio file \"" << file_name_or_port_number
         << "\"! Ecasound was disabled at compile time.");
     return;
 #endif
@@ -1930,7 +1930,7 @@ Controller<Renderer>::_new_source(id_t requested_id, const std::string& name
   }
   catch (std::exception& e)
   {
-    ERROR(e.what());
+    SSRERROR(e.what());
     return;
   }
   assert(requested_id.size() == 0 || requested_id == id);

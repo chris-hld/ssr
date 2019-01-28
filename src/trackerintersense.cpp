@@ -88,7 +88,7 @@ ssr::TrackerInterSense::TrackerInterSense(api::Publisher& controller
     }
     else
     {
-      ERROR("Could not create /tmp/isports.ini to configure InterSense tracker ports");
+      SSRERROR("Could not create /tmp/isports.ini to configure InterSense tracker ports");
     }
   }
   else
@@ -148,7 +148,7 @@ ssr::TrackerInterSense::create(api::Publisher& controller
   }
   catch(std::runtime_error& e)
   {
-    ERROR(e.what());
+    SSRERROR(e.what());
   }
   return temp;
 }

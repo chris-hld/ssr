@@ -184,7 +184,7 @@ ssr::TrackerPolhemus::create(api::Publisher& controller
   }
   catch(std::runtime_error& e)
   {
-    ERROR(e.what());
+    SSRERROR(e.what());
   }
   return temp;
 }
@@ -267,7 +267,7 @@ ssr::TrackerPolhemus::thread(void *arg)
 
       if (error < 1)
       {
-        ERROR("Can not read from serial port. Stopping Polhemus tracker.");
+        SSRERROR("Can not read from serial port. Stopping Polhemus tracker.");
         return arg;
       }
 
@@ -277,7 +277,7 @@ ssr::TrackerPolhemus::thread(void *arg)
       }
       else
       {
-        ERROR("Can not read from serial port.");
+        SSRERROR("Can not read from serial port.");
         return arg;
       }
     }

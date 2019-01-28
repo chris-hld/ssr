@@ -54,8 +54,7 @@ ssr::NetworkSubscriber::_send_source_message(const std::string& first_part
   }
   else
   {
-    const std::string msg = std::string("Source ID \" ") + std::string(id) + std::string(" \" not found");
-    ERROR("msg");
+    SSRERROR("Source ID \"" << id << "\" not found");
   }
 }
 
