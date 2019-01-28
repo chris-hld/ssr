@@ -9,10 +9,10 @@
  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  copies of the Software, and to permit persons to whom the Software is
  furnished to do so, subject to the following conditions:
- 
+
  The above copyright notice and this permission notice shall be included in
  all copies or substantial portions of the Software.
- 
+
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -29,6 +29,18 @@
 
 #ifndef APF_COMMANDQUEUE_H
 #define APF_COMMANDQUEUE_H
+
+#ifndef _WIN32
+#include <unistd.h>  // for usleep()
+#else
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>  // for Sleep()
+#endif // !_WIN32
 
 #include <thread>   // std::this_thread::sleep_for
 #include <chrono>   // std::chrono::microseconds
@@ -187,7 +199,7 @@ class CommandQueue : NonCopyable
  * realtime thread.
  * If the CommandQueue is inactive, the command is not queued but executed and
  * cleaned up immediately.
- * @param cmd The command to be executed. 
+ * @param cmd The command to be executed.
  **/
 void CommandQueue::push(Command* cmd)
 {
@@ -199,8 +211,8 @@ void CommandQueue::push(Command* cmd)
   }
 
   // First remove all commands from _out_fifo.
-  // This ensures that it's not going to be full which would block 
-  // process_commands() and its calling realtime thread.  
+  // This ensures that it's not going to be full which would block
+  // process_commands() and its calling realtime thread.
   this->cleanup_commands();
 
   // Now push the command on _in_fifo; if the FIFO is full: retry, retry, ...
@@ -233,6 +245,3 @@ void CommandQueue::wait()
 }  // namespace apf
 
 #endif
-
-// Settings for Vim (http://www.vim.org/), please do not remove:
-// vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent

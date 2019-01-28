@@ -25,7 +25,7 @@
  ******************************************************************************/
 
 /// @file
-/// Server class (definition). 
+/// Server class (definition).
 
 #ifndef SSR_SERVER_H
 #define SSR_SERVER_H
@@ -36,7 +36,6 @@
 
 #include <functional>
 #include <thread>
-#include <iostream>
 
 #if !defined(ASIO_STANDALONE)
 #define ASIO_STANDALONE
@@ -50,7 +49,7 @@ namespace ssr
 
 struct Publisher;
 
-/// Server class. 
+/// Server class.
 class Server
 {
   public:
@@ -76,6 +75,3 @@ class Server
 }  // namespace ssr
 
 #endif
-
-// Settings for Vim (http://www.vim.org/), please do not remove:
-// vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent

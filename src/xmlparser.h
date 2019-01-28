@@ -78,8 +78,7 @@ class XMLParser::Document
       document_error(const std::string& s): std::runtime_error(s) {}
     };
 
-    explicit Document(const std::string& input, bool file = true)
-      throw (document_error);
+    explicit Document(const std::string& input, bool file = true);
 
     ~Document();
 
@@ -136,14 +135,14 @@ class XMLParser::Node
     /// get a named attribute from the current node.
     std::string get_attribute(const std::string& attr_name) const;
 
-    void descend() throw (std::underflow_error);     ///< go to the first child
-    Node child() const throw (std::underflow_error); ///< get the first child
+    void descend();     ///< go to the first child
+    Node child() const; ///< get the first child
     Node child(const std::string& name) const; ///< get element named @a name
     xmlNodePtr get() const;
 
     std::string to_string();
 
-    Node&      operator++() throw (std::overflow_error);
+    Node&      operator++();
     xmlNodePtr operator= (const xmlNodePtr);
     bool       operator! () const;
 
@@ -162,6 +161,3 @@ std::string get_content(const xmlNodePtr& node);      ///< get node content
 std::string get_content(const XMLParser::Node& node); ///< get node content
 
 #endif
-
-// Settings for Vim (http://www.vim.org/), please do not remove:
-// vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent

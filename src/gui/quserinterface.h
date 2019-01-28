@@ -92,12 +92,7 @@ class QUserInterface : public QOpenGLPlotter
   protected:
     std::string scene_description_file; ///< path to current scene descriptinon file (obsolete???)
     uint _active_scene;       ///< number of the quick access tab of the current scene
-#ifndef ENABLE_FLOATING_CONTROL_PANEL
-    bool _mouse_event_out_of_scope(QMouseEvent *event);
-    virtual bool event(QEvent *event);
-#else
     bool eventFilter(QObject *sender, QEvent *event);
-#endif
     virtual void resizeEvent(QResizeEvent *event);
     virtual void keyPressEvent(QKeyEvent *event);
     virtual void keyReleaseEvent(QKeyEvent *event);
@@ -142,13 +137,10 @@ class QUserInterface : public QOpenGLPlotter
     void _solo_selected_sources();
     void _unsolo_selected_sources();
     void _unsolo_all_sources();
-  
+
     QWidget *_controlsParent;  ///< parent widget of buttons and labels
 };
 
 }  // namespace ssr
 
 #endif
-
-// Settings for Vim (http://www.vim.org/), please do not remove:
-// vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent

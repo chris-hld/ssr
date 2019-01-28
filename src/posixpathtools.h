@@ -36,10 +36,24 @@
 #include <iterator> // for ostream_iterator
 #include <cstring>  // for strcmp()
 #include <fcntl.h>  // for O_RDONLY, dev_t, ino_t
+
+#ifndef _MSC_VER
+#include <unistd.h>  // for chdir(), fchdir(), close()
 #include <dirent.h> // for DIR, opendir()
+#else
+#include "dirent_port.h"  // for DIR, opendir() ...
+#include <direct.h>  // for _chdir()
+#define chdir _chdir
+#include <io.h>
+#define	open _open
+#define close _close
+#endif // !_MSC_VER
+
+
 #include <cassert>  // for assert()
 #include <sys/stat.h> // for stat and mkdir (on Mac OSX)
-#include <unistd.h>  // for chdir(), fchdir(), close()
+
+#include "ssr_global.h"
 
 /** helper functions for filename and path manipulation.
  *
@@ -49,6 +63,8 @@
  * boost.filesystem or using a totally different language (like Python) for such
  * things.
  **/
+
+
 namespace posixpathtools
 {
 
@@ -99,7 +115,7 @@ inline bool getcwd(std::string& path)
               {
                 if (strcmp(entry->d_name, ".")
                     && strcmp(entry->d_name, "..")
-                    && !lstat(entry->d_name, &sb))
+                    && !stat(entry->d_name, &sb))
                 {
                   auto child_id = file_id(sb.st_dev, sb.st_ino);
                   // We found where we came from, add its name to the list
@@ -135,7 +151,11 @@ inline bool getcwd(std::string& path)
           if (path == "") path = "/";
           success = true;
         }
+        #ifndef _WIN32
         fchdir(start_fd);
+        #else
+        WARNING("fchdir() not available on Windows.");
+        #endif
       }
     }
     close(start_fd);
@@ -154,9 +174,15 @@ template<typename T>
 void tokenize(const std::string& path, T& tokens)
 {
   // add another slash to get an empty string if there is a trailing slash
+  #ifndef _WIN32
   std::istringstream ss(path + "/");
   std::string s;
   while (std::getline(ss, s, '/')) tokens.push_back(s);
+  #else
+  std::istringstream ss(path + "\\");
+  std::string s;
+  while (std::getline(ss, s, '\\')) tokens.push_back(s);
+  #endif
 }
 
 /** Turn a sequence of path components into a path.
@@ -368,7 +394,11 @@ void make_relative(T& path, const T& directory = T())
 inline std::string make_path_relative_to_file(const std::string& path
     , const std::string& filename)
 {
+  #ifndef _WIN32
   if (path != "" && path[0] != '/')
+  #else
+  if (path != "" && path[1] != ':')
+  #endif
   {
     // path components will be stored in lists p1 and p2:
     std::list<std::string> p1, p2;
@@ -398,7 +428,7 @@ inline std::string make_path_relative_to_file(const std::string& path
  * @param path A path given relative to @p filename.
  *   If @p path is absolute or empty, it is not changed. If @p path has a
  *   trailing slash, the result will also have a trailing slash.
- *   If @p path is relative, the result is also relative. 
+ *   If @p path is relative, the result is also relative.
  * @param filename The directory part of @p filename is prepended to @p path.
  * @return @p path prepended with the directory name of @p filename.
  * @warning This function expects UNIX-style paths!
@@ -406,7 +436,11 @@ inline std::string make_path_relative_to_file(const std::string& path
 inline std::string make_path_relative_to_current_dir(const std::string& path
     , const std::string& filename)
 {
+  #ifndef _WIN32
   if (path != "" && path[0] != '/')
+  #else
+  if (path != "" && path[1] != ':')
+  #endif
   {
     auto result = std::list<std::string>();
 
@@ -472,6 +506,3 @@ inline std::string get_escaped_filename(const std::string& filename)
 }  // namespace posixpathtools
 
 #endif
-
-// Settings for Vim (http://www.vim.org/), please do not remove:
-// vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent

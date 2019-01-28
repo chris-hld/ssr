@@ -9,10 +9,10 @@
  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  copies of the Software, and to permit persons to whom the Software is
  furnished to do so, subject to the following conditions:
- 
+
  The above copyright notice and this permission notice shall be included in
  all copies or substantial portions of the Software.
- 
+
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -95,13 +95,13 @@ struct fftw_allocator
   pointer allocate(size_type n, const void* hint = nullptr)
   {
     (void)hint;
-    return static_cast<pointer>(fftw<T>::malloc(sizeof(value_type) * n));
+    return static_cast<pointer>(malloc(sizeof(value_type) * n));
   }
 
   void deallocate(pointer p, size_type n)
   {
     (void)n;
-    fftw<T>::free(p);
+    free(p);
   }
 
   void construct(pointer p, const T& t) { new (p) T(t); }
@@ -134,6 +134,3 @@ struct fftw_allocator
 }  // namespace apf
 
 #endif
-
-// Settings for Vim (http://www.vim.org/), please do not remove:
-// vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent

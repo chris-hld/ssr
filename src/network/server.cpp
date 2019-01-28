@@ -27,7 +27,13 @@
 /// @file
 /// Server class (implementation).
 
+#include <functional>
+#include <thread>
+#include <mutex>
 #include "server.h"
+
+std::mutex accept_mutex;  // protects ssr::Server::start_accept()
+
 
 ssr::Server::Server(Publisher& controller, int port
     , char end_of_message_character)
@@ -47,13 +53,17 @@ ssr::Server::~Server()
 void
 ssr::Server::start_accept()
 {
+  // lock accept_mutex
+  std::lock_guard<std::mutex> lock(accept_mutex);
+
   Connection::pointer new_connection = Connection::create(_io_service
       , _controller, _end_of_message_character);
 
   _acceptor.async_accept(new_connection->socket()
       , std::bind(&Server::handle_accept, this, new_connection
       , std::placeholders::_1));
-  VERBOSE2("Network connection accepted.");
+
+  // accept_mutex released when lock goes out of scope
 }
 
 void
@@ -63,6 +73,8 @@ ssr::Server::handle_accept(Connection::pointer new_connection
   if (!error)
   {
     new_connection->start();
+    VERBOSE2("Network connection accepted.");
+
     start_accept();
   }
 }
@@ -71,6 +83,7 @@ void
 ssr::Server::start()
 {
   _network_thread = new std::thread(std::bind(&Server::run, this));
+  VERBOSE2("Created network thread.");
 }
 
 void
@@ -91,6 +104,3 @@ ssr::Server::run()
   start_accept();
   _io_service.run();
 }
-
-// Settings for Vim (http://www.vim.org/), please do not remove:
-// vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent

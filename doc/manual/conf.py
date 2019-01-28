@@ -41,7 +41,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'SoundScape Renderer'
-copyright = u'2014, SSR Team'
+copyright = u'2018, SSR Team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -65,6 +65,11 @@ language = 'en'
 #today = ''
 # Else, today_fmt is used as the format for a strftime call.
 #today_fmt = '%B %d, %Y'
+try:
+    today = check_output(['git', 'show', '-s', '--format=%ad', '--date=short'])
+    today = today.decode().strip()
+except Exception:
+    today = '<unknown date>'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.

@@ -28,9 +28,7 @@ Compiling and Running the SSR
 =============================
 
 The following sections describe how to build and/or install the SSR on your
-computer. The SSR can be used on GNU/Linux  and Mac OS X.
-There is no MS Windows version of the SSR (yet?). If you feel inclined to port
-the SSR to Windows, let us know!
+computer. The SSR can be used on GNU/Linux and Mac OS X. The MS Windows version of SSR is experimental at this stage.
 
 Choosing the Operating System
 -----------------------------
@@ -39,10 +37,10 @@ Well, first you'll need a proper operating system.
 We recommend Debian GNU/Linux (http://www.debian.org/) or something Debian-based
 like Ubuntu (http://www.ubuntu.com/).
 The SSR should work on most modern Linux-distributions, though.
-You can also try Arch Linux (http://www.archlinux.org/), if you want.
+You can also try Arch Linux (https://www.archlinux.org/), if you want.
 If you are reluctant to install a new operating system on your computer, you can
 also install any of the above-mentioned operating systems virtually, for example
-using http://www.virtualbox.org/.
+using https://www.virtualbox.org/.
 
 If you happen to have Mac OS X installed on your computer, that's OK, too.
 
@@ -65,11 +63,11 @@ http://packages.debian.org/soundscaperenderer
   If it still doesn't work, you should consider upgrading your whole system to
   "testing" or, if that's not feasible, you can still compile and install the
   SSR from its source (see below for instructions).
-  
+
   .. _stable:  http://www.debian.org/releases/stable/
   .. _testing: http://www.debian.org/releases/testing/
   .. _sid:     http://www.debian.org/releases/sid/
-  .. _Debian Sources List Generator: http://debgen.simplylinux.ch/
+  .. _Debian Sources List Generator: https://debgen.simplylinux.ch/
 
 You can install the *soundscaperenderer* package using your favorite package
 manager (*apt-get*, *aptitude*, *synaptic*, ...), all dependencies should be
@@ -185,6 +183,11 @@ If you encounter problems configuring the SSR these hints could help:
    devel-package (``devel`` or ``dev``, where available) mentioned in
    Section :ref:`Dependencies <dependencies>`.
 
+-  If your QT5 library cannot be found during configuration,
+   try running ``export QT_SELECT=qt5``.
+   If there are problems with qt5's ``moc`` during the build, you might need to add
+   the corresponding folder (like ``/usr/local/opt/qt/bin``) to your ``PATH``.
+
 -  It may be necessary to run ``ldconfig`` after installing new
    libraries.
 
@@ -277,9 +280,9 @@ an overview of the command line options and various renderers:
         --brs              Binaural Room Synthesis (using BRIRs)
         --wfs              Wave Field Synthesis
         --aap              Ambisonics Amplitude Panning
+        --dca              Distance-coded Ambisonics (experimental!)
         --vbap             Stereophonic (Vector Base Amplitude Panning)
         --generic          Generic Renderer
-        --nfc-hoa          Near-field-corrected Higher Order Ambisonics (experimental!)
 
     Renderer-specific options:
         --hrirs=FILE       Load the HRIRs for binaural renderer from FILE
@@ -359,8 +362,7 @@ named ``FILE``. The order of channels corresponds to the order of loudspeakers
 specifed in the reproduction setup (see Sections
 :ref:`Reproduction Setups <reproduction_setups>` and
 :ref:`ASDF <asdf>`). The recording can then be used to analyze the SSR output or
-to replay it without the SSR using a software player like "ecaplay" (http://
-eca.cx/ecasound/).
+to replay it without the SSR using a software player like "ecaplay" (http://eca.cx/ecasound/).
 
 .. _ssr_configuration_file:
 
@@ -389,7 +391,7 @@ which a given setting is specified.
 3. ``$HOME/Library/SoundScapeRenderer/ssr.conf``
 4. ``$HOME/.ssr/ssr.conf``
 5. the path(s) specified with the ``--config``/``-c`` option(s) (e.g.,
-    ``ssr -c my_config.file``)
+   ``ssr -c my_config.file``)
 
 We explicitly mention one parameter here that might be of immediate
 interest for you: ``MASTER_VOLUME_CORRECTION``. This a correction in
@@ -471,11 +473,11 @@ Preparing Polhemus Fastrak/Patriot
 For incorporation of the *Polhemus Fastrak/Patriot*
 with serial connection, no additional libraries are required. Make sure that
 you have the required access rights to the tracker before starting SSR by
-typing something like :: 
+typing something like ::
 
   sudo chmod a+rw /dev/ttyS0
 
-or :: 
+or ::
 
   sudo chmod a+rw /dev/ttyS1
 
@@ -571,15 +573,31 @@ TODO
 Mac OS X
 --------
 
+JACK on Mac OS X
+~~~~~~~~~~~~~~~~
+
+Tested with version 0.87 (64 bit) which includes:
+
+- Jackdmp 1.9.6
+- JackRouter 0.9.3
+- JackPilot 1.7.0
+
+Note that the site http://www.jackosx.com/ is outdated. The latest version of JACK is
+available from http://jackaudio.org/downloads/.
+
+Or, you can install JACK using Homebrew_.
+
+If you are using OS X El Capitan or newer, make sure that you are installing the version "jackOSX 0.92_b3" from http://jackaudio.org/downloads/. JACK versions installed from other sources tend not to work on these versions of OS X.
+
 Application Bundle
 ~~~~~~~~~~~~~~~~~~
 
 This assumes that you are using the precompiled SSR application bundle for Mac OS
 X. If you want to build the SSR yourself, have a look at `Building from Source`_.
 
-You can download the application bundle from http://spatialaudio.net/ssr. You will need 
+You can download the application bundle from http://spatialaudio.net/ssr. You will need
 JACK as prerequisite. Refer to `JACK on Mac OS X`_ for instructions how to obtain and
-install it. 
+install it.
 
 The installation should be straightforward. Just double-click on the ``.dmg`` file and
 drag the ``SoundScapeRenderer-x.x.x`` folder to your ``Applications`` folder. Done. When
@@ -594,6 +612,20 @@ sort of adds applications placed in the ``/Applications`` folder to the
 environment, so lets assume you put the SSR there (This also works for
 ``$HOME/Applications``).
 
+Under new versions of Mac OS (Sierra and up) the SoundScapeRenderer executable might be stuck in quarantine resulting in files not being loaded properly. The corresponding error message might look like this::
+
+/private/var/folders/_t/67rf88lx507btn91x6g_vfk40000gp/T/AppTranslocation/42F7F94E-AED9-4F39-8647-41D898CCE032/d/SoundScapeRenderer.app/Contents/MacOS/ssr: line 48: 36804 Abort trap: 6           $SSR_EXECUTABLE "${OPTIONS[@]}"
+
+You can allow the SoundScapeRender to run from its original location by running::
+
+  xattr -d com.apple.quarantine SoundScapeRenderer.app
+
+The following warning can occur on High Sierra when using the file dialog::
+
+  objc[50474]: Class FIFinderSyncExtensionHost is implemented in both /System/Library/PrivateFrameworks/FinderKit.framework/Versions/A/FinderKit (0x7fffa1883c90) and /System/Library/PrivateFrameworks/FileProvider.framework/OverrideBundles/FinderSyncCollaborationFileProviderOverride.bundle/Contents/MacOS/FinderSyncCollaborationFileProviderOverride (0x11f84ccd8). One of the two will be used. Which one is undefined.
+
+It is a bug outside of SSR.
+
 Building from Source
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -602,7 +634,7 @@ The following is an overview on how to set up the build environment for SSR on M
 What to install first?
 ::::::::::::::::::::::
 
-You can make your life much easier with a decent package manager, name Homebrew (http://brew.sh/) or MacPorts (http://www.macports.org/). Both greatly simplify the process of installing and managing dependencies.
+You can make your life much easier with a decent package manager, name Homebrew (https://brew.sh/) or MacPorts (https://www.macports.org/). Both greatly simplify the process of installing and managing dependencies.
 
 .. _Homebrew:
 
@@ -614,16 +646,24 @@ internal repository, upgrade itself and install all necessary dependencies::
 
   brew update && brew upgrade && brew install autoconf fftw libsndfile jack ecasound qt asio --c++11
 
+If Qt is not found by the build system, i.e., if the build system proposes to compile without GUI, then run the following commands (using the according paths on your system) or add them to your ``~/.bash_profile`` file::
+
+  export PATH=/usr/local/opt/qt/bin:$PATH
+  export PKG_CONFIG_PATH=/usr/local/opt/qt/lib/pkgconfig
+
 To build the manual and documentation, you can also install help2man and doxygen::
 
   brew install help2man doxygen
+  export LC_CTYPE=en_US.UTF-8
 
-MacPorts
-********
+On El Capitan and newer OS X versions, it has happened that only the help2man version installed through MacPorts worked properly.
+
+MacPorts (not recommended)
+**************************
 
 Tested with version 1.9.2
 
-Download here: http://www.macports.org/
+Download here: https://www.macports.org/
 
 Then open a terminal and do an initial ports tree update ::
 
@@ -677,28 +717,6 @@ ports. Issuing one command to install all ports might be more convenient::
 Lastly, you need to install the asio library if you want to compile with the network
 interface. You can download it from: http://think-async.com
 
-JACK on Mac OS X
-****************
-
-Tested with version 0.87 (64 bit) which includes:
-
-- Jackdmp 1.9.6
-- JackRouter 0.9.3
-- JackPilot 1.7.0
-
-Note that the site http://www.jackosx.com/ is outdated. The latest version of JACK is 
-available from http://jackaudio.org/downloads/. 
-
-Or, you can install JACK using Homebrew_.
-
-OS X El Capitan is a little trickier as there is no official JACK version for it. When
-scrolling down `this thread`_ you'll find a link to a beta version of JACK that works on 
-El Capitan. Here's the direct link to this beta version of JACK: 
-https://dl.dropboxusercontent.com/u/28869550/JackOSX.0.92_b3.zip
-
-.. _`this thread`:
-  https://github.com/jackaudio/jack2/issues/144
-
 .. _ecasound:
 
 Ecasound
@@ -706,12 +724,12 @@ Ecasound
 
 Tested with version 2.7.2
 
-If you don't want to get Ecasound from Homebrew_, then download the source code from 
+If you don't want to get Ecasound from Homebrew_, then download the source code from
 http://www.eca.cx/ecasound/. (If you choose to use Homebrew and you're experiencing
 problems, then you might want to take a look at :ref:`ecasound_cannot_open_a_jack_port`).
 
 It didn't work with 2.9.0 for us, older versions can be found there:
-http://ecasound.seul.org/download/.
+https://ecasound.seul.org/download/.
 
 In Terminal go into the unpacked ecasound folder and do::
 
@@ -753,7 +771,7 @@ Ecasound -- git version
 Note: if you successfully installed Ecasound 2.7.2, you *don't* need this!
 
 If you want to use the newest Ecasound version from their git repository
-(http://ecasound.seul.org/ecasound.git) with OS X 10.9 (Mavericks),
+(https://ecasound.seul.org/ecasound.git) with OS X 10.9 (Mavericks),
 you can try this::
 
   ./configure CXX="clang++ -stdlib=libc++" CPPFLAGS=-D_DARWIN_C_SOURCE
@@ -848,7 +866,7 @@ Using the GUI
 
 1. Run the JackPilot and hit start.
 2. Double-click the SoundScape Renderer icon |icon|, select the renderer type,
-    and off you go!
+   and off you go!
 
 .. |icon| image:: images/ssr_logo_mac_30px.png
 
@@ -905,7 +923,7 @@ selection)::
 
 .. note:: The arguments other than the renderer selection have to be enclosed in
         quotation marks (``""``)!
-        
+
 To load a scene do::
 
     open -a SoundScapeRenderer --args --binaural "/absolute/path/to/scene.asd"
@@ -988,7 +1006,7 @@ If you happen not to own a Polhemus or InterSense tracker to do your head-
 tracking, an alternative would be to use our DIY low-cost `Razor AHRS tracker`_.
 
 .. _`Razor AHRS tracker`:
-  https://dev.qu.tu-berlin.de/projects/sf-razor-9dof-ahrs
+  https://github.com/Razor-AHRS/razor-9dof-ahrs/wiki/Tutorial
 
 If you have Arduino installed on you machine, FTDI drivers will be there too.
 Otherwise get the driver from http://www.ftdichip.com/Drivers/VCP.htm .
@@ -1004,7 +1022,7 @@ To make the SSR use this Razor AHRS tracker, you have two options:
 Using the command line::
 
     open -a SoundScapeRenderer --args --binaural "--tracker=razor
-    --tracker-port=/dev/tty.usbserial-XXXXXXXX" 
+    --tracker-port=/dev/tty.usbserial-XXXXXXXX"
 
 ... or using config files:
 
@@ -1015,6 +1033,11 @@ Add these lines to a config file::
 
 It's recommended to use the config file approach - best use a global
 :ref:`config file<ssr_configuration_file>`.
+
+MS Windows
+----------
+
+The MS Windows version of SSR is experimental at this stage. Find the pre-release of the executables at https://github.com/chris-hld/ssr/releases. Note that this SSR version only works with live inputs currently (it cannot play audio files). It has no limitation otherwise.
 
 Using the SSR with DAWs
 -----------------------
@@ -1077,7 +1100,7 @@ Only ``WAVE_FORMAT_PCM`` and ``WAVE_FORMAT_IEEE_FLOAT`` are supported.
 
 Multi-channel WAV files would normally use the format
 ``WAVE_FORMAT_EXTENSIBLE``, see
-http://www-mmsp.ece.mcgill.ca/documents/audioformats/wave/wave.html .
+http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/WAVE.html.
 
 However, Ecasound doesn't know this format, that's why we have to use one of
 the above mentioned formats, although for files with more than 2 channels this
@@ -1089,8 +1112,8 @@ example, sox (Debian package sox) with the wavpcm option::
 
   sox old.wav new.wavpcm
   mv new.wavpcm new.wav
-  
-SSR crashes with a segmentation fault on Max OS X 
+
+SSR crashes with a segmentation fault on Max OS X
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If this happens whenever you are opening an audio file or loading a scene that involves opening an audio file, then this might be due to Ecasound. We've seen this with the app bundle. Try the following:
@@ -1105,7 +1128,7 @@ Refer also to :ref:`ecasound` for instructions on how to compile Ecasound. The e
 Finally, replace the Ecasound executable in the SSR bundle with something like this::
 
   sudo cp ecasound/ecasound /Applications/SoundScapeRenderer-0.4.2-74-gb99f8b2/SoundScapeRenderer.app/Contents/MacOS/
-  
+
 You might have to modify the name of the SSR folder in the above command as you're likely to use a different version.
 
 A file that can't be loaded results in a connection to a live input
@@ -1149,7 +1172,7 @@ You may have seen this message::
 
   ***********************************************************************
   * Message from libecasoundc:
-  * 
+  *
   * 'ECASOUND' environment variable not set. Using the default value
   * value 'ECASOUND=ecasound'.
   ***********************************************************************
@@ -1160,7 +1183,7 @@ or, if you prefer, you can put it into your ``$HOME/.bashrc``
 (just for your user account)::
 
   export ECASOUND=ecasound
-  
+
 .. _ecasound_cannot_open_a_jack_port:
 
 Ecasound cannot open a JACK port
@@ -1170,26 +1193,26 @@ Sometimes, when Ecasound is installed via Homebrew_, it can have trouble finding
 a result SSR displays the sound source symbols in the GUI, but they don't play audio, and
 an according error message is posted in the SSR terminal.
 
-Type ``ecasound -c`` in a terminal to start Ecasound in interactive mode. 
+Type ``ecasound -c`` in a terminal to start Ecasound in interactive mode.
 Then type ``aio-register`` to list all available outputs that Ecasound has recognized. If
 JACK is not listed, then download the Ecasound source code from
 http://nosignal.fi/ecasound/download.php, and ::
 
   ./configure --enable-jack
-  make 
+  make
   make install
-  
+
 The last line might have to be ::
 
-  sudo make install 
-  
+  sudo make install
+
 Refer also to :ref:`ecasound` for instructions on how to compile Ecasound.
 
 Using SSR on Mac OS X El Capitan
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 SSR works well on El Capitan. JACK is what can cause headache. See `JACK on Mac OS X`_ .
-  
+
 Long paths to audio files on Mac OS X
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1200,7 +1223,7 @@ It can happen that SSR displays this error message when loading audio files dire
 
 Opening such a file would result in a JACK port name that is too long. You can resolve
 this limitation by moving the audio file to a location that produces a shorter (full) path
-name or by wrapping the audio file in an asd-file. 
+name or by wrapping the audio file in an asd-file.
 
 Segmentation Fault when Opening a Scene
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1296,14 +1319,12 @@ fully understood goes wrong and the Pohlemus data can not be read. In this
 case you can either rename the file isports.ini or change its content.
 
 It might be necessary to execute ``echo C > /dev/ttyS0`` several times in
-order to make the Polhemus tracker operational again. You can check with ``cat
-/dev/ttyS0`` if it delivers data.
+order to make Polhemus Fastrak operational again. Use ``echo -e "C\r" > /dev/ttyS0`` for Polhemus Patriot. You can check with ``cat /dev/ttyS0`` if it delivers data.
 
 Missing GUI Buttons and Timeline
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This issue was resolved in version 0.3.2, the default setting for ``--enable-
-floating-control-panel`` is chosen depending on the installed Qt version.
+This issue was resolved in version 0.3.2, the default setting for ``--enable-floating-control-panel`` is chosen depending on the installed Qt version.
 As of version 0.5 (switching to qt5), the floating control panel is always enabled.
 
 Different versions of Qt show different behaviour regarding OpenGL Overlays
@@ -1312,7 +1333,7 @@ and as a result, the GUI buttons are not shown in newer Qt versions.
 To overcome this limitation, we provide two GUI variants:
 
 - Traditional GUI, can be used up to Qt 4.6.x
-- Floating control panel, should be used with Qt 4.7 and above
+- Floating control panel, which is used with Qt 4.7 and above
 
 The floating control panel is the default setting on Mac OS X, for Linux it
 can be activated with::
@@ -1362,5 +1383,5 @@ create) the file ``.bash_profile`` and add the following to this file::
   export LANG=en_US.UTF-8
   export LANGUAGE=en_US.UTF-8
   export LC_CTYPE=en_US.UTF-8
-  
+
 You might have to re-open the terminal or log out and in again to see the effect.

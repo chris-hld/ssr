@@ -9,10 +9,10 @@
  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  copies of the Software, and to permit persons to whom the Software is
  furnished to do so, subject to the following conditions:
- 
+
  The above copyright notice and this permission notice shall be included in
  all copies or substantial portions of the Software.
- 
+
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -112,24 +112,30 @@ class jack_policy : public JackClient
 template<typename interface_policy, typename native_handle_type>
 struct thread_traits;  // definition in mimoprocessor.h
 
+#ifndef _WIN32
 template<>
 struct thread_traits<jack_policy, pthread_t>
 {
-  static void set_priority(const jack_policy& obj, pthread_t thread_id)
-  {
-    if (obj.is_realtime())
-    {
-      struct sched_param param;
-      param.sched_priority = obj.get_real_time_priority();
-      if (pthread_setschedparam(thread_id, SCHED_FIFO, &param))
-      {
-        throw std::runtime_error("Can't set scheduling priority for thread!");
-      }
-    }
-    else
-    {
-      // do nothing
-    }
+	static void set_priority(const jack_policy& obj, pthread_t thread_id)
+	{
+		if (obj.is_realtime())
+		{
+			struct sched_param param;
+			param.sched_priority = obj.get_real_time_priority();
+#ifndef _WIN32
+			if (pthread_setschedparam(thread_id, SCHED_FIFO, &param))
+			{
+				throw std::runtime_error("Can't set scheduling priority for thread!");
+			}
+#else
+			// TODO: Windows scheduling
+#endif
+		}
+		else
+		{
+			// do nothing
+		}
+
 #ifdef APF_JACK_POLICY_DEBUG
     struct sched_param param;
     int policy;
@@ -143,6 +149,8 @@ struct thread_traits<jack_policy, pthread_t>
 #endif
   }
 };
+#endif // !_WIN32
+
 
 // Helper class to avoid code duplication in Input and Output
 template<typename X>
@@ -173,7 +181,7 @@ class jack_policy::Xput
     Xput(const Xput&); Xput& operator=(const Xput&);  // deactivated
 
     jack_policy& _parent;
-    JackClient::port_t* _port;  // JACK port corresponding to this object. 
+    JackClient::port_t* _port;  // JACK port corresponding to this object.
 
     JackClient::port_t* _init_port(const parameter_map& p, jack_policy& parent);
 
@@ -261,6 +269,3 @@ class jack_policy::Output : public Xput<i_am_out>
 }  // namespace apf
 
 #endif
-
-// Settings for Vim (http://www.vim.org/), please do not remove:
-// vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent

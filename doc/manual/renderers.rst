@@ -124,21 +124,21 @@ not.
 Subwoofers
 ~~~~~~~~~~
 
-All loudspeaker-based renderers support the use of subwoofers. Outputs of the 
+All loudspeaker-based renderers support the use of subwoofers. Outputs of the
 SSR that are assigned to subwoofers receive a signal having full bandwidth. So,
 you will have to make sure yourself that your system lowpasses these signals
 appropriately before they are emitted by the subwoofers.
 
-You might need to adjust the level of your subwoofer(s) depending on the 
-renderers that you are using as the overall radiated power of the normal 
-speakers cannot be predicted easily so that we cannot adjust for it 
-automatically. For example, no matter of how many loudspeakers your setup is 
-composed of the VBAP renderer will only use two loudspeakers at a time to 
-present a given virtual sound source. The WFS renderer on the other hand might 
+You might need to adjust the level of your subwoofer(s) depending on the
+renderers that you are using as the overall radiated power of the normal
+speakers cannot be predicted easily so that we cannot adjust for it
+automatically. For example, no matter of how many loudspeakers your setup is
+composed of the VBAP renderer will only use two loudspeakers at a time to
+present a given virtual sound source. The WFS renderer on the other hand might
 use 10 or 20 loudspeakers, which can clearly lead to a different sound pressure
 level at a given receiver location.
 
-For convenience, ASDF allows for specifying permantent weight for loudspeakers 
+For convenience, ASDF allows for specifying permantent weight for loudspeakers
 and subwoofers using the ``weight`` attribute:
 
 ::
@@ -148,33 +148,33 @@ and subwoofers using the ``weight`` attribute:
       <orientation azimuth="0"/>
     </loudspeaker>
 
-``weight`` is a linear factor that is always applied to the signal of this 
-speaker. Above example will obviously attenuate the signal by approx. 6 dB. You 
-can use two ASDF description for the same reproduction setup that 
-differ only with respect to the subwoofer weights if you're using different 
+``weight`` is a linear factor that is always applied to the signal of this
+speaker. Above example will obviously attenuate the signal by approx. 6 dB. You
+can use two ASDF description for the same reproduction setup that
+differ only with respect to the subwoofer weights if you're using different
 renderers on the same loudspeaker system.
 
 Distance Attenuation
 ~~~~~~~~~~~~~~~~~~~~
 
-Note that in all renderers -- except for the BRS and generic renderers --, the 
-distance attenuation in the virtual space is :math:`\frac{1}{r}` with respect 
+Note that in all renderers -- except for the BRS and generic renderers --, the
+distance attenuation in the virtual space is :math:`\frac{1}{r}` with respect
 to the distance :math:`r` of the respective virtual point source to the
 reference position. Point sources closer than 0.5 m to the reference position
 do not experience any increase of amplitude. Virtual plane waves do not
-experience any algorithmic distance attenuation in any renderer. 
+experience any algorithmic distance attenuation in any renderer.
 
 You can specify your own preferred distance attenuation exponent :math:`exp`
-(in :math:`\frac{1}{r^{exp}}`) either via the command line argument 
+(in :math:`\frac{1}{r^{exp}}`) either via the command line argument
 ``--decay-exponent=VALUE`` or the configuration option ``DECAY_EXPONENT`` (see
 the file ``data/ssr.conf.example``). The higher the exponent, the faster is the
-amplitude decay over distance. The default exponent is 
-:math:`exp = 1` [1]_. Fig. :ref:`3.1 <distance_attenuation>` illustrates the effect 
+amplitude decay over distance. The default exponent is
+:math:`exp = 1` [1]_. Fig. :ref:`3.1 <distance_attenuation>` illustrates the effect
 of different choices of the exponent. In simple words, the smaller the exponent
 the slower is the amplitude decay over distance. Note that the default decay of
-:math:`\frac{1}{r}` is theoretically correct only for infinitessimally small 
-sound sources. Spatially extended sources, like most real world sources, exhibit 
-a slower decay. So you might want to choose the exponent to be somewhere between 
+:math:`\frac{1}{r}` is theoretically correct only for infinitessimally small
+sound sources. Spatially extended sources, like most real world sources, exhibit
+a slower decay. So you might want to choose the exponent to be somewhere between
 0.5 and 1. You can completely suppress any sort of distance attenuation by
 setting the decay exponent to 0.
 
@@ -199,14 +199,14 @@ been set to.
     Illustration of the amplitude of virtual point sources as a function of
     source distance from the reference point for different exponents
     :math:`exp`. The exponents range from 0 to 2 (black color to gray color).
-    The amplitude reference distance is set to 3 m. Recall that sources 
-    closer than 0.5 m to the reference position do not experience any further 
+    The amplitude reference distance is set to 3 m. Recall that sources
+    closer than 0.5 m to the reference position do not experience any further
     increase of amplitude.
 
 .. [1]
    A note regarding previous versions of the WFS renderer: In the present SSR
    version, the amplitude decay is handled centrally and equally for all
-   renderers that take distance attenuation into account (see Table 
+   renderers that take distance attenuation into account (see Table
    :ref:`2 <source_props>`). Previously, the WFS renderer relied on the distance
    attenuation that was inherent to the WFS driving function. This amplitude
    decay is very similar to an exponent of 0.5 (instead of the current default
@@ -265,6 +265,8 @@ approach which is computationally significantly more costly.
 
 Binaural Renderer
 -----------------
+
+Executable: ``ssr-binaural``
 
 Binaural rendering is an approach where the acoustical influence of the
 human head is electronically simulated to position virtual sound sources
@@ -332,28 +334,28 @@ The HRIR sets shipped with SSR
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 SSR comes with two different HRIR sets: FABIAN and KEMAR (QU). The differ with respect to
-the manikin that was used in the measurement (FABIAN vs. KEMAR). The reference for the 
-FABIAN measurement is [Lindau2007]_, and the reference for the KEMAR (QU) is 
+the manikin that was used in the measurement (FABIAN vs. KEMAR). The reference for the
+FABIAN measurement is [Lindau2007]_, and the reference for the KEMAR (QU) is
 [Wierstorf2011]_. The low-frequency extension from [SpatialAudio]_ has been applied to the
 KEMAR (QU) HRTFs.
 
-You will find all sets in the folder ``data/impulse_responses/hrirs/``. 
+You will find all sets in the folder ``data/impulse_responses/hrirs/``.
 The suffix ``_eq`` in the file name indicates the equalized data. The unequalized data is
-of course also there. See the file 
+of course also there. See the file
 ``data/impulse_responses/hrirs/hrirs_fabian_documentation.pdf`` for a few more details on
 the FABIAN measurement.
 
 Starting with SSR release 0.5.0, the default HRIR set that is loaded is headphone
-compensated, i.e., we equalized the HRIRs a bit in order to compensate for the alterations 
-that a typical pair of headphones would apply to the ear signals. Note that by design, 
+compensated, i.e., we equalized the HRIRs a bit in order to compensate for the alterations
+that a typical pair of headphones would apply to the ear signals. Note that by design,
 headphones do not have a flat transfer function. However, when performing binaural
-rendering, we need the headphones to be transparent. Our equalization may not be 
-perfect for all headphones or earbuds as these can exhibit very different properties 
-between different models. 
+rendering, we need the headphones to be transparent. Our equalization may not be
+perfect for all headphones or earbuds as these can exhibit very different properties
+between different models.
 
-We chose a frequency sampling-based minimum-phase filter design. The transfer functions 
-and impulse responses of the two compensation filters are depicted in Fig. :ref:`3.3 
-<hrir_comp_filters>`. The impulse responses themselves can be found in the same folder 
+We chose a frequency sampling-based minimum-phase filter design. The transfer functions
+and impulse responses of the two compensation filters are depicted in Fig. :ref:`3.3
+<hrir_comp_filters>`. The impulse responses themselves can be found in the same folder
 like the HRIRs (see above). The length is 513 taps so that the unequalized
 HRIRs are 512 taps long, the equalized ones are 1024 taps long.
 
@@ -362,9 +364,9 @@ HRIRs are 512 taps long, the equalized ones are 1024 taps long.
 .. figure:: images/hrir_comp_filters.png
     :align: center
 
-    Magnitude transfer functions and impulse responses of the headphone compensation / 
+    Magnitude transfer functions and impulse responses of the headphone compensation /
     equalization filters
-    
+
 Recall that there are several ways of defining which HRIR set is loaded, for example the
 ``HRIR_FILE_NAME`` in the :ref:`SSR configuration files<ssr_configuration_file>` property,
 or the command line option ``--hrirs=FILE``.
@@ -372,12 +374,12 @@ or the command line option ``--hrirs=FILE``.
 .. [Lindau2007] Alexander Lindau and Stefan Weinzierl. FABIAN - Schnelle
     Erfassung binauraler Raumimpulsantworten in mehreren Freiheitsgraden. In
     Fortschritte der Akustik, DAGA Stuttgart, 2007.
-    
-.. [Wierstorf2011] Hagen Wierstorf, Matthias Geier, Alexander Raake, and Sascha Spors. A 
-    Free Database of Head-Related Impulse Response Measurements in the Horizontal Plane 
-    with Multiple Distances. In 130th Convention of the Audio Engineering Society (AES), 
+
+.. [Wierstorf2011] Hagen Wierstorf, Matthias Geier, Alexander Raake, and Sascha Spors. A
+    Free Database of Head-Related Impulse Response Measurements in the Horizontal Plane
+    with Multiple Distances. In 130th Convention of the Audio Engineering Society (AES),
     May 2011.
-    
+
 .. [SpatialAudio] https://github.com/spatialaudio/lf-corrected-kemar-hrtfs (commit 5b5ec8)
 
 Preparing HRIR sets
@@ -391,12 +393,14 @@ expects. See the script for further information and how to obtain the raw HRIRs.
 the KEMAR (CIPIC) HRIRs are not identical to the KEMAR (QU) ones.
 
 .. [AlgaziCIPIC] V. Ralph Algazi. The CIPIC HRTF database.
-    http://interface.cipic.ucdavis.edu/CIL_html/CIL_HRTF_database.htm.
+    https://www.ece.ucdavis.edu/cipic/spatial-sound/hrtf-data/.
 
 .. _brs:
 
 Binaural Room Synthesis Renderer
 --------------------------------
+
+Executable: ``ssr-brs``
 
 The Binaural Room Synthesis (BRS) renderer is a binaural renderer (refer
 to Section :ref:`Binaural Renderer <binaural_renderer>`) which uses one
@@ -454,10 +458,14 @@ different source positions. Due to the file size, we have not included
 them in the release. You can obtain the data from [BRIRs]_.
 
 .. [BRIRs] The Sputnik BRIRs can be obtained from here: https://dev.qu.tu-berlin.de/projects/measurements/wiki/Impulse_Response_Measurements.
-    More BRIR repositories are compiled here: http://www.soundfieldsynthesis.org/other-resources/#impulse-responses. 
+    More BRIR repositories are compiled here: http://www.soundfieldsynthesis.org/other-resources/#impulse-responses.
+
+.. _vbap:
 
 Vector Base Amplitude Panning Renderer
 --------------------------------------
+
+Executable: ``ssr-vbap``
 
 The Vector Base Amplitude Panning (VBAP) renderer uses the algorithm
 described in [Pulkki1997]_. It tries to find a loudspeaker pair between which
@@ -525,8 +533,12 @@ setups.
     Base Amplitude Panning. In Journal of the Audio Engineering Society (JAES),
     Vol.45(6), June 1997.
 
+.. _wfs:
+
 Wave Field Synthesis Renderer
 -----------------------------
+
+Executable: ``ssr-wfs``
 
 The Wave Field Synthesis (WFS) renderer is the only renderer so far
 that discriminates between virtual point sources and plane waves. It
@@ -587,8 +599,7 @@ are part of an array of loudspeakers need to be corrected. The lower
 limit is typically around 100 Hz. The upper limit is given by the
 spatial aliasing frequency. The spatial aliasing is dependent on the
 mutual distance of the loudspeakers, the distance of the considered
-listening position to the loudspeakers, and the array geometry. See [Spors2006]
-_ for
+listening position to the loudspeakers, and the array geometry. See [Spors2006]_ for
 detailed information on how to determine the spatial aliasing frequency
 of a given loudspeaker setup. The spatial aliasing frequency is
 typically between 1000 Hz and 2000 Hz. For a theoretical treatment of
@@ -603,7 +614,7 @@ selection of prefilters.
 
 .. [Spors2006] Sascha Spors and Rudolf Rabenstein. Spatial aliasing artifacts
     produced by linear and circular loudspeaker arrays used for Wave
-    Field Synthesis. In 120th Convention of the AES, Paris, France, 
+    Field Synthesis. In 120th Convention of the AES, Paris, France,
     May 20–23, 2006.
 
 Tapering
@@ -623,8 +634,12 @@ each loudspeaker in ASDF format (refer to Section [sec:asdf]). The
 ``weight`` determines the linear (!) weight to be applied to the
 respective loudspeaker. It defaults to 1 if it is not specified.
 
+.. _aap:
+
 Ambisonics Amplitude Panning Renderer
 -------------------------------------
+
+Executable: ``ssr-aap``
 
 The Ambisonics Amplitude Panning (AAP) renderer does very simple
 Ambisonics rendering. It does amplitude panning by simultaneously using
@@ -678,7 +693,7 @@ for example, in [Neukom2007]_. It reads
 
 whereby :math:`\alpha_0` is the azimuth angle of the position of the
 considered secondary source, :math:`\alpha_\textrm{s}` is the azimuth
-angle of the position of the virtual source, both in radians, and :math:`M` is 
+angle of the position of the virtual source, both in radians, and :math:`M` is
 the Ambisonics order.
 
 In-phase driving function
@@ -695,7 +710,7 @@ algebraic sign.
 
 These problems can be worked around when only positive weights are
 applied on the input signal (*in-phase* rendering). This can be
-accomplished via the in-phase driving function given e.g. in [Neukom2007]_ 
+accomplished via the in-phase driving function given e.g. in [Neukom2007]_
 reading
 
 .. math:: d(\alpha_0) = \cos^{2M} \left (\frac{\alpha_0 - \alpha_\textrm{s}}{2}
@@ -711,8 +726,28 @@ section :ref:`Configuration File <ssr_configuration_file>`) to be
 .. [Neukom2007] Martin Neukom. Ambisonic panning. In 123th Convention of the
     AES, New York, NY, USA, Oct. 5–8, 2007.
 
+.. _dca:
+
+Distance-coded Ambisonics Renderer
+----------------------------------
+
+Executable: ``ssr-dca``
+
+
+Distance-coded Ambisonics (DCA) is sometimes also termed "Nearfield Compensated Higher-Order Ambisonics". This renderer implements the driving functions from [Spors2011]_. The difference to the AAP renderer is a long story, which we will elaborate on at a later point.
+
+Note that the DCA renderer is experimental at this stage. It currently supports orders of up to 28. There are some complications regarding how the user specifies the locations of the loudspeakers and how the renderer handles them. The rendered scene might appear mirrored or rotated. If you are experiencing this, you might want to play around with the assignment of the outputs and the loudspeakers to fix it temporarily. Or contact us.
+
+Please bear with us. We are going to take care of this soon.
+
+.. [Spors2011] S. Spors, V. Kuscher, and J. Ahrens. Efficient Realization of Model-Based Rendering for 2.5-dimensional Near-Field Compensated Higher Order Ambisonics. In IEEE WASPAA, New Paltz, NY, USA, 2011.
+
+.. _genren:
+
 Generic Renderer
 ----------------
+
+Executable: ``ssr-generic``
 
 The generic renderer turns the SSR into a multiple-input-multiple-output
 convolution engine. You have to use an ASDF file in which the attribute
@@ -775,7 +810,7 @@ SSR renderers.
 .. [2]
    So far, only planar sources have a defined orientation. By default, their
    orientation is always pointing from their nominal position to the reference
-   point no matter where you move them. Any other information or updates on the 
-   orientation are ignored. You can changes this behavior by using either the 
-   command line option ``--no-auto-rotation``, using the ``AUTO_ROTATION`` 
+   point no matter where you move them. Any other information or updates on the
+   orientation are ignored. You can changes this behavior by using either the
+   command line option ``--no-auto-rotation``, using the ``AUTO_ROTATION``
    configuration parameter, or hitting ``r`` in the GUI.

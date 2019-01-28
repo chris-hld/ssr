@@ -144,9 +144,9 @@ class BrsRenderer::Source : public _base::Source
 
       _weighting_factor = this->weighting_factor;
 
-      float azi = this->parent.state.reference_orientation.get().azimuth;
-
-      // TODO: get reference offset!
+      auto ori = _input.parent.state.reference_orientation
+        + _input.parent.state.reference_offset_orientation;
+      float azi = ori.azimuth;
 
       // get BRTF index from listener orientation
       // (source positions are NOT considered!)
@@ -300,6 +300,3 @@ BrsRenderer::load_reproduction_setup()
 }  // namespace ssr
 
 #endif
-
-// Settings for Vim (http://www.vim.org/), please do not remove:
-// vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent

@@ -32,7 +32,20 @@
 #endif
 
 #include <cassert>      // for assert()
+#ifndef _MSC_VER
 #include <getopt.h>     // for getopt_long()
+#else
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+#include "getopt_port.h"
+#define strcasecmp _stricmp
+#endif // !_MSC_VER
+
 #include <cstdlib>      // for getenv(), ...
 #include <cstring>
 #include <stdio.h>
@@ -123,9 +136,11 @@ ssr::conf_struct ssr::configuration(int& argc, char* argv[])
 
   conf_struct conf;
 
+  conf.exec_name = argv[0];
+
 #ifndef NDEBUG
   // Because of this warning, "make check" fails for debug builds (on purpose).
-  WARNING(argv[0] << " was compiled for debugging!");
+  WARNING(conf.exec_name << " was compiled for debugging!");
 #endif
 
   // hard coded default values:
@@ -179,6 +194,8 @@ ssr::conf_struct ssr::configuration(int& argc, char* argv[])
 
   conf.loop = false; // temporary solution!
 
+
+#ifndef _WIN32
   // load system-wide config file (Mac)
   load_config_file("/Library/SoundScapeRenderer/ssr.conf",conf);
   // load system-wide config file (Linux et al.)
@@ -191,9 +208,12 @@ ssr::conf_struct ssr::configuration(int& argc, char* argv[])
   filename = getenv("HOME");
   filename += "/.ssr/ssr.conf";
   load_config_file(filename.c_str(),conf);
+#else
+  // TODO: Load Windows paths here
+#endif
 
   const std::string usage_string =
-"Usage: " + std::string(argv[0]) + " [OPTIONS] <scene-file>\n";
+"Usage: " + std::string(conf.exec_name) + " [OPTIONS] <scene-file>\n";
 
   const std::string help_string =
 "\nThe SoundScape Renderer (SSR) is a tool for real-time "
@@ -235,11 +255,12 @@ ssr::conf_struct ssr::configuration(int& argc, char* argv[])
 "      --master-volume-correction=VALUE\n"
 "                      Correction of the master volume in dB "
                                                          "(default: 0 dB)\n"
-"      --auto-rotation Auto-rotate sound sources' orientation toward "
-                                                               "the reference\n"
+"      --auto-rotation Auto-rotate sound sources' orientation toward the\n"
+"                      reference\n"
 "      --no-auto-rotation\n"
-"                      Don't auto-rotate sound sources' orientation toward "
-                                                               "the reference\n"
+"                      Don't auto-rotate sound sources' orientation "
+                                                                  "toward the\n"
+"                      reference\n"
 
 #ifdef ENABLE_IP_INTERFACE
 "  -i, --ip-server[=PORT]\n"
@@ -253,7 +274,7 @@ ssr::conf_struct ssr::configuration(int& argc, char* argv[])
 "  -i, --ip-server     Start IP server (not enabled at compile time!)\n"
 "  -I, --no-ip-server  Don't start IP server (default)\n"
 #endif
-#ifdef ENABLE_GUI      
+#ifdef ENABLE_GUI
 "  -g, --gui           Start GUI (default)\n"
 "  -G, --no-gui        Don't start GUI\n"
 #else
@@ -513,7 +534,7 @@ ssr::conf_struct ssr::configuration(int& argc, char* argv[])
         // here we deal with unknown/invalid options
         // getopt() already prints an error message for unknown options
         std::cout << usage_string;
-        std::cout << "Type '" << argv[0] << " --help' "
+        std::cout << "Type '" << conf.exec_name << " --help' "
           "for more information.\n\n";
         exit(EXIT_FAILURE);
         break;
@@ -805,7 +826,7 @@ int ssr::load_config_file(const char *filename, conf_struct& conf){
     }
     else if (!strcmp(key, "END_OF_MESSAGE_CHARACTER"))
     {
-      #ifdef ENABLE_IP_INTERFACE     
+      #ifdef ENABLE_IP_INTERFACE
       if (!S2A(value, conf.end_of_message_character))
       {
         ERROR("Invalid end-of-message character specified!");
@@ -837,6 +858,3 @@ int ssr::load_config_file(const char *filename, conf_struct& conf){
   }//while
   return EXIT_SUCCESS;
 }
-
-// Settings for Vim (http://www.vim.org/), please do not remove:
-// vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent

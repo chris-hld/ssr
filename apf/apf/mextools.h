@@ -9,10 +9,10 @@
  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  copies of the Software, and to permit persons to whom the Software is
  furnished to do so, subject to the following conditions:
- 
+
  The above copyright notice and this permission notice shall be included in
  all copies or substantial portions of the Software.
- 
+
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -131,6 +131,17 @@ bool convert(const mxArray* in, double& out)
 
 /// Convert @c mxArray to @c int
 bool convert(const mxArray* in, int& out)
+{
+  if (!mxIsDouble(in) || mxIsComplex(in)) return false;
+  if (mxGetNumberOfElements(in) != 1) return false;
+  double temp = mxGetScalar(in);
+  if (temp != std::floor(temp)) return false;
+  out = temp;
+  return true;
+}
+
+/// Convert @c mxArray to <tt>long int</tt>
+bool convert(const mxArray* in, long int& out)
 {
   if (!mxIsDouble(in) || mxIsComplex(in)) return false;
   if (mxGetNumberOfElements(in) != 1) return false;
@@ -294,6 +305,3 @@ void next_optarg(int& n, const mxArray**& p, T& data, const std::string& error)
 }  // namespace apf
 
 #endif
-
-// Settings for Vim (http://www.vim.org/), please do not remove:
-// vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent

@@ -35,7 +35,9 @@
                 "/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed",
                 "/usr/include/x86_64-linux-gnu",
                 "/usr/include",
-                "${workspaceRoot}"
+                "${workspaceRoot}",
+                "${workspaceRoot}/src",
+                "${workspaceRoot}/apf"
             ],
             "defines": [],
             "intelliSenseMode": "clang-x64",
@@ -76,5 +78,5 @@
             }
         }
     ],
-    "version": 3
+    "version": 4
 }

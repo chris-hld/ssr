@@ -1,0 +1,120 @@
+language: cpp
+sudo: required
+
+git:
+  depth: 3
+
+env:
+  global:
+    - COMPILE_ASIO=0
+
+matrix:
+  include:
+    # linux with gcc 8
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+      dist: trusty
+      env:
+        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
+    # linux with gcc 7
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+      dist: trusty
+      env:
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+    # linux with clang 7
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-7
+          packages:
+            - clang-7
+      dist: trusty
+      env:
+        - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7 && COMPILE_ASIO=1"
+    # linux with clang 6.0
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-6.0
+          packages:
+            - clang-6.0
+      dist: trusty
+      env:
+        - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0 && COMPILE_ASIO=1"
+    # linux with clang 5.0
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-trusty-5.0
+          packages:
+            - clang-5.0
+      dist: trusty
+      env:
+        - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0 && COMPILE_ASIO=1"
+    # linux with clang 4.0
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-trusty-4.0
+          packages:
+            - clang-4.0
+      dist: trusty
+      env:
+        - MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0 && COMPILE_ASIO=1"
+    # osx with xcode10.1/clang
+    - os: osx
+      osx_image: xcode10.1
+    # osx with xcode9.4/clang
+    - os: osx
+      osx_image: xcode9.4
+
+before_install:
+  - eval "${MATRIX_EVAL}"
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get -qq update; fi
+
+install:
+  - ci/install-deps.sh
+
+before_script:
+  - ci/build-deps.sh
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then export PKG_CONFIG_PATH=/usr/local/opt/openssl/lib/pkgconfig:/usr/local/opt/qt/lib/pkgconfig:/usr/local/lib/pkgconfig; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then export PATH="/usr/local/opt/qt/bin:$PATH"; fi
+  - autoreconf -vfi
+
+script:
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ./configure; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ./configure --prefix='/usr'; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then make; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then make && sudo make install; fi
+
+after_failure:
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ls -alhv /usr/bin/ |grep -E "(clang|gcc|g\+\+)"; fi
+  - if [[ -f config.log ]]; then cat config.log; fi
+
+branches:
+  only:
+    - master
+    - travis-integration
+    - ssr-windows
+    - mxe
+
+notifications:
+  email: false

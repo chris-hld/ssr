@@ -224,7 +224,7 @@ LoudspeakerRenderer<Derived>::_load_loudspeaker(const Node& node)
   Loudspeaker::model_t model;
   if      (model_str == "normal")    model = Loudspeaker::normal;
   else if (model_str == "subwoofer") model = Loudspeaker::subwoofer;
-  else                               model = Loudspeaker::unknown;
+  else                               model = Loudspeaker::normal;
 
   float delay = !node ? 0.0f
     : apf::str::S2RV(node.get_attribute("delay"), 0.0f);
@@ -504,6 +504,3 @@ LoudspeakerRenderer<Derived>::_get_angle(const Node& node)
 }  // namespace ssr
 
 #endif
-
-// Settings for Vim (http://www.vim.org/), please do not remove:
-// vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent

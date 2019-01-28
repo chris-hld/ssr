@@ -27,10 +27,6 @@
 #ifndef APF_CXX_THREAD_POLICY_H
 #define APF_CXX_THREAD_POLICY_H
 
-#ifndef _REENTRANT
-#error You need to compile with _REENTRANT defined since this uses threads!
-#endif
-
 #ifndef APF_MIMOPROCESSOR_THREAD_POLICY
 #define APF_MIMOPROCESSOR_THREAD_POLICY apf::cxx_thread_policy
 #endif
@@ -54,8 +50,8 @@ class cxx_thread_policy
     using useconds_type = int;
 
     class Thread;
-    template<typename F> struct ScopedThread;
-    template<typename F> struct DetachedThread;
+    template<typename F> class ScopedThread;
+    template<typename F> class DetachedThread;
     using Lock = std::mutex;
     class Semaphore;
 
@@ -217,6 +213,3 @@ class cxx_thread_policy::Semaphore : NonCopyable
 }  // namespace apf
 
 #endif
-
-// Settings for Vim (http://www.vim.org/), please do not remove:
-// vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent

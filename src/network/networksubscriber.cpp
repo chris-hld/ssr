@@ -25,7 +25,7 @@
  ******************************************************************************/
 
 /// @file
-/// NetworkSubscriber class (implementation). 
+/// NetworkSubscriber class (implementation).
 
 #include "networksubscriber.h"
 #include "apf/stringtools.h"
@@ -34,15 +34,10 @@
 
 using apf::str::A2S;
 
-// temporary hack:
-//static bool previous_state = false;
-
 ssr::NetworkSubscriber::NetworkSubscriber(Connection &connection)
   : _connection(connection)
   , _master_level(0.0)
 {}
-
-ssr::NetworkSubscriber::~NetworkSubscriber() {}
 
 void
 ssr::NetworkSubscriber::update_all_clients(std::string str)
@@ -315,7 +310,7 @@ ssr::NetworkSubscriber::set_transport_state(
   }
 }
 
-void 
+void
 ssr::NetworkSubscriber::set_auto_rotation(bool auto_rotate_sources)
 {
   (void) auto_rotate_sources;
@@ -356,6 +351,3 @@ ssr::NetworkSubscriber::set_source_signal_level(const id_t id, const float& leve
   //update_all_clients(ms);
   return true;
 }
-
-// Settings for Vim (http://www.vim.org/), please do not remove:
-// vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent

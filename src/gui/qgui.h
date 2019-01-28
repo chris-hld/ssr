@@ -38,6 +38,11 @@
 #include "publisher.h"
 #include "scene.h"
 
+#ifdef _WIN32
+#include <QtCore/QtPlugin>
+Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin)
+#endif
+
 namespace ssr
 {
 
@@ -67,6 +72,3 @@ class QGUI : public QObject
 }  // namespace ssr
 
 #endif
-
-// Settings for Vim (http://www.vim.org/), please do not remove:
-// vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent

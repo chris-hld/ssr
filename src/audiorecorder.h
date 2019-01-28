@@ -54,7 +54,7 @@ class AudioRecorder
     AudioRecorder(const std::string& audio_file_name,
         const std::string& format_string, const std::string& record_source,
         const std::string& client_name = "recorder",
-        const std::string& input_prefix = "channel") throw(audiorecorder_error);
+        const std::string& input_prefix = "channel");
 
     bool enable();   ///< enable recording as soon as transport is started
     bool disable();  ///< disable recording
@@ -67,6 +67,3 @@ class AudioRecorder
 };
 
 #endif
-
-// Settings for Vim (http://www.vim.org/), please do not remove:
-// vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent
