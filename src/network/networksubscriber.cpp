@@ -27,7 +27,7 @@
 /// @file
 /// NetworkSubscriber class (implementation).
 
-#include "ssr_global.h"  // for ERROR()
+#include "ssr_global.h"  // for SSRERROR()
 #include "networksubscriber.h"
 #include "apf/stringtools.h"
 #include "apf/math.h" // for linear2dB()
@@ -54,7 +54,7 @@ ssr::NetworkSubscriber::_send_source_message(const std::string& first_part
   }
   else
   {
-    ERROR("Source ID \"" << id << "\" not found");
+    SSRERROR("Source ID \"" << id << "\" not found");
   }
 }
 

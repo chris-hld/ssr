@@ -32,7 +32,7 @@
 #define SSR_TRACKERRAZOR_H
 
 #include "legacy_orientation.h"  // for Orientation
-#include "ssr_global.h"  // for ERROR
+#include "ssr_global.h"  // for SSRERROR
 #include "tracker.h"  // base class
 
 #include "razor-ahrs/RazorAHRS.h"
@@ -76,7 +76,7 @@ class TrackerRazor : public Tracker
       _controller.take_control()->reference_offset_rotation(
           Orientation(-_current_azimuth + _az_corr));
     }
-    void on_error(const std::string &msg) { ERROR("Razor AHRS: " << msg); }
+    void on_error(const std::string &msg) { SSRERROR("Razor AHRS: " << msg); }
 
     api::Publisher& _controller;
     volatile float _current_azimuth;
