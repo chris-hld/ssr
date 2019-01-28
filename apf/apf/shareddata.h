@@ -9,10 +9,10 @@
  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  copies of the Software, and to permit persons to whom the Software is
  furnished to do so, subject to the following conditions:
- 
+
  The above copyright notice and this permission notice shall be included in
  all copies or substantial portions of the Software.
- 
+
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -61,6 +61,15 @@ class SharedData
       _fifo.push(new SetCommand(&_data, rhs));
     }
 
+    friend bool
+    operator==(const SharedData& lhs, const X& rhs) { return lhs._data == rhs; }
+    friend bool
+    operator==(const X& lhs, const SharedData& rhs) { return lhs == rhs._data; }
+    friend bool
+    operator!=(const SharedData& lhs, const X& rhs) { return lhs._data != rhs; }
+    friend bool
+    operator!=(const X& lhs, const SharedData& rhs) { return lhs != rhs._data; }
+
   private:
     CommandQueue& _fifo;
     X _data;
@@ -88,6 +97,3 @@ class SharedData<X>::SetCommand : public CommandQueue::Command
 }  // namespace apf
 
 #endif
-
-// Settings for Vim (http://www.vim.org/), please do not remove:
-// vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent

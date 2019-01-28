@@ -58,8 +58,7 @@
  **/
 AudioRecorder::AudioRecorder(const std::string& audio_file_name,
     const std::string& format_string, const std::string& record_source,
-    const std::string& client_name_,  const std::string& input_prefix_)
-    throw (audiorecorder_error) :
+    const std::string& client_name_,  const std::string& input_prefix_) :
   client_name(client_name_),
   input_prefix(input_prefix_)
 {
@@ -134,6 +133,3 @@ bool AudioRecorder::disable()
   }
   return true;
 }
-
-// Settings for Vim (http://www.vim.org/), please do not remove:
-// vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent

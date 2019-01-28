@@ -36,8 +36,10 @@
 
 #include <functional>
 #include <thread>
-#include <iostream>
 
+#if !defined(ASIO_STANDALONE)
+#define ASIO_STANDALONE
+#endif
 #include <asio.hpp>
 
 #include "connection.h"
@@ -73,6 +75,3 @@ class Server
 }  // namespace ssr
 
 #endif
-
-// Settings for Vim (http://www.vim.org/), please do not remove:
-// vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent

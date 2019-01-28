@@ -25,17 +25,13 @@
  ******************************************************************************/
 
 /// @file
-/// CommandParser class (definition). 
+/// CommandParser class (definition).
 
 #ifndef SSR_COMMANDPARSER_H
 #define SSR_COMMANDPARSER_H
 
-#include <iostream>
-#include <queue>
 #include <string>
 
-#include "ssr_global.h"
-#include "xmlparser.h"
 
 namespace ssr
 {
@@ -44,25 +40,20 @@ struct Publisher;
 
 /** Parses a XML string and maps to Controller.
  * This class is the bridge between the network interface and the Controller.
- * Incoming XML messages (in ASDF-format) are parsed and the appropriate 
- * functions of Controller called.  
+ * Incoming XML messages (in ASDF-format) are parsed and the appropriate
+ * functions of Controller called.
  **/
 class CommandParser
 {
   public:
     CommandParser(Publisher& controller);
-    ~CommandParser();
 
-    void parse_cmd(std::string &cmd);
-    //void parse_cmd_old(std::string &cmd)
+    void parse_cmd(const std::string &cmd);
+
   private:
     Publisher& _controller;
-    //Subscriber& _scene;
 };
 
 }  // namespace ssr
 
 #endif
-
-// Settings for Vim (http://www.vim.org/), please do not remove:
-// vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent

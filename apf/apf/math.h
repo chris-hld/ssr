@@ -9,10 +9,10 @@
  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  copies of the Software, and to permit persons to whom the Software is
  furnished to do so, subject to the following conditions:
- 
+
  The above copyright notice and this permission notice shall be included in
  all copies or substantial portions of the Software.
- 
+
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -43,12 +43,12 @@ namespace math
 
 /// \f$\pi\f$.
 /// Undefined general case.
-template<typename T> inline T pi();
+template<typename T> constexpr T pi();
 
 /// \f$\pi\f$.
 /// Specialization for float.
 template<>
-inline float pi<float>()
+constexpr float pi<float>()
 {
   // 9 digits are needed for float, 17 digits for double, 21 for long double
   // TODO: But this may be different on other hardware platforms ...?
@@ -58,7 +58,7 @@ inline float pi<float>()
 /// \f$\pi\f$.
 /// Specialization for double.
 template<>
-inline double pi<double>()
+constexpr double pi<double>()
 {
   return 3.1415926535897932384626433832795;
 }
@@ -66,7 +66,7 @@ inline double pi<double>()
 /// \f$\pi\f$.
 /// Specialization for long double.
 template<>
-inline long double pi<long double>()
+constexpr long double pi<long double>()
 {
   return 3.1415926535897932384626433832795l;
 }
@@ -189,7 +189,7 @@ inline T wrap_two_pi(T x)
 
 /** Find a power of 2 which is >= a given number.
  * @param number number for which to find next power of 2
- * @return power of 2 above (or equal to) \b number 
+ * @return power of 2 above (or equal to) \b number
  * @note For all @p number%s <= 1 the result is 1;
  **/
 template<typename T>
@@ -336,6 +336,3 @@ struct identity { const T& operator()(const T& in) { return in; } };
 }  // namespace apf
 
 #endif
-
-// Settings for Vim (http://www.vim.org/), please do not remove:
-// vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent

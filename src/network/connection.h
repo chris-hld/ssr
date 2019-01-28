@@ -40,6 +40,9 @@
 #include <thread>
 #include <memory>
 
+#if !defined(ASIO_STANDALONE)
+#define ASIO_STANDALONE
+#endif
 #include <asio.hpp>
 
 #include "networksubscriber.h"
@@ -62,7 +65,7 @@ class Connection : public std::enable_shared_from_this<Connection>
         , Publisher &controller, char end_of_message_character);
 
     void start();
-    void write(std::string &writestring);
+    void write(const std::string& writestring);
 
     /// @return Reference to socket
     socket_t& socket() { return _socket; }
@@ -102,6 +105,3 @@ class Connection : public std::enable_shared_from_this<Connection>
 }  // namespace ssr
 
 #endif
-
-// Settings for Vim (http://www.vim.org/), please do not remove:
-// vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent

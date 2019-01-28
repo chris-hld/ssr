@@ -215,7 +215,7 @@ ssr::QGUI::~QGUI()
 {}
 
 /**
- * This function is used to verify if setting the sample buffer (enabling 
+ * This function is used to verify if setting the sample buffer (enabling
  * anti-aliasing) has succeeded.
  * @return current QGLFormat
  */
@@ -241,6 +241,3 @@ int ssr::QGUI::run()
   _qt_app.connect(&_qt_app, SIGNAL(lastWindowClosed()), &_qt_app, SLOT(quit()));
   return _qt_app.exec();
 }
-
-// Settings for Vim (http://www.vim.org/), please do not remove:
-// vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent
