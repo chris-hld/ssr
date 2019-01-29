@@ -2,7 +2,7 @@
 MXE_PATH=/home/chris/git/mxe
 
 
-export PATH=$MXE_PATH/usr/bin:$PATH
+PATH=$MXE_PATH/usr/bin:$PATH
 
 rm -r _build
 mkdir -p _build && cd _build

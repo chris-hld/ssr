@@ -10,6 +10,11 @@ env:
 
 matrix:
   include:
+    # linux with MXE
+    - os: linux
+      dist: trusty
+      env:
+        - PLATFORM='windows64'
     # linux with gcc 8
     - os: linux
       addons:
@@ -84,6 +89,7 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get -qq update; fi
 
 install:
+  - ci/mxe-requirements.sh
   - ci/install-deps.sh
 
 before_script:
