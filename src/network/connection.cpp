@@ -30,6 +30,7 @@
 #include <functional>
 #include <memory>
 #include "connection.h"
+#include "ssr_global.h"  // for VERBOSE2()
 
 
 /// ctor

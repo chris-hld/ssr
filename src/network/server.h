@@ -36,7 +36,9 @@
 
 #include <functional>
 #include <thread>
-
+#if !defined(ASIO_STANDALONE)
+#define ASIO_STANDALONE
+#endif
 #include <asio.hpp>
 
 #include "connection.h"
