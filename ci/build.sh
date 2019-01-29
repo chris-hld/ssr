@@ -6,11 +6,10 @@ then
     if [ "${TARGET}" = "windows64" ]
     then
         PATH=$PATH:/usr/lib/mxe/usr/bin
-        cd ..
         mkdir -p _build && cd _build
         x86_64-w64-mingw32.static-cmake ... -DCMAKE_BUILD_TYPE=RELEASE -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
         make
-        cd ..
+
     else
       ./configure --prefix='/usr'
       make && sudo make install
