@@ -4,9 +4,11 @@ set -xeu
 
 if [ "${TARGET}" = "windows32" ] || [ "${TARGET}" = "windows64" ]
 then
-    # Add debian packages built from MXE packages
-    echo "deb http://pkg.mxe.cc/repos/apt/debian jessie main" | sudo tee --append /etc/apt/sources.list.d/mxeapt.list
-    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys D43A795B73B16ABE9643FE1AFD8FFF16DB45C6AB
+	sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 86B72ED9
+	#sudo add-apt-repository 'deb [arch=amd64] http://mirror.mxe.cc/repos/apt trusty main'
+	# or https for xenial
+	sudo add-apt-repository 'deb [arch=amd64] https://mirror.mxe.cc/repos/apt xenial main'
+	sudo apt-get update
 
     if [ "${TARGET}" = "windows64" ]
     then

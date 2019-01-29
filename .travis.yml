@@ -13,7 +13,7 @@ matrix:
     # linux with MXE
     - env: TARGET="windows64"
       os: linux
-      dist: trusty
+      dist: xenial
     # linux with gcc 8
     - os: linux
       addons:
@@ -58,6 +58,7 @@ branches:
     - travis-integration
     - ssr-windows
     - mxe
+    - mxe-apt
     - beta
 
 notifications:
