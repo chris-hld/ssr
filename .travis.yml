@@ -25,7 +25,7 @@ matrix:
       dist: trusty
       env:
         - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
-          TARGET = "native"
+          TARGET="native"
 
 
 before_install:
