@@ -8,7 +8,7 @@ then
 	#sudo add-apt-repository 'deb [arch=amd64] http://mirror.mxe.cc/repos/apt trusty main'
 	# or https for xenial
 	sudo add-apt-repository 'deb [arch=amd64] https://mirror.mxe.cc/repos/apt xenial main'
-	sudo apt-get update
+	sudo apt-get -qq update
 
     if [ "${TARGET}" = "windows64" ]
     then

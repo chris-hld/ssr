@@ -43,11 +43,7 @@ before_script:
   - autoreconf -vfi
 
 script:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ] && [ "${TARGET}" = "windows64" ]]; then ci/mxe-build.sh'; fi  
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ./configure; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ] && ![ "${TARGET}" = "windows64" ]]; then ./configure --prefix='/usr'; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then make; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then make && sudo make install; fi
+  - ci/build.sh
 
 after_failure:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ls -alhv /usr/bin/ |grep -E "(clang|gcc|g\+\+)"; fi
