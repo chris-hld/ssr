@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.8)
 project(SSR)
 
 # The version number
-set(SSR_VERSION 0.5.0-cmake)
+set(SSR_VERSION 0.5.1-cmake)
 
 # Show more of make
 set(CMAKE_VERBOSE_MAKEFILE ON)
