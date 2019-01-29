@@ -31,7 +31,10 @@
 
 #include "ssr_global.h" // for ERROR()
 #include "commandparser.h"
-#include "publisher.h"
+#include "api.h"
+#include "xmlparser.h"
+#include "legacy_position.h"
+#include "legacy_orientation.h"
 
 #include "apf/stringtools.h"
 #include "apf/math.h"  // for dB2linear()
@@ -39,20 +42,17 @@
 using namespace apf::str;
 
 /** ctor.
- * @param controller 
+ * @param publisher
  **/
-ssr::CommandParser::CommandParser(Publisher& controller)
-  : _controller(controller)
+ssr::CommandParser::CommandParser(api::Publisher& publisher)
+  : _publisher(publisher)
 {}
 
-/// dtor.
-ssr::CommandParser::~CommandParser() {}
-
 /** Parse a XML string and map to Controller.
- * @param cmd XML string. 
+ * @param cmd XML string.
  **/
 void
-ssr::CommandParser::parse_cmd(std::string& cmd)
+ssr::CommandParser::parse_cmd(const std::string& cmd)
 {
   XMLParser xp;
   XMLParser::doc_t doc1 = xp.load_string(cmd);
@@ -71,6 +71,8 @@ ssr::CommandParser::parse_cmd(std::string& cmd)
   }
   XMLParser::Node node1 = result1->node(); // get first (and only?) node.
 
+  auto control = _publisher.take_control();
+
   for (XMLParser::Node i = node1.child(); !!i; ++i)
   {
     if (i == "source")
@@ -81,19 +83,25 @@ ssr::CommandParser::parse_cmd(std::string& cmd)
         new_source = false;
       }
 
-      id_t id = 0; // ugly ...
+      unsigned int source_number = 0;
       if (!new_source)
       {
-        if (!S2A(i.get_attribute("id"),id))
+        if (!S2A(i.get_attribute("id"), source_number))
         {
           ERROR("No source ID specified!");
           return;
         }
       }
+      auto id = control->get_source_id(source_number);
+      if (id == "" && !new_source)
+      {
+        ERROR("Invalid source number: " << source_number);
+        return;
+      }
 
       Position position;
       Orientation orientation;
-      bool position_fixed = false, orientation_fixed = false;
+      bool fixed = false;
 
       for (XMLParser::Node inner_loop = i.child(); !!inner_loop; ++inner_loop)
       {
@@ -104,12 +112,12 @@ ssr::CommandParser::parse_cmd(std::string& cmd)
           {
             if (!new_source)
             {
-              _controller.set_source_position(id, position);
+              control->source_position(id, position);
               VERBOSE2("set source position: id = " << id << ", " << position);
             }
             else
             {
-              // position is used later for _controller.new_source(...)
+              // position is used later for control->new_source(...)
             }
           }
           else
@@ -117,18 +125,18 @@ ssr::CommandParser::parse_cmd(std::string& cmd)
             position = Position();
           }
 
-          if (S2A(inner_loop.get_attribute("fixed"), position_fixed))
+          if (S2A(inner_loop.get_attribute("fixed"), fixed))
           {
             if (!new_source)
             {
-              _controller.set_source_position_fixed(id, position_fixed);
+              control->source_fixed(id, fixed);
               VERBOSE2("set source position fixed: id = " << id << ", fixed = "
-                  << A2S(position_fixed));
+                  << A2S(fixed));
             }
           }
           else
           {
-            position_fixed = false;
+            fixed = false;
           }
         }
         else if (inner_loop == "orientation")
@@ -137,35 +145,19 @@ ssr::CommandParser::parse_cmd(std::string& cmd)
           {
             if (!new_source)
             {
-              _controller.set_source_orientation(id, orientation);
+              control->source_rotation(id, orientation);
               VERBOSE2("set source orientation: id = " << id << ", "
                   << orientation);
             }
             else
             {
-              // orientation is used later for _controller.new_source(...)
+              // orientation is used later for control->new_source(...)
             }
           }
           else
           {
             orientation = Orientation();
           }
-          // source orientation_fixed is not yet implemented!
-          /*
-          if (S2A(inner_loop.get_attribute("fixed"),
-          orientation_fixed))
-          {
-          if (!new_source)
-          {
-          _controller.set_source_orientation_fix(id, orientation_fixed);
-          VERBOSE2("set source orientation fixed");
-          }
-          }
-          else
-          {
-          orientation_fixed = false;
-          }
-          */
         }
       }//for (XMLParser:...
 
@@ -176,7 +168,7 @@ ssr::CommandParser::parse_cmd(std::string& cmd)
         volume = apf::math::dB2linear(volume);
         if (!new_source)
         {
-          _controller.set_source_gain(id, volume);
+          control->source_volume(id, volume);
           VERBOSE2("set source volume: id = " << id
               << ", volume (linear) = " << volume);
         }
@@ -191,7 +183,7 @@ ssr::CommandParser::parse_cmd(std::string& cmd)
       {
         if (!new_source)
         {
-          _controller.set_source_mute(id, muted);
+          control->source_mute(id, muted);
           VERBOSE2("set source mute mode: id = " << id
               << ", mute = " << A2S(muted));
         }
@@ -203,38 +195,31 @@ ssr::CommandParser::parse_cmd(std::string& cmd)
       std::string name = i.get_attribute("name");
       if (!name.empty() && !new_source)
       {
-        _controller.set_source_name(id,name);
+        control->source_name(id,name);
         VERBOSE2("set source name: id = " << id << ", name = " << name);
       }
 
       std::string properties_file = i.get_attribute("properties_file");
       if (!properties_file.empty() && !new_source)
       {
-        _controller.set_source_properties_file(id,properties_file);
-        VERBOSE2("set source properties file name: id = " << id
-            << ", file = " << properties_file);
+        ERROR("Cannot set properties_file! This works only for new sources.");
       }
 
-      Source::model_t model = Source::model_t();
-      if (S2A(i.get_attribute("model"),model))
+      std::string model = i.get_attribute("model");
+      if (!new_source && model != "")
       {
-        if (!new_source)
-        {
-          _controller.set_source_model(id,model);
-          VERBOSE2("set source model: id = " << id << ", model = " << model);
-        }
+        control->source_model(id,model);
+        VERBOSE2("set source model: id = " << id << ", model = " << model);
       }
       else
       {
-        model = Source::point;
+        model = "point";
       }
 
       std::string port_name = i.get_attribute("port");
       if (!port_name.empty() && !new_source)
       {
-        _controller.set_source_port_name(id,port_name);
-        VERBOSE2("set source port  name: id = " << id
-            << ", port = " << port_name);
+        ERROR("Cannot set port name! This works only for new sources.");
       }
 
       std::string file_or_port_name = port_name;
@@ -288,16 +273,15 @@ ssr::CommandParser::parse_cmd(std::string& cmd)
               "\nfile_or_port_name: " << file_or_port_name <<
               "\nchannel: " << channel <<
               "\nposition: " << position <<
-              "\nposition_fixed: " << A2S(position_fixed) <<
               "\norientation: " << orientation <<
-              "\norientation_fixed: " << A2S(orientation_fixed) <<
+              "\nfixed: " << A2S(fixed) <<
               "\nvolume (linear): " << volume <<
               "\nmuted: " << A2S(muted) <<
               "\nproperties_file: " << properties_file <<
               "\n");
 
-          _controller.new_source(name, model, file_or_port_name, channel,
-              position, position_fixed, orientation, orientation_fixed,
+          control->new_source(id, name, model, file_or_port_name, channel,
+              position, orientation, fixed,
               volume, muted, properties_file);
         }
       }
@@ -313,7 +297,7 @@ ssr::CommandParser::parse_cmd(std::string& cmd)
           if (S2A(inner_loop.get_attribute("x"), x)
               && S2A(inner_loop.get_attribute("y"), y))
           {
-            _controller.set_reference_position(Position(x,y));
+            control->reference_position(Position(x,y));
             VERBOSE2("set reference position: " << Position(x,y));
           }
           else ERROR("Invalid reference position!");
@@ -323,7 +307,7 @@ ssr::CommandParser::parse_cmd(std::string& cmd)
           float azimuth;
           if (S2A(inner_loop.get_attribute("azimuth"), azimuth))
           {
-            _controller.set_reference_orientation(Orientation(azimuth));
+            control->reference_rotation(Orientation(azimuth));
             VERBOSE2("set reference orientation: " << Orientation(azimuth));
           }
           else ERROR("Invalid reference orientation!");
@@ -340,7 +324,7 @@ ssr::CommandParser::parse_cmd(std::string& cmd)
           if (S2A(inner_loop.get_attribute("x"), x)
               && S2A(inner_loop.get_attribute("y"), y))
           {
-            _controller.set_reference_offset_position(Position(x,y));
+            control->reference_offset_position(Position(x,y));
             VERBOSE2("set reference offset position: " << Position(x,y));
           }
           else ERROR("Invalid reference offset position!");
@@ -350,7 +334,7 @@ ssr::CommandParser::parse_cmd(std::string& cmd)
           float azimuth;
           if (S2A(inner_loop.get_attribute("azimuth"), azimuth))
           {
-            _controller.set_reference_offset_orientation(Orientation(azimuth));
+            control->reference_offset_rotation(Orientation(azimuth));
             VERBOSE2("set reference offset orientation: " << Orientation(azimuth));
           }
           else ERROR("Invalid reference offset orientation!");
@@ -363,12 +347,18 @@ ssr::CommandParser::parse_cmd(std::string& cmd)
       {
         if (inner_loop == "source")
         {
-          id_t id;
-          if (S2A(inner_loop.get_attribute("id"),id))
+          unsigned int source_number;
+          if (S2A(inner_loop.get_attribute("id"), source_number))
           {
-            // if (id == 0) {} //_controller.delete_all_sources();
-            // else {}//_controller.delete_source(id);
-            _controller.delete_source(id);
+            std::string id = control->get_source_id(source_number);
+            if (id != "")
+            {
+              control->delete_source(id);
+            }
+            else
+            {
+              ERROR("Source ID doesn't exist: " << id);
+            }
           }
           else ERROR("Cannot read source ID!");
         }
@@ -385,7 +375,7 @@ ssr::CommandParser::parse_cmd(std::string& cmd)
       std::string save_scene = i.get_attribute("save");
       if (save_scene != "")
       {
-        _controller.save_scene_as_XML(save_scene);
+        control->save_scene(save_scene);
       }
 
       // load scene
@@ -393,7 +383,7 @@ ssr::CommandParser::parse_cmd(std::string& cmd)
       std::string load_scene = i.get_attribute("load");
       if (load_scene != "")
       {
-        _controller.load_scene(load_scene);
+        control->load_scene(load_scene);
       }
 
       std::string volume_str = i.get_attribute("volume");
@@ -405,7 +395,7 @@ ssr::CommandParser::parse_cmd(std::string& cmd)
       else if (S2A(volume_str, volume))
       {
         // volume is given in dB in the network messages
-        _controller.set_master_volume(apf::math::dB2linear(volume));
+        control->master_volume(apf::math::dB2linear(volume));
         VERBOSE2("set master volume: " << volume << " dB");
       }
       else ERROR("Invalid Volume Setting! (\"" << volume_str << "\")");
@@ -413,7 +403,7 @@ ssr::CommandParser::parse_cmd(std::string& cmd)
       bool clear_scene;
       if (S2A(i.get_attribute("clear"), clear_scene) && clear_scene)
       {
-        _controller.delete_all_sources();
+        control->delete_all_sources();
       }
     }
     else if (i == "state")
@@ -423,11 +413,11 @@ ssr::CommandParser::parse_cmd(std::string& cmd)
       std::string processing= i.get_attribute("processing");
       if (processing == "start")
       {
-        _controller.start_processing();
+        control->processing(true);
       }
       else if (processing == "stop")
       {
-        _controller.stop_processing();
+        control->processing(false);
       }
       else if (processing != "")
       {
@@ -439,15 +429,15 @@ ssr::CommandParser::parse_cmd(std::string& cmd)
       std::string transport = i.get_attribute("transport");
       if (transport == "start")
       {
-        _controller.transport_start();
+        control->transport_start();
       }
       else if (transport == "stop")
       {
-        _controller.transport_stop();
+        control->transport_stop();
       }
       else if (transport == "rewind")
       {
-        _controller.transport_locate(0);
+        control->transport_locate(0);
       }
       else if (transport != "")
       {
@@ -465,7 +455,7 @@ ssr::CommandParser::parse_cmd(std::string& cmd)
       float time;
       if (string2time(seek, time))
       {
-        _controller.transport_locate(time);
+        control->transport_locate(time);
       }
       else if (seek != "")
       {
@@ -478,7 +468,7 @@ ssr::CommandParser::parse_cmd(std::string& cmd)
       std::string tracker = i.get_attribute("tracker");
       if (tracker == "reset")
       {
-        _controller.calibrate_client();
+        control->calibrate_tracker();
       }
       else if (tracker != "")
       {
@@ -488,261 +478,3 @@ ssr::CommandParser::parse_cmd(std::string& cmd)
   }
 }
 
-#if 0
-ssr::CommandParser::parse_string2(std::string cmd)
-{
-  XMLParser xp;
-  XMLParser::doc_t doc1 = xp.load_string(data);
-  if (!doc1)
-  {
-    std::cerr << "client_parser_thread: Unable to load string!" << std::endl;
-    return;
-  }
-  XMLParser::xpath_t result1 = doc1->eval_xpath("/update");
-
-  if (!result1)
-  {
-    std::cerr << "XPath: no result!" << std::endl;
-    continue ;
-  }
-  XMLParser::Node node1 = result1->node(); // get first (and only?) node.
-
-  // all loudspeaker information is written to this temporary container and
-  // transmitted in the end of the function
-  Loudspeaker::container_t loudspeakers;
-
-  for (XMLParser::Node i = node1.child(); !!i; ++i)
-  {
-    if (i == "source")
-    {
-      id_t id;
-      if (!S2A (i.get_attribute("id"),id))
-      {
-        ERROR("No source ID given!");
-        return;
-      }
-      _scene.new_source(id);
-
-      for (XMLParser::Node inner_loop = i.child(); !!inner_loop; ++inner_loop)
-      {
-        if (inner_loop == "position")
-        {
-          float x, y;
-          if (S2A(inner_loop.get_attribute("x"), x)
-              && S2A(inner_loop.get_attribute("y"), y))
-          {
-            _scene.set_source_position(id, Position(x,y));
-            VERBOSE2("set source position");
-          }
-          else
-          {
-            std::cerr << "Invalid position!" << std::endl;
-          }
-        }
-        else if (inner_loop == "orientation")
-        {
-          float azimuth;
-          if (S2A(inner_loop.get_attribute("azimuth"), azimuth))
-          {
-            _scene.set_source_orientation(id,Orientation(azimuth));
-            VERBOSE2("set source orientation");
-          }
-          else
-          {
-            std::cerr << "Invalid source orientation!" << std::endl;
-          }
-        }
-      }//eof for
-
-      float volume;
-      if (S2A(i.get_attribute("volume"),volume))
-      {
-        // volume is given in dB in the network messages
-        _scene.set_source_gain(id, apf::math::dB2linear(volume));
-        VERBOSE2("set source volume");
-      }
-
-      bool muted;
-      if (S2A(i.get_attribute("mute"), muted))
-      {
-        _scene.set_source_mute(id, muted);
-        VERBOSE2("set source mute mode");
-      }
-
-      std::string name = i.get_attribute("name");
-      if (name.empty() == false)
-      {
-        _scene.set_source_name(id,name);
-        VERBOSE2("set source name");
-      }
-
-      std::string properties_file = i.get_attribute("brirs");
-      if (properties_file.empty() == false)
-      {
-        _scene.set_source_properties_file(id,properties_file);
-        VERBOSE2("set source BRIR file name");
-      }
-
-      Source::model_t model;
-      if (S2A(i.get_attribute("model"),model))
-      {
-
-        _scene.set_source_model(id,model);
-        VERBOSE2("set source model");
-      }
-
-      std::string port_name = i.get_attribute("port_name");
-      if (!port_name.empty())
-      {
-        _scene.set_source_port_name(id,port_name);
-        VERBOSE2("Set source port name");
-      }
-
-      float level;
-      if (S2A(i.get_attribute("level"),level))
-      {
-        _scene.set_source_signal_level(id,level);
-      }
-
-    }//eof if (source)
-    else if (i == "reference")
-    {
-      for (XMLParser::Node inner_loop = i.child(); !!inner_loop; ++inner_loop)
-      {
-        if (inner_loop == "position")
-        {
-          float x, y;
-          if (S2A(inner_loop.get_attribute("x"), x)
-              && S2A(inner_loop.get_attribute("y"), y))
-          {
-            _scene.set_reference_position(Position(x,y));
-            VERBOSE2("Set Reference Position");
-          }
-          else
-          {
-            std::cerr << "Invalid reference position!" << std::endl;
-          }
-        }
-        else if (inner_loop == "orientation")
-        {
-          float azimuth;
-          if (S2A(inner_loop.get_attribute("azimuth"), azimuth))
-          {
-            _scene.set_reference_orientation(Orientation(azimuth));
-            VERBOSE2("Set Reference Orientation");
-          }
-          else
-            std::cerr << "Invalid reference orientation!" << std::endl;
-        }
-      }// for
-    }// if (reference)
-    else if (i == "loudspeaker")
-    {
-      Loudspeaker loudspeaker;
-      for (XMLParser::Node inner_loop = i.child(); !!inner_loop; ++inner_loop)
-      {
-        if (inner_loop == "position")
-        {
-          float x, y;
-          if (S2A(inner_loop.get_attribute("x"), x)
-              && S2A(inner_loop.get_attribute("y"), y))
-            loudspeaker.position = Position(x,y);
-          else
-            std::cerr << "Invalid loudspeaker position!" << std::endl;
-        }
-        else if (inner_loop == "orientation")
-        {
-          float azimuth;
-          if (S2A(inner_loop.get_attribute("azimuth"), azimuth))
-            loudspeaker.orientation = Orientation(azimuth);
-          else
-            std::cerr << "Invalid loudspeaker orientation!" << std::endl;
-        }
-      }//for
-      Loudspeaker::model_t model;
-      if (S2A(i.get_attribute("model"), model))
-      {
-        loudspeaker.model = model;
-      }
-      bool mute = false;
-      if (S2A(i.get_attribute("mute"), mute))
-        loudspeaker.mute = mute;
-      loudspeakers.push_back(loudspeaker);
-    }
-    else if (i == "volume")
-    {
-      float volume;
-      if (S2A(get_content(i),volume))
-      {
-        // volume is given in dB in the network messages
-        _scene.set_master_volume(apf::math::dB2linear(volume));
-        VERBOSE2("Set Master Volume");
-      }
-      else
-        std::cerr << "Invalid Volume Setting!" << std::endl;
-    } //if (volume)
-    else if (i == "active")
-    {
-      Loudspeaker::container_t::size_type loudspeaker_id;
-      if (S2A(i.get_attribute("loudspeaker"),loudspeaker_id))
-      {
-        std::set<id_t> active_source_ids;
-        id_t temp_id;
-        std::istringstream iss (get_content(i));
-        while (iss >> temp_id)
-        {
-          active_source_ids.insert(temp_id);
-        }
-        if (!active_source_ids.empty())
-          _scene.set_active_sources(loudspeaker_id, active_source_ids);
-      }
-    }
-    else if (i == "delete")
-    {
-      for (XMLParser::Node inner_loop = i.child(); !!inner_loop; ++inner_loop)
-      {
-        if (inner_loop == "source")
-        {
-          id_t id;
-          if (S2A(inner_loop.get_attribute("id"),id))
-          {
-            if (id == 0)
-            {
-              _scene.delete_all_sources();
-              VERBOSE2("delete all sources");
-            }
-            else {
-              _scene.delete_source(id);
-              VERBOSE2("delete source with id " << A2S(id));
-            }
-          }
-          else
-            std::cerr << "Cannot read source ID!" << std::endl;
-        }
-        else {}
-      }
-    }//eof if (delete)
-    else if (i == "cpu")
-    {
-      float load;
-      if (S2A(i.get_attribute("load"),load))
-        _scene.set_cpu_load(load);
-    } //cpu
-    else if (i == "master")
-    {
-      float level;
-      if (S2A(i.get_attribute("level"),level))
-        _scene.set_master_signal_level(level);
-    }
-  }
-  // if there were any loudspeakers given, save them
-  if (!loudspeakers.empty())
-  {
-    _scene.set_loudspeakers(loudspeakers);
-  }
-}
-
-#endif
-
-// Settings for Vim (http://www.vim.org/), please do not remove:
-// vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent

@@ -35,7 +35,6 @@
 #include <QtWidgets/QApplication>
 
 #include "quserinterface.h"
-#include "publisher.h"
 #include "scene.h"
 
 #ifdef _WIN32
@@ -55,7 +54,7 @@ class QGUI : public QObject
   Q_OBJECT
 
   public:
-    QGUI(Publisher& controller, const Scene& scene, int &argc
+    QGUI(api::Publisher& controller, const LegacyScene& scene, int &argc
         , char *argv[], const std::string& path_to_gui_images
         , const std::string& path_to_scene_menu);
 
@@ -72,6 +71,3 @@ class QGUI : public QObject
 }  // namespace ssr
 
 #endif
-
-// Settings for Vim (http://www.vim.org/), please do not remove:
-// vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent

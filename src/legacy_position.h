@@ -25,19 +25,20 @@
  ******************************************************************************/
 
 /// @file
-/// %Position class and helper functions (definition).
+/// Legacy 2D %Position class and helper functions (definition).
 
-#ifndef SSR_POSITION_H
-#define SSR_POSITION_H
+#ifndef SSR_LEGACY_POSITION_H
+#define SSR_LEGACY_POSITION_H
 
-#include "orientation.h"
+#include "api.h"  // for Pos
+#include "legacy_orientation.h"
 
 /** Geometric representation of a position.
  * Stores the position of a point in space and provides some helper functions.
  * If you want to speak in design patterns, you could call this a "Messenger"
  * patter. It's the most trivial of all patterns. So maybe it's not even worth
  * mentioning. But I did it anyway ...
- * @warning For now, it only uses 2 dimensions (x,y) but a z coordinate can be 
+ * @warning For now, it only uses 2 dimensions (x,y) but a z coordinate can be
  * added later, if needed.
  **/
 struct Position
@@ -47,6 +48,11 @@ struct Position
    * @param y y coordinate (in meters)
    **/
   explicit Position(const float x = 0, const float y = 0);
+
+  /// Conversion from 3D position.
+  Position(const ssr::Pos& three_d_pos);
+
+  operator ssr::Pos();
 
   float x; ///< x coordinate (in meters)
   float y; ///< y coordinate (in meters)
@@ -96,6 +102,3 @@ float angle(const Position& point, const Orientation& orientation);
 // TODO: declare angle() also as friend of Position?
 
 #endif
-
-// Settings for Vim (http://www.vim.org/), please do not remove:
-// vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent

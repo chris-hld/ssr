@@ -40,7 +40,7 @@
 #include <QtWidgets/QRadioButton>
 
 #include "qclicktextlabel.h"
-#include "source.h"
+#include "legacy_source.h"
 
 /// QSourceProperties
 class QSourceProperties : public QFrame
@@ -51,7 +51,7 @@ class QSourceProperties : public QFrame
     QSourceProperties(QWidget* parent = 0);
     ~QSourceProperties();
 
-    void update_displays(const Source& source, 
+    void update_displays(const LegacySource& source,
 			 const DirectionalPoint& reference);
 
   private:
@@ -78,7 +78,7 @@ class QSourceProperties : public QFrame
     QClickTextLabel* _close_button;
 
     QLabel* _create_text_label(const QString& text = QString());
-   
+
     bool _create_new_source;
 
     virtual void mousePressEvent(QMouseEvent *event);
@@ -106,6 +106,3 @@ class QSourceProperties : public QFrame
 };
 
 #endif
-
-// Settings for Vim (http://www.vim.org/), please do not remove:
-// vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent

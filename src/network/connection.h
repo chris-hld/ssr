@@ -39,7 +39,9 @@
 #include <chrono>
 #include <thread>
 #include <memory>
-
+#if !defined(ASIO_STANDALONE)
+#define ASIO_STANDALONE
+#endif
 #include <asio.hpp>
 
 #include "networksubscriber.h"
@@ -48,7 +50,7 @@
 namespace ssr
 {
 
-struct Publisher;
+namespace api { struct Publisher; }
 
 /// Connection class.
 class Connection : public std::enable_shared_from_this<Connection>
@@ -59,18 +61,18 @@ class Connection : public std::enable_shared_from_this<Connection>
     typedef asio::ip::tcp::socket socket_t;
 
     static pointer create(asio::io_service &io_service
-        , Publisher &controller, char end_of_message_character);
+        , api::Publisher &controller, char end_of_message_character);
 
     void start();
-    void write(std::string &writestring);
+    void write(const std::string& writestring);
 
     /// @return Reference to socket
     socket_t& socket() { return _socket; }
 
-    ~Connection();
+    unsigned int get_source_number(id_t source_id) const;
 
   private:
-    Connection(asio::io_service &io_service, Publisher &controller
+    Connection(asio::io_service &io_service, api::Publisher &controller
         , char end_of_message_character);
 
     void start_read();
@@ -88,20 +90,17 @@ class Connection : public std::enable_shared_from_this<Connection>
     asio::steady_timer _timer;
 
     /// Reference to Controller
-    Publisher &_controller;
+    api::Publisher &_controller;
     /// Subscriber obj
     NetworkSubscriber _subscriber;
     /// Commandparser obj
     CommandParser _commandparser;
 
-    bool _is_subscribed;
-
     char _end_of_message_character;
+
+    std::vector<std::unique_ptr<api::Subscription>> _subs;
 };
 
 }  // namespace ssr
 
 #endif
-
-// Settings for Vim (http://www.vim.org/), please do not remove:
-// vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent

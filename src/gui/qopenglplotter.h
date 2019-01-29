@@ -50,9 +50,8 @@
 #include <map>
 #include <set>
 
-#include "publisher.h"
-#include "scene.h"
 #include "qsourceproperties.h"
+#include "legacy_loudspeaker.h"  // for LegacyLoudspeaker
 
 #define STDZOOMFACTOR 280.0f
 #define STDWINDOWYOFFSET -1.0f
@@ -74,16 +73,19 @@
  * reference handle for translation: 2
  * reference handle for rotation:    3
  * SSR logo:                         4
- * 
+ *
  * source:                          NAMESTACKOFFSET + index_of_source      * NAMESTACKSTEP + 1
- * source volume slider:            NAMESTACKOFFSET + index_of_source      * NAMESTACKSTEP + 2 
+ * source volume slider:            NAMESTACKOFFSET + index_of_source      * NAMESTACKSTEP + 2
  * source direction handle:         NAMESTACKOFFSET + index_of_source      * NAMESTACKSTEP + 3
  * loudspeaker:                     NAMESTACKOFFSET + index_of_loudspeaker * NAMESTACKSTEP + 4
- * 
+ *
  */
 
 namespace ssr
 {
+
+namespace api { struct Publisher; }
+class LegacyScene;
 
 /// open GL plotter
 class QOpenGLPlotter : public QGLWidget
@@ -93,7 +95,6 @@ class QOpenGLPlotter : public QGLWidget
     // TODO: Discriminate between GLfloat and float etc.
 
   protected:
-    struct SourceCopy;      // nested class, defined later
 
 ////////////////////////////////////////////////////////////////////////////////
 // Declaration of the nested class SourceCopy
@@ -101,18 +102,18 @@ class QOpenGLPlotter : public QGLWidget
 
     /** Temporary buffer for source information.
      * This class is used to extract certain information for each source from
-     * the Scene. There is no use in copying data which are not used afterwards.
+     * the scene. There is no use in copying data which are not used afterwards.
      **/
     struct SourceCopy : DirectionalPoint
     {
       /// SourceCopies want to be stored in such a list
       typedef std::list<SourceCopy> list_t;
       /// type conversion constructor
-      SourceCopy(const Scene::source_map_t::value_type& other);
+      SourceCopy(const std::pair<unsigned int, LegacySource>& other);
 
-      ssr::id_t id;       ///< identifier
-      Source::model_t model; ///< source model
-      bool mute;           ///< mute state 
+      unsigned int id;       ///< identifier
+      LegacySource::model_t model; ///< source model
+      bool mute;           ///< mute state
       float gain;            ///< source gain
       float signal_level;   ///< level of audio stream (linear, between 0 and 1)
       std::vector<float> output_levels;
@@ -121,7 +122,7 @@ class QOpenGLPlotter : public QGLWidget
     };
 
   public:
-    QOpenGLPlotter(Publisher& controller, const Scene& scene
+    QOpenGLPlotter(api::Publisher& controller, const LegacyScene& scene
         , const std::string& path_to_gui_images
         , QWidget *parent = 0);
     virtual ~QOpenGLPlotter();
@@ -134,19 +135,19 @@ class QOpenGLPlotter : public QGLWidget
     void set_device_pixel_ratio();
 
   protected:
-    Publisher& _controller;
-    const Scene& _scene;
+    api::Publisher& _controller;
+    const LegacyScene& _scene;
     int _active_source;
     const std::string _path_to_gui_images;
 
-    ssr::id_t _id_of_last_clicked_source;
+    unsigned int _id_of_last_clicked_source;
 
-    typedef std::map<int, ssr::id_t> selected_sources_map_t;
+    typedef std::map<int, unsigned int> selected_sources_map_t;
     selected_sources_map_t _selected_sources_map;
 
     float _zoom_factor;
 
-    std::set<ssr::id_t> _soloed_sources;
+    std::set<unsigned int> _soloed_sources;
 
     //  void  mousePressEvent(QMouseEvent *event);
     QMouseEvent _previous_mouse_event;
@@ -154,13 +155,13 @@ class QOpenGLPlotter : public QGLWidget
     bool   _alt_pressed;
 
     int    _find_selected_object(const QPoint &pos);
-    void   _get_openGL_pos(int x, int y, 
+    void   _get_openGL_pos(int x, int y,
 			   GLdouble* posX,
 			   GLdouble* posY,
 			   GLdouble* posZ);
-    void   _get_pixel_pos(GLdouble pos_x, 
-			  GLdouble pos_y, 
-			  GLdouble pos_z, 
+    void   _get_pixel_pos(GLdouble pos_x,
+			  GLdouble pos_y,
+			  GLdouble pos_z,
 			  int* x, int* y);
 
     Position _rubber_band_starting_point;
@@ -190,12 +191,12 @@ class QOpenGLPlotter : public QGLWidget
     GLuint _listener_shadow_texture;
     GLuint _listener_background_texture;
 
-    Loudspeaker::container_t _loudspeakers;
+    LegacyLoudspeaker::container_t _loudspeakers;
 
     color_vector_t _color_vector;
 
     bool _allow_displaying_text;
-    /// Quadric necessary to plot spheres and disks 
+    /// Quadric necessary to plot spheres and disks
     GLUquadricObj *_glu_quadric;
 
     bool _plot_listener;
@@ -208,7 +209,7 @@ class QOpenGLPlotter : public QGLWidget
     // drawing functions
     void _draw_background();
     void _draw_objects();
-    void _draw_source(source_buffer_list_t::const_iterator& source, 
+    void _draw_source(source_buffer_list_t::const_iterator& source,
 		      unsigned int index);
     void _draw_loudspeaker(bool muted = false, bool active = false);
     void _draw_rubber_band();
@@ -226,6 +227,3 @@ class QOpenGLPlotter : public QGLWidget
 }  // namespace ssr
 
 #endif
-
-// Settings for Vim (http://www.vim.org/), please do not remove:
-// vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent

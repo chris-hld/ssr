@@ -25,40 +25,32 @@
  ******************************************************************************/
 
 /// @file
-/// Connection class (implementation). 
+/// Connection class (implementation).
 
 #include <functional>
 #include <memory>
 #include "connection.h"
-#include "publisher.h"
+
 
 /// ctor
 ssr::Connection::Connection(asio::io_service &io_service
-    , Publisher &controller, char end_of_message_character)
+    , api::Publisher &controller, char end_of_message_character)
   : _socket(io_service)
   , _timer(io_service)
   , _controller(controller)
   , _subscriber(*this)
   , _commandparser(controller)
-  , _is_subscribed(false)
   , _end_of_message_character(end_of_message_character)
 {}
 
-/// dtor
-ssr::Connection::~Connection()
-{
-  if (_is_subscribed) _controller.unsubscribe(&_subscriber);
-  _is_subscribed = false;
-}
-
 /** Get an instance of Connection.
- * @param io_service 
+ * @param io_service
  * @param controller used to (un)subscribe and get the actual Scene
  * @return ptr to Connection
  **/
 ssr::Connection::pointer
 ssr::Connection::create(asio::io_service &io_service
-    , Publisher& controller, char end_of_message_character)
+    , api::Publisher& controller, char end_of_message_character)
 {
   VERBOSE2("New network connection ...");
   return pointer(new Connection(io_service, controller
@@ -74,20 +66,14 @@ ssr::Connection::create(asio::io_service &io_service
 void
 ssr::Connection::start()
 {
-  // ok... this Connection object is activated.
-  // now we can connect the NetworkSubscriber.
+  _subs.push_back(_controller.subscribe_scene_control(&_subscriber));
+  _subs.push_back(_controller.subscribe_renderer_control(&_subscriber));
+  _subs.push_back(_controller.subscribe_source_metering(&_subscriber));
+  _subs.push_back(_controller.subscribe_output_activity(&_subscriber));
 
-  _controller.subscribe(&_subscriber);
-  _is_subscribed = true;
-  // this stuff should perhaps get refactored.
-  // need to think about this. not sure if i like this mixed into
-  // the Connection code. 
-  std::string whole_scene = _controller.get_scene_as_XML();
-  this->write(whole_scene);
-  // And we can also start_read ing.
   start_read();
 
-  // intialize the timer
+  // initialize the timer
   _timer.expires_from_now(std::chrono::milliseconds(100));
   _timer.async_wait(std::bind(&Connection::timeout_handler, shared_from_this()
         , std::placeholders::_1));
@@ -104,15 +90,13 @@ ssr::Connection::timeout_handler(const asio::error_code &e)
 {
   if (e) return;
 
-  _subscriber.send_levels();
-
   // Set timer again.
   _timer.expires_from_now(std::chrono::milliseconds(100));
   _timer.async_wait(std::bind(&Connection::timeout_handler, shared_from_this()
         , std::placeholders::_1));
 }
 
-/// Start reading from socket. 
+/// Start reading from socket.
 void
 ssr::Connection::start_read()
 {
@@ -147,17 +131,17 @@ ssr::Connection::read_handler(const asio::error_code &error
 }
 
 /** Write to socket.
- * @param writestring: String to be send over the network. 
+ * @param writestring: String to be send over the network.
  **/
 void
-ssr::Connection::write(std::string &writestring)
+ssr::Connection::write(const std::string& writestring)
 {
   // Create a Copy of this string.
   // Put into shared_ptr bound to the callback
   // handler. This is sufficient to make it
   // be destroyed on exit.
 
-  std::shared_ptr<std::string> str_ptr(new std::string(writestring 
+  std::shared_ptr<std::string> str_ptr(new std::string(writestring
       + _end_of_message_character));
 
   asio::async_write(_socket, asio::buffer(*str_ptr)
@@ -166,11 +150,11 @@ ssr::Connection::write(std::string &writestring)
         , std::placeholders::_2));
 }
 
-/** Empty callback handler.  
+/** Empty callback handler.
  *
- * @param str_ptr String passed to Connection::write 
+ * @param str_ptr String passed to Connection::write
  * @param error error code
- * @param bytes_transferred self explanatory 
+ * @param bytes_transferred self explanatory
  *
  * @todo Check if we can delete this function.
  **/
@@ -186,5 +170,8 @@ ssr::Connection::write_handler(std::shared_ptr<std::string> str_ptr
   // destroy it now.
 }
 
-// Settings for Vim (http://www.vim.org/), please do not remove:
-// vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent
+unsigned int
+ssr::Connection::get_source_number(id_t source_id) const
+{
+  return _controller.get_source_number(source_id);
+}

@@ -52,19 +52,20 @@
 #include <winsock2.h>
 #endif  // !_WIN32
 
+#include "api.h"  // for Publisher
+#include "legacy_orientation.h"  // for Orientation
 #include "trackerpolhemus.h"
-#include "publisher.h"
 #include "ssr_global.h"
 #include "apf/stringtools.h"
 
 using apf::str::A2S;
 
-ssr::TrackerPolhemus::TrackerPolhemus(Publisher& controller
+ssr::TrackerPolhemus::TrackerPolhemus(api::Publisher& controller
     , const std::string& type, const std::string& ports)
   : Tracker()
   , _controller(controller)
   , _stopped(false)
-  , _az_corr(90.0f)
+  , _az_corr(0.0f)
   , _thread_id(0)
 {
   if (ports == "")
@@ -173,8 +174,8 @@ ssr::TrackerPolhemus::~TrackerPolhemus()
 }
 
 ssr::TrackerPolhemus::ptr_t
-ssr::TrackerPolhemus::create(Publisher& controller, const std::string& type
-    , const std::string& ports)
+ssr::TrackerPolhemus::create(api::Publisher& controller
+    , const std::string& type, const std::string& ports)
 {
   ptr_t temp; // temp = NULL
   try
@@ -213,7 +214,7 @@ ssr::TrackerPolhemus::_open_serial_port(const char *portname)
 void
 ssr::TrackerPolhemus::calibrate()
 {
-  _az_corr = _current_data.azimuth + 90.0f;
+  _az_corr = _current_data.azimuth;
 }
 
 void
@@ -312,7 +313,7 @@ ssr::TrackerPolhemus::thread(void *arg)
 //
 // The data coming from the Polhemus Patriot is similar, except that only two
 // sockets are available and each of the 6 degrees of freedom are represented by
-// 9 bytes, leading to a total of 60 ASCII bytes.  
+// 9 bytes, leading to a total of 60 ASCII bytes.
 
     // extract data
     lineparse >> _current_data.header
@@ -323,11 +324,8 @@ ssr::TrackerPolhemus::thread(void *arg)
               >> _current_data.elevation
               >> _current_data.roll;
 
-    _controller.set_reference_orientation(
+    _controller.take_control()->reference_offset_rotation(
         Orientation(-_current_data.azimuth + _az_corr));
   };
   return arg;
 }
-
-// Settings for Vim (http://www.vim.org/), please do not remove:
-// vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent

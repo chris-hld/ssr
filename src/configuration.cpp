@@ -136,9 +136,11 @@ ssr::conf_struct ssr::configuration(int& argc, char* argv[])
 
   conf_struct conf;
 
+  conf.exec_name = argv[0];
+
 #ifndef NDEBUG
   // Because of this warning, "make check" fails for debug builds (on purpose).
-  WARNING(argv[0] << " was compiled for debugging!");
+  WARNING(conf.exec_name << " was compiled for debugging!");
 #endif
 
   // hard coded default values:
@@ -153,6 +155,8 @@ ssr::conf_struct ssr::configuration(int& argc, char* argv[])
   conf.ip_server = false;
 #endif
   conf.server_port = 4711;
+
+  conf.follow = false;
 
   conf.freewheeling = false;
   conf.scene_file_name = "";
@@ -211,7 +215,7 @@ ssr::conf_struct ssr::configuration(int& argc, char* argv[])
 #endif
 
   const std::string usage_string =
-"Usage: " + std::string(argv[0]) + " [OPTIONS] <scene-file>\n";
+"Usage: " + std::string(conf.exec_name) + " [OPTIONS] <scene-file>\n";
 
   const std::string help_string =
 "\nThe SoundScape Renderer (SSR) is a tool for real-time "
@@ -253,11 +257,12 @@ ssr::conf_struct ssr::configuration(int& argc, char* argv[])
 "      --master-volume-correction=VALUE\n"
 "                      Correction of the master volume in dB "
                                                          "(default: 0 dB)\n"
-"      --auto-rotation Auto-rotate sound sources' orientation toward "
-                                                               "the reference\n"
+"      --auto-rotation Auto-rotate sound sources' orientation toward the\n"
+"                      reference\n"
 "      --no-auto-rotation\n"
-"                      Don't auto-rotate sound sources' orientation toward "
-                                                               "the reference\n"
+"                      Don't auto-rotate sound sources' orientation "
+                                                                  "toward the\n"
+"                      reference\n"
 
 #ifdef ENABLE_IP_INTERFACE
 "  -i, --ip-server[=PORT]\n"
@@ -271,7 +276,9 @@ ssr::conf_struct ssr::configuration(int& argc, char* argv[])
 "  -i, --ip-server     Start IP server (not enabled at compile time!)\n"
 "  -I, --no-ip-server  Don't start IP server (default)\n"
 #endif
-#ifdef ENABLE_GUI      
+"      --follow        Wait for another SSR instance to connect\n"
+"      --no-follow     Don't follow another SSR instance (default)\n"
+#ifdef ENABLE_GUI
 "  -g, --gui           Start GUI (default)\n"
 "  -G, --no-gui        Don't start GUI\n"
 #else
@@ -344,6 +351,8 @@ ssr::conf_struct ssr::configuration(int& argc, char* argv[])
     {"ip-server",    optional_argument, nullptr, 'i'},
     {"no-ip-server", no_argument,       nullptr, 'I'},
     {"end-of-message-character", required_argument, nullptr, 0},
+    {"follow",       no_argument,       nullptr,  0 },
+    {"no-follow",    no_argument,       nullptr,  0 },
     {"gui",          no_argument,       nullptr, 'g'},
     {"no-gui",       no_argument,       nullptr, 'G'},
     {"tracker",      required_argument, nullptr, 't'},
@@ -429,6 +438,14 @@ ssr::conf_struct ssr::configuration(int& argc, char* argv[])
           {
             ERROR("Invalid end-of-message character specified!");
           }
+        }
+        else if (strcmp("follow", longopts[longindex].name) == 0)
+        {
+          conf.follow = true;
+        }
+        else if (strcmp("no-follow", longopts[longindex].name) == 0)
+        {
+          conf.follow = false;
         }
         else if (strcmp("tracker-port", longopts[longindex].name) == 0)
         {
@@ -531,7 +548,7 @@ ssr::conf_struct ssr::configuration(int& argc, char* argv[])
         // here we deal with unknown/invalid options
         // getopt() already prints an error message for unknown options
         std::cout << usage_string;
-        std::cout << "Type '" << argv[0] << " --help' "
+        std::cout << "Type '" << conf.exec_name << " --help' "
           "for more information.\n\n";
         exit(EXIT_FAILURE);
         break;
@@ -823,12 +840,23 @@ int ssr::load_config_file(const char *filename, conf_struct& conf){
     }
     else if (!strcmp(key, "END_OF_MESSAGE_CHARACTER"))
     {
-      #ifdef ENABLE_IP_INTERFACE     
+      #ifdef ENABLE_IP_INTERFACE
       if (!S2A(value, conf.end_of_message_character))
       {
         ERROR("Invalid end-of-message character specified!");
       }
       #endif
+    }
+    else if (!strcmp(key, "FOLLOW"))
+    {
+      if (!strcasecmp(value, "yes"))
+      {
+        conf.follow = true;
+      }
+      else
+      {
+        conf.follow = false;
+      }
     }
     else if (!strcmp(key, "VERBOSE"))
     {
@@ -855,6 +883,3 @@ int ssr::load_config_file(const char *filename, conf_struct& conf){
   }//while
   return EXIT_SUCCESS;
 }
-
-// Settings for Vim (http://www.vim.org/), please do not remove:
-// vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent

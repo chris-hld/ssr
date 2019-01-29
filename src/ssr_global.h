@@ -36,9 +36,6 @@
 namespace ssr
 {
 
-/// Used as unique identifier for sources, loudspeakers, ...
-using id_t = unsigned int;
-
 /** Verbosity level.
  * @arg 0 - Only errors and warnings are shown.
  * @arg 1 - A few more messages are shown.
@@ -93,6 +90,3 @@ extern unsigned int usleeptime;
   std::cerr << "Error: " << msg << " " __POS__ << std::endl
 
 #endif
-
-// Settings for Vim (http://www.vim.org/), please do not remove:
-// vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent

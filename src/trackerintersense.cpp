@@ -36,11 +36,12 @@
 #include <fstream>
 
 #include "trackerintersense.h"
-#include "publisher.h"
+#include "api.h"  // for Publisher
+#include "legacy_orientation.h"  // for Orientation
 #include "ssr_global.h"
 #include "posixpathtools.h"
 
-ssr::TrackerInterSense::TrackerInterSense(Publisher& controller
+ssr::TrackerInterSense::TrackerInterSense(api::Publisher& controller
     , const std::string& ports, const unsigned int read_interval)
   : Tracker()
   , _controller(controller)
@@ -106,8 +107,8 @@ ssr::TrackerInterSense::TrackerInterSense(Publisher& controller
   }
 
   // restore stdout and stderr
-  //dup2(stdout_handle, stdout_fileno);  
-  //dup2(stderr_handle, stderr_fileno); 
+  //dup2(stdout_handle, stdout_fileno);
+  //dup2(stderr_handle, stderr_fileno);
 
   // no tracker found
   if (_tracker_h <= 0)
@@ -137,8 +138,8 @@ ssr::TrackerInterSense::~TrackerInterSense()
 }
 
 ssr::TrackerInterSense::ptr_t
-ssr::TrackerInterSense::create(Publisher& controller, const std::string& ports
-    , const unsigned int read_interval)
+ssr::TrackerInterSense::create(api::Publisher& controller
+    , const std::string& ports, const unsigned int read_interval)
 {
   ptr_t temp; // temp = NULL
   try
@@ -190,12 +191,12 @@ void* ssr::TrackerInterSense::thread(void *arg)
   {
 #ifdef HAVE_INTERSENSE_404
     ISD_GetTrackingData(_tracker_h, &tracker_data);
-    _controller.set_reference_orientation(
+    _controller.take_control()->reference_offset_rotation(
         Orientation(-tracker_data.Station[0].Euler[0]
            + 90.0f));
 #else
     ISD_GetData(_tracker_h, &tracker_data);
-    _controller.set_reference_orientation(
+    _controller.take_control()->reference_offset_rotation(
         Orientation(-static_cast<float>(tracker_data.Station[0].Orientation[0])
            + 90.0f));
 #endif
@@ -206,6 +207,3 @@ void* ssr::TrackerInterSense::thread(void *arg)
 
   return arg;
 }
-
-// Settings for Vim (http://www.vim.org/), please do not remove:
-// vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent

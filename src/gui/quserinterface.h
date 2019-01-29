@@ -60,7 +60,7 @@ class QUserInterface : public QOpenGLPlotter
   Q_OBJECT
 
   public:
-    QUserInterface(Publisher& controller, const Scene& scene
+    QUserInterface(api::Publisher& controller, const LegacyScene& scene
         , const std::string& path_to_gui_images
         , const std::string& path_to_scene_menu
         , unsigned int update_frequency = 30u, QWidget *parent = 0);
@@ -137,13 +137,10 @@ class QUserInterface : public QOpenGLPlotter
     void _solo_selected_sources();
     void _unsolo_selected_sources();
     void _unsolo_all_sources();
-  
+
     QWidget *_controlsParent;  ///< parent widget of buttons and labels
 };
 
 }  // namespace ssr
 
 #endif
-
-// Settings for Vim (http://www.vim.org/), please do not remove:
-// vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent

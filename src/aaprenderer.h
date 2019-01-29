@@ -183,7 +183,7 @@ AapRenderer::load_reproduction_setup()
 
   for (const auto& out: rtlist_proxy<Output>(this->get_output_list()))
   {
-    if (out.model == Loudspeaker::subwoofer)
+    if (out.model == LegacyLoudspeaker::subwoofer)
     {
       // TODO: something
     }
@@ -221,7 +221,7 @@ AapRenderer::RenderFunction::select(SourceChannel& in)
 
   auto weighting_factor = sample_type();
 
-  if (_out.model == Loudspeaker::normal)
+  if (_out.model == LegacyLoudspeaker::normal)
   {
     // WARNING: The reference offset is currently broken!
 
@@ -286,6 +286,3 @@ AapRenderer::RenderFunction::select(SourceChannel& in)
 }  // namespace ssr
 
 #endif
-
-// Settings for Vim (http://www.vim.org/), please do not remove:
-// vim:softtabstop=2:shiftwidth=2:expandtab:textwidth=80:cindent
