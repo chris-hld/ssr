@@ -28,6 +28,4 @@ then
                          ${PKG_PREFIX}-qtbase
 fi
 
-PATH=$PATH:/usr/lib/mxe/usr/bin
-
 exit 0

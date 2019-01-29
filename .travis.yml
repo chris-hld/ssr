@@ -43,8 +43,9 @@ before_script:
   - autoreconf -vfi
 
 script:
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ] && [ "${TARGET}" = "windows64" ]]; then ci/mxe-build.sh'; fi  
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ./configure; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ./configure --prefix='/usr'; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ] && ![ "${TARGET}" = "windows64" ]]; then ./configure --prefix='/usr'; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then make; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then make && sudo make install; fi
 
