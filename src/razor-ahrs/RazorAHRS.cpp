@@ -12,11 +12,25 @@
 *     https://github.com/ptrbrtz/razor-9dof-ahrs
 ******************************************************************************************/
 
-#include <thread>   // std::this_thread::sleep_for
 #include <chrono>   // std::chrono::milliseconds
-
-#include "RazorAHRS.h"
 #include <cassert>
+#ifdef _WIN32
+#include <bits/fcntl2.h>   // for open(), ...
+#include <unistd_extra.h>  // for write(), close(), ...
+
+// Since open(), close(), read(), write() functions already exist on Windows but with a
+// limited compatibility with Linux, we need to replace them with other versions...
+#define open open_linux
+#define close close_linux
+#define read read_linux
+#define write write_linux
+#else
+#include <unistd.h>  // for write(), close(), ...
+#include <fcntl.h>   // for open(), ...
+#include <unistd.h>  // for write(), close(), ...
+#endif // _WIN32
+#include "RazorAHRS.h"
+#include "ssr_global.h"
 
 RazorAHRS::RazorAHRS(const std::string &port, DataCallbackFunc data_func, ErrorCallbackFunc error_func,
     Mode mode, int connect_timeout_ms, speed_t speed)
@@ -25,7 +39,7 @@ RazorAHRS::RazorAHRS(const std::string &port, DataCallbackFunc data_func, ErrorC
     , _connect_timeout_ms(connect_timeout_ms)
     , data(data_func)
     , error(error_func)
-    , _thread_id(0)
+    , _thread_id()
     , _stop_thread(false)
 {
   // check data type sizes
@@ -86,13 +100,13 @@ RazorAHRS::RazorAHRS(const std::string &port, DataCallbackFunc data_func, ErrorC
   }
 
   // start input/output thread
-  _start_io_thread();
+  _start();
 }
 
 RazorAHRS::~RazorAHRS()
 {
   // if thread was started, stop thread
-  if (_thread_id) _stop_io_thread();
+  if (_thread_id == _tracker_thread.get_id()) _stop();
   close(_serial_port);
 }
 
@@ -270,6 +284,28 @@ bool
 RazorAHRS::_is_io_blocking()
 {
   return (fcntl(_serial_port, F_GETFL, 0) & O_NDELAY);
+}
+
+void
+RazorAHRS::_start()
+{
+  // create thread
+  _tracker_thread = std::thread(_thread_starter, this);
+  _thread_id = _tracker_thread.get_id();
+  VERBOSE("Starting tracker ...");
+}
+
+void
+RazorAHRS::_stop()
+{
+  _stop_thread = true;
+  _tracker_thread.join();
+}
+
+void*
+RazorAHRS::_thread_starter(void *arg)
+{
+  return reinterpret_cast<RazorAHRS*> (arg)->_thread(nullptr);
 }
 
 void*
