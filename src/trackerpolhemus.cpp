@@ -249,21 +249,14 @@ ssr::TrackerPolhemus::_thread(void *arg)
   fds.fd = _tracker_port;
   fds.events = POLLRDNORM;
 
-<<<<<<< HEAD
-  while (!_stopped)
-=======
   while (!_stop_thread)
->>>>>>> PR-unify-tracker
   {
     c = 0;
     line.clear();
 
     while (c != '\n')
     {
-<<<<<<< HEAD
       #ifndef _WIN32
-=======
->>>>>>> PR-unify-tracker
       error = poll(&fds, 1, 100);
       #else
       error = WSAPoll(&fds, 1, 100);

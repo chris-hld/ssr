@@ -230,6 +230,7 @@ endif(ENABLE_IP_INTERFACE)
 # Head tracker
 option(HEAD_TRACKER "Basic head tracker support" ON)
 if(HEAD_TRACKER)
+  # Razor and Polhemus Tracker
   list(APPEND SOURCE_FILES
     src/trackerrazor.cpp
     src/razor-ahrs/RazorAHRS.cpp
@@ -241,6 +242,17 @@ if(HEAD_TRACKER)
     add_definitions(-DENABLE_O_NDELAY_WORKAROUND)  # bits/fcntl2.h
   endif(WIN32)
   message(STATUS "Basic head tracker support")
+  # Intersense Tracker
+  if(EXISTS "${PROJECT_SOURCE_DIR}/extern/include/isense.h")
+    list(APPEND SOURCE_FILES
+      src/trackerintersense.cpp
+      extern/isense.c
+      )
+    set(ENABLE_INTERSENSE ON)
+    set(HAVE_INTERSENSE_404 ON)
+    message(STATUS "Include InterSense tracker >= 4.04")
+  endif()
+
 else(HEAD_TRACKER)
   message(WARNING "HEAD_TRACKER disabled.")
 endif(HEAD_TRACKER)

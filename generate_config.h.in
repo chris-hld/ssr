@@ -19,6 +19,12 @@
 /* Polhemus Fastrak/Patriot tracker support */
 #cmakedefine ENABLE_POLHEMUS 1
 
+/* InterSense tracker support */
+#cmakedefine ENABLE_INTERSENSE 1
+
+/* Using InterSense library version >= 4.04 */
+#cmakedefine HAVE_INTERSENSE_404
+
 /*?? support for isatty() ??*/
 #cmakedefine ENABLE_ISATTY 1
 
