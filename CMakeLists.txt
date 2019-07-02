@@ -191,6 +191,8 @@ if(GUI)
     find_package(Freetype REQUIRED)
     list(APPEND QT5PLATFORMSUPPORT_LIBS ${FREETYPE_LIBRARIES})
 
+    list(APPEND QT5PLATFORMSUPPORT_LIBS "-lwtsapi32")
+
     message(STATUS "Found Qt5PlatformSupport: " ${QT5PLATFORMSUPPORT_LIBS})
   endif(WIN32)
 
