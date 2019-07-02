@@ -1,3 +1,5 @@
+# Override setting.mk in the mxe folder with this file and then run make.
+
 # This is a template of configuration file for MXE. See
 # docs/index.html for more extensive documentations.
 
@@ -12,12 +14,12 @@ JOBS := 4
 #MXE_TMP := /tmp
 
 # This variable controls the targets that will build.
-#MXE_TARGETS := i686-w64-mingw32.static i686-w64-mingw32.shared x86_64-w64-mingw32.static x86_64-w64-mingw32.shared
-MXE_TARGETS := x86_64-w64-mingw32.static.posix
-# This variable controls which plugins are in use.
+#MXE_TARGETS := x86_64-w64-mingw32.static.posix
+MXE_TARGETS := x86_64-w64-mingw32.static
+## This variable controls which plugins are in use.
 # See plugins/README.md for further information.
 #override MXE_PLUGIN_DIRS += plugins/apps plugins/native
-override MXE_PLUGIN_DIRS += plugins/gcc8
+override MXE_PLUGIN_DIRS += plugins/gcc9
 
 # This variable controls the download mirror for SourceForge,
 # when it is used. Enabling the value below means auto.
@@ -28,6 +30,6 @@ override MXE_PLUGIN_DIRS += plugins/gcc8
 #LOCAL_PKG_LIST := boost curl file flac lzo pthreads vorbis wxwidgets
 #.DEFAULT_GOAL  := local-pkg-list
 #local-pkg-list: $(LOCAL_PKG_LIST)
-LOCAL_PKG_LIST := cc cmake pthreads fftw libsndfile libxml2 qtbase
+LOCAL_PKG_LIST := cc cmake fftw libsndfile libxml2 qtbase
 .DEFAULT_GOAL  := local-pkg-list
 local-pkg-list: $(LOCAL_PKG_LIST)
