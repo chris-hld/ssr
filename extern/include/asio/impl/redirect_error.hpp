@@ -1,15 +1,15 @@
+
+// impl/redirect_error.hpp
+// ~~~~~~~~~~~~~~~~~~~~~~~
 //
-// experimental/impl/redirect_error.hpp
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//
-// Copyright (c) 2003-2018 Christopher M. Kohlhoff (chris at kohlhoff dot com)
+// Copyright (c) 2003-2019 Christopher M. Kohlhoff (chris at kohlhoff dot com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef ASIO_EXPERIMENTAL_IMPL_REDIRECT_ERROR_HPP
-#define ASIO_EXPERIMENTAL_IMPL_REDIRECT_ERROR_HPP
+#ifndef ASIO_IMPL_REDIRECT_ERROR_HPP
+#define ASIO_IMPL_REDIRECT_ERROR_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
 # pragma once
@@ -24,13 +24,11 @@
 #include "asio/detail/handler_invoke_helpers.hpp"
 #include "asio/detail/type_traits.hpp"
 #include "asio/detail/variadic_templates.hpp"
-#include "asio/handler_type.hpp"
 #include "asio/system_error.hpp"
 
 #include "asio/detail/push_options.hpp"
 
 namespace asio {
-namespace experimental {
 namespace detail {
 
 // Class to adapt a redirect_error_t as a completion handler.
@@ -38,10 +36,20 @@ template <typename Handler>
 class redirect_error_handler
 {
 public:
+  typedef void result_type;
+
   template <typename CompletionToken>
   redirect_error_handler(redirect_error_t<CompletionToken> e)
     : ec_(e.ec_),
       handler_(ASIO_MOVE_CAST(CompletionToken)(e.token_))
+  {
+  }
+
+  template <typename RedirectedHandler>
+  redirect_error_handler(asio::error_code& ec,
+      ASIO_MOVE_ARG(RedirectedHandler) h)
+    : ec_(ec),
+      handler_(ASIO_MOVE_CAST(RedirectedHandler)(h))
   {
   }
 
@@ -211,60 +219,131 @@ struct redirect_error_signature<R(const asio::error_code&)>
 #endif // defined(ASIO_HAS_VARIADIC_TEMPLATES)
 
 } // namespace detail
-} // namespace experimental
 
 #if !defined(GENERATING_DOCUMENTATION)
 
 template <typename CompletionToken, typename Signature>
-struct async_result<experimental::redirect_error_t<CompletionToken>, Signature>
-  : async_result<CompletionToken,
-      typename experimental::detail::redirect_error_signature<Signature>::type>
+struct async_result<redirect_error_t<CompletionToken>, Signature>
 {
-  typedef experimental::detail::redirect_error_handler<
-    typename async_result<CompletionToken,
-      typename experimental::detail::redirect_error_signature<Signature>::type>
-        ::completion_handler_type> completion_handler_type;
+  typedef typename async_result<CompletionToken,
+    typename detail::redirect_error_signature<Signature>::type>
+      ::return_type return_type;
 
-  explicit async_result(completion_handler_type& h)
-    : async_result<CompletionToken,
-        typename experimental::detail::redirect_error_signature<
-          Signature>::type>(h.handler_)
+  template <typename Initiation>
+  struct init_wrapper
   {
-  }
-};
+    template <typename Init>
+    init_wrapper(asio::error_code& ec, ASIO_MOVE_ARG(Init) init)
+      : ec_(ec),
+        initiation_(ASIO_MOVE_CAST(Init)(init))
+    {
+    }
 
-#if !defined(ASIO_NO_DEPRECATED)
+#if defined(ASIO_HAS_VARIADIC_TEMPLATES)
 
-template <typename CompletionToken, typename Signature>
-struct handler_type<experimental::redirect_error_t<CompletionToken>, Signature>
-{
-  typedef experimental::detail::redirect_error_handler<
-    typename async_result<CompletionToken,
-      typename experimental::detail::redirect_error_signature<Signature>::type>
-        ::completion_handler_type> type;
-};
+    template <typename Handler, typename... Args>
+    void operator()(
+        ASIO_MOVE_ARG(Handler) handler,
+        ASIO_MOVE_ARG(Args)... args)
+    {
+      ASIO_MOVE_CAST(Initiation)(initiation_)(
+          detail::redirect_error_handler<
+            typename decay<Handler>::type>(
+              ec_, ASIO_MOVE_CAST(Handler)(handler)),
+          ASIO_MOVE_CAST(Args)(args)...);
+    }
 
-template <typename Handler>
-struct async_result<experimental::detail::redirect_error_handler<Handler> >
-  : async_result<Handler>
-{
-  explicit async_result(
-      experimental::detail::redirect_error_handler<Handler>& h)
-    : async_result<Handler>(h.handler_)
+#else // defined(ASIO_HAS_VARIADIC_TEMPLATES)
+
+    template <typename Handler>
+    void operator()(
+        ASIO_MOVE_ARG(Handler) handler)
+    {
+      ASIO_MOVE_CAST(Initiation)(initiation_)(
+          detail::redirect_error_handler<
+            typename decay<Handler>::type>(
+              ec_, ASIO_MOVE_CAST(Handler)(handler)));
+    }
+
+#define ASIO_PRIVATE_INIT_WRAPPER_DEF(n) \
+    template <typename Handler, ASIO_VARIADIC_TPARAMS(n)> \
+    void operator()( \
+        ASIO_MOVE_ARG(Handler) handler, \
+        ASIO_VARIADIC_MOVE_PARAMS(n)) \
+    { \
+      ASIO_MOVE_CAST(Initiation)(initiation_)( \
+          detail::redirect_error_handler< \
+            typename decay<Handler>::type>( \
+              ec_, ASIO_MOVE_CAST(Handler)(handler)), \
+          ASIO_VARIADIC_MOVE_ARGS(n)); \
+    } \
+    /**/
+    ASIO_VARIADIC_GENERATE(ASIO_PRIVATE_INIT_WRAPPER_DEF)
+#undef ASIO_PRIVATE_INIT_WRAPPER_DEF
+
+#endif // defined(ASIO_HAS_VARIADIC_TEMPLATES)
+
+    asio::error_code& ec_;
+    Initiation initiation_;
+  };
+
+#if defined(ASIO_HAS_VARIADIC_TEMPLATES)
+
+  template <typename Initiation, typename RawCompletionToken, typename... Args>
+  static return_type initiate(
+      ASIO_MOVE_ARG(Initiation) initiation,
+      ASIO_MOVE_ARG(RawCompletionToken) token,
+      ASIO_MOVE_ARG(Args)... args)
   {
+    return async_initiate<CompletionToken,
+      typename detail::redirect_error_signature<Signature>::type>(
+        init_wrapper<typename decay<Initiation>::type>(
+          token.ec_, ASIO_MOVE_CAST(Initiation)(initiation)),
+        token.token_, ASIO_MOVE_CAST(Args)(args)...);
   }
-};
 
-#endif // !defined(ASIO_NO_DEPRECATED)
+#else // defined(ASIO_HAS_VARIADIC_TEMPLATES)
+
+  template <typename Initiation, typename RawCompletionToken>
+  static return_type initiate(
+      ASIO_MOVE_ARG(Initiation) initiation,
+      ASIO_MOVE_ARG(RawCompletionToken) token)
+  {
+    return async_initiate<CompletionToken,
+      typename detail::redirect_error_signature<Signature>::type>(
+        init_wrapper<typename decay<Initiation>::type>(
+          token.ec_, ASIO_MOVE_CAST(Initiation)(initiation)),
+        token.token_);
+  }
+
+#define ASIO_PRIVATE_INITIATE_DEF(n) \
+  template <typename Initiation, typename RawCompletionToken, \
+      ASIO_VARIADIC_TPARAMS(n)> \
+  static return_type initiate( \
+      ASIO_MOVE_ARG(Initiation) initiation, \
+      ASIO_MOVE_ARG(RawCompletionToken) token, \
+      ASIO_VARIADIC_MOVE_PARAMS(n)) \
+  { \
+    return async_initiate<CompletionToken, \
+      typename detail::redirect_error_signature<Signature>::type>( \
+        init_wrapper<typename decay<Initiation>::type>( \
+          token.ec_, ASIO_MOVE_CAST(Initiation)(initiation)), \
+        token.token_, ASIO_VARIADIC_MOVE_ARGS(n)); \
+  } \
+  /**/
+  ASIO_VARIADIC_GENERATE(ASIO_PRIVATE_INITIATE_DEF)
+#undef ASIO_PRIVATE_INITIATE_DEF
+
+#endif // defined(ASIO_HAS_VARIADIC_TEMPLATES)
+};
 
 template <typename Handler, typename Executor>
-struct associated_executor<
-    experimental::detail::redirect_error_handler<Handler>, Executor>
+struct associated_executor<detail::redirect_error_handler<Handler>, Executor>
 {
   typedef typename associated_executor<Handler, Executor>::type type;
 
   static type get(
-      const experimental::detail::redirect_error_handler<Handler>& h,
+      const detail::redirect_error_handler<Handler>& h,
       const Executor& ex = Executor()) ASIO_NOEXCEPT
   {
     return associated_executor<Handler, Executor>::get(h.handler_, ex);
@@ -272,13 +351,12 @@ struct associated_executor<
 };
 
 template <typename Handler, typename Allocator>
-struct associated_allocator<
-    experimental::detail::redirect_error_handler<Handler>, Allocator>
+struct associated_allocator<detail::redirect_error_handler<Handler>, Allocator>
 {
   typedef typename associated_allocator<Handler, Allocator>::type type;
 
   static type get(
-      const experimental::detail::redirect_error_handler<Handler>& h,
+      const detail::redirect_error_handler<Handler>& h,
       const Allocator& a = Allocator()) ASIO_NOEXCEPT
   {
     return associated_allocator<Handler, Allocator>::get(h.handler_, a);
@@ -291,4 +369,4 @@ struct associated_allocator<
 
 #include "asio/detail/pop_options.hpp"
 
-#endif // ASIO_EXPERIMENTAL_IMPL_REDIRECT_ERROR_HPP
+#endif // ASIO_IMPL_REDIRECT_ERROR_HPP
