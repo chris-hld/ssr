@@ -1,5 +1,6 @@
 language: cpp
 sudo: required
+dist: xenial
 
 git:
   depth: 3
@@ -22,10 +23,8 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - g++-8
-      dist: trusty
       env:
         - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
-
 
 before_install:
   - if [[ "$TARGET" == "windows64" ]]; then ci/mxe-requirements.sh; fi

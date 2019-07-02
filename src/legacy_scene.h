@@ -51,7 +51,7 @@ class LegacyScene : public api::SceneControlEvents
                   , public api::SceneInformationEvents
                   , public api::RendererControlEvents
                   , public api::RendererInformationEvents
-                  , public api::TransportEvents
+                  , public api::TransportFrameEvents
                   , public api::SourceMetering
                   , public api::MasterMetering
                   , public api::OutputActivity
@@ -256,9 +256,11 @@ class LegacyScene : public api::SceneControlEvents
     {
       if (auto iter = _source_id_map.find(id); iter != _source_id_map.end())
       {
+        VERBOSE("LegacyScene: deleting source \"" << iter->first << "\"");
         // this should call the destructor for the LegacySource object.
         // IMPORTANT: the map holds the Sources directly, no pointers!
         _source_map.erase(iter->second);
+        _source_id_map.erase(iter->first);
       }
     }
 
@@ -325,6 +327,11 @@ class LegacyScene : public api::SceneControlEvents
 
     // from SceneInformationEvents
 
+    void sample_rate(int rate) override
+    {
+      _sample_rate = rate;
+    }
+
     void new_source(id_t id) override
     {
       auto [iter, inserted] = _source_id_map.try_emplace(id, _next_source_id);
@@ -345,25 +352,25 @@ class LegacyScene : public api::SceneControlEvents
     virtual void source_property(id_t id, const std::string& key
                                         , const std::string& value) override
     {
-      if (key == "audio_file")
+      if (key == "audio-file")
       {
         _set_source_member(id, &LegacySource::audio_file_name, value);
       }
-      else if (key == "audio_file_channel")
+      else if (key == "audio-file-channel")
       {
         _set_source_member(id, &LegacySource::audio_file_channel
             , apf::str::S2RV(value, 0));
       }
-      else if (key == "audio_file_length")
+      else if (key == "audio-file-length")
       {
         _set_source_member(id, &LegacySource::file_length
             , apf::str::S2RV(value, 0));
       }
-      else if (key == "port_name")
+      else if (key == "port-name")
       {
         _set_source_member(id, &LegacySource::port_name, value);
       }
-      else if (key == "properties_file")
+      else if (key == "properties-file")
       {
         _set_source_member(id, &LegacySource::properties_file, value);
       }
@@ -373,6 +380,11 @@ class LegacyScene : public api::SceneControlEvents
       }
     }
 
+    void transport_rolling(bool rolling) override
+    {
+      _transport_playing = rolling;
+    }
+
     // from RendererControlEvents
 
     void processing(bool processing_state) override
@@ -380,12 +392,12 @@ class LegacyScene : public api::SceneControlEvents
       _processing_state = processing_state;
     }
 
-    void reference_offset_position(const Pos& position) override
+    void reference_position_offset(const Pos& position) override
     {
       _reference_offset.position = position;
     }
 
-    void reference_offset_rotation(const Rot& rotation) override
+    void reference_rotation_offset(const Rot& rotation) override
     {
       Orientation orientation(rotation);
       orientation.azimuth -= 90.0f;  // Undo angle conversion offset
@@ -399,21 +411,15 @@ class LegacyScene : public api::SceneControlEvents
       _renderer_name = name;
     }
 
-    void sample_rate(int rate) override
-    {
-      _sample_rate = rate;
-    }
-
     void loudspeakers(const std::vector<Loudspeaker>& loudspeakers) override
     {
       _loudspeakers.assign(loudspeakers.begin(), loudspeakers.end());
     }
 
-    // from TransportEvents
+    // from TransportFrameEvents
 
-    void transport_state(bool rolling, uint32_t frame) override
+    void transport_frame(uint32_t frame) override
     {
-      _transport_playing = rolling;
       _transport_position = frame;
     }
 

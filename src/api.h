@@ -66,7 +66,7 @@ namespace api
 
 /// Bundle start/stop events.  Bundles typically contain one or more messages
 /// that are supposed to happen at the same time.
-/// @see Publisher::subscribe_bundle()
+/// @see SubscribeHelper::bundle()
 struct BundleEvents
 {
   virtual ~BundleEvents() = default;
@@ -81,7 +81,7 @@ struct BundleEvents
 
 
 /// Subscribable scene properties that can be changed by clients.
-/// @see Publisher::subscribe_scene_control()
+/// @see SubscribeHelper::scene_control()
 struct SceneControlEvents
 {
   virtual ~SceneControlEvents() = default;
@@ -154,25 +154,33 @@ struct SceneControlEvents
 
 
 /// Subscribable scene information that cannot be directly changed by clients.
-/// @see Publisher::subscribe_scene_information()
+/// @see SubscribeHelper::scene_information()
 struct SceneInformationEvents
 {
   virtual ~SceneInformationEvents() = default;
+
+  /// Sampling rate of the scene/transport in Hertz.
+  /// This is needed to convert api::TransportFrameEvents::transport_frame()
+  /// and audio file durations to seconds.
+  virtual void sample_rate(int rate) = 0;
 
   /// Publish creation of a new source.
   /// @param id ID of the new source
   virtual void new_source(id_t id) = 0;
 
   /// Set immutable properties (string-to-string mapping) of a (new) source,
-  /// e.g. @c audio_file, @c audio_file_channel, @c audio_file_length,
-  /// @c port_name, @c properties_file.
+  /// e.g. @c audio-file, @c audio-file-channel, @c audio-file-length,
+  /// @c port-name, @c properties-file.
   virtual void source_property(id_t id, const std::string& key
                                       , const std::string& value) = 0;
+
+  /// Whether the JACK transport is rolling or not.
+  virtual void transport_rolling(bool rolling) = 0;
 };
 
 
 /// Subscribable renderer properties that can be changed by clients.
-/// @see Publisher::subscribe_renderer_control()
+/// @see SubscribeHelper::renderer_control()
 struct RendererControlEvents
 {
   virtual ~RendererControlEvents() = default;
@@ -182,17 +190,17 @@ struct RendererControlEvents
 
   /// Renderer-specific position offset.
   /// Relative to SceneControlEvents::reference_position().
-  virtual void reference_offset_position(const Pos& position) = 0;
+  virtual void reference_position_offset(const Pos& position) = 0;
 
   /// Renderer-specific rotation offset.
   /// Relative to SceneControlEvents::reference_rotation().
   /// This is typically controlled by a head tracker.
-  virtual void reference_offset_rotation(const Rot& rotation) = 0;
+  virtual void reference_rotation_offset(const Rot& rotation) = 0;
 };
 
 
 /// Subscribable renderer properties that cannot be changed by clients.
-/// @see Publisher::subscribe_renderer_information()
+/// @see SubscribeHelper::renderer_information()
 struct RendererInformationEvents
 {
   virtual ~RendererInformationEvents() = default;
@@ -200,34 +208,33 @@ struct RendererInformationEvents
   /// Name of the renderer.
   virtual void renderer_name(const std::string& name) = 0;
 
-  /// Sampling rate of the renderer in Hertz.
-  virtual void sample_rate(int rate) = 0;
-
   /// List of loudspeakers.  Doesn't change during the lifetime of a renderer.
   virtual void loudspeakers(const std::vector<Loudspeaker>& loudspeakers) = 0;
 };
 
 
-/// Continuous updates about the current JACK transport state.
+/// Continuous updates about the current JACK transport position.
 /// This is part of the scene information but because of the high frequency of
 /// messages this can be subscribed separately.
-/// @see Publisher::subscribe_transport()
-struct TransportEvents
+/// @see SubscribeHelper::transport_frame()
+struct TransportFrameEvents
 {
-  virtual ~TransportEvents() = default;
+  virtual ~TransportFrameEvents() = default;
 
-  /// Update transport state.
-  /// @param rolling whether transport is currently rolling or stopped
-  /// @param frame current transport time in frames
+  /// Update transport frame.
+  /// Whether or not the transport is "rolling" can be found out with
+  /// api::SceneInformationEvents::transport_rolling().
+  /// @param frame current transport time in frames.
+  ///   Use api::SceneInformationEvents::sample_rate() to convert to seconds.
   /// @see http://www.jackaudio.org/files/docs/html/group__TransportControl.html
-  virtual void transport_state(bool rolling, uint32_t frame) = 0;
+  virtual void transport_frame(uint32_t frame) = 0;
 };
 
 
 /// Continuous updates about current source signal levels.
 /// This is part of the scene information but because of the high frequency of
 /// messages this can be subscribed separately.
-/// @see Publisher::subscribe_source_metering()
+/// @see SubscribeHelper::source_metering()
 struct SourceMetering
 {
   virtual ~SourceMetering() = default;
@@ -242,7 +249,7 @@ struct SourceMetering
 /// Continuous updates about the current master signal level.
 /// This is part of the renderer information but because of the high frequency
 /// of messages this can be subscribed separately.
-/// @see Publisher::subscribe_master_metering()
+/// @see SubscribeHelper::master_metering()
 struct MasterMetering
 {
   virtual ~MasterMetering() = default;
@@ -256,7 +263,7 @@ struct MasterMetering
 /// Continuous updates about output activity, per source.
 /// This is part of the renderer information but because of the high frequency
 /// of messages this can be subscribed separately.
-/// @see Publisher::subscribe_output_activity()
+/// @see SubscribeHelper::output_activity()
 struct OutputActivity
 {
   virtual ~OutputActivity() = default;
@@ -272,7 +279,7 @@ struct OutputActivity
 /// Continuous updates about the renderer's CPU load (as reported by JACK).
 /// This is part of the renderer information but because of the high frequency
 /// of messages this can be subscribed separately.
-/// @see Publisher::subscribe_cpu_load()
+/// @see SubscribeHelper::cpu_load()
 struct CpuLoad
 {
   virtual ~CpuLoad() = default;
@@ -323,20 +330,27 @@ struct Controller : virtual SceneControlEvents
   /// Delete all sources.
   virtual void delete_all_sources() = 0;
 
-  /// Start JACK transport.  @see TransportEvents
+  /// Start JACK transport.  @see TransportFrameEvents
   virtual void transport_start() = 0;
 
-  /// Stop JACK transport.  @see TransportEvents
+  /// Stop JACK transport.  @see TransportFrameEvents
   virtual void transport_stop() = 0;
 
   /// Skip the scene to a specified instant of time.
+  /// @param time instant of time in frames.
+  ///   Use api::SceneInformationEvents::sample_rate() to convert from seconds.
+  /// @see TransportFrameEvents
+  virtual void transport_locate_frames(uint32_t time) = 0;
+
+  /// Skip the scene to a specified instant of time.
   /// @param time instant of time in seconds.
-  /// @see TransportEvents
-  virtual void transport_locate(float time) = 0;
+  ///   Use api::SceneInformationEvents::sample_rate() to convert from frames.
+  /// @see TransportFrameEvents
+  virtual void transport_locate_seconds(float time) = 0;
 
   /// Reset the tracker (if one is connected).
   /// @todo There should probably be a more fancy tracker interface ...?
-  virtual void calibrate_tracker() = 0;
+  virtual void reset_tracker() = 0;
 
   /// Get string ID given one-based source number.
   /// If the source number is @c 0 or higher than the number of sources, an
@@ -356,7 +370,7 @@ struct Controller : virtual SceneControlEvents
 /// Control over a "follower" can be obtained with Publisher::update_follower().
 struct Follower : virtual SceneControlEvents
                 , SceneInformationEvents
-                , TransportEvents
+                , TransportFrameEvents
                 , SourceMetering
 {};
 
@@ -371,62 +385,103 @@ struct Subscription
 };
 
 
+/// Return type of Publisher::subscribe().
+/// An object of this class has exclusive control over the SSR instance until
+/// the object is destroyed.  Use it like this for a single subscription:
+///                                                                        @code
+/// mysubscription = mypublisher.subscribe()->cpu_load(mysubscriber);
+///                                                                     @endcode
+/// ... or in its own scope for multiple subscriptions:
+///                                                                        @code
+/// {
+///   auto subscribe = mypublisher.subscribe();
+///   mysubscription1 = subscribe->transport_frame(mysubscriber);
+///   mysubscription2 = subscribe->master_metering(mysubscriber);
+/// }
+///                                                                     @endcode
+/// A given subscription is automatically cancelled when the corresponding
+/// Subscription object is destroyed.
+/// @note A subscriber must outlive its subscription.  This can be easily ensured
+///   by binding the returned Subscription to the scope of the subscriber,
+///   because the subscriber is automatically unsubscribed when the subscription
+///   object goes out of scope.
+/// @warning Subscribing again to an already subscribed class of events is not
+///   allowed and an exception will be raised if it is attempted.
+struct SubscribeHelper
+{
+  virtual ~SubscribeHelper() = default;
+
+  /// Subscribe to BundleEvents.
+  virtual std::unique_ptr<Subscription> bundle(
+      BundleEvents* subscriber) = 0;
+  /// Subscribe to SceneControlEvents.
+  /// Additionally, this sends the current state to the @a subscriber.
+  virtual std::unique_ptr<Subscription> scene_control(
+      SceneControlEvents* subscriber) = 0;
+  /// Subscribe to SceneInformationEvents.
+  /// Additionally, this sends the current state to the @a subscriber.
+  virtual std::unique_ptr<Subscription> scene_information(
+      SceneInformationEvents* subscriber) = 0;
+  /// Subscribe to RendererControlEvents.
+  /// Additionally, this sends the current state to the @a subscriber.
+  virtual std::unique_ptr<Subscription> renderer_control(
+      RendererControlEvents* subscriber) = 0;
+  /// Subscribe to RendererInformationEvents.
+  /// Additionally, this sends the current state to the @a subscriber.
+  virtual std::unique_ptr<Subscription> renderer_information(
+      RendererInformationEvents* subscriber) = 0;
+  /// Subscribe to TransportFrameEvents.
+  virtual std::unique_ptr<Subscription> transport_frame(
+      TransportFrameEvents* subscriber) = 0;
+  /// Subscribe to SourceMetering.
+  virtual std::unique_ptr<Subscription> source_metering(
+      SourceMetering* subscriber) = 0;
+  /// Subscribe to MasterMetering.
+  virtual std::unique_ptr<Subscription> master_metering(
+      MasterMetering* subscriber) = 0;
+  /// Subscribe to OutputActivity.
+  virtual std::unique_ptr<Subscription> output_activity(
+      OutputActivity* subscriber) = 0;
+  /// Subscribe to CpuLoad.
+  virtual std::unique_ptr<Subscription> cpu_load(
+      CpuLoad* subscriber) = 0;
+};
+
+
 /// Handle subscriptions, allow controlling the scene/renderer.
 struct Publisher
 {
   virtual ~Publisher() = default;
 
-  /// Subscribe to BundleEvents.
-  /// A subscriber must outlive its subscription.  This can be easily ensured
-  /// by binding the returned Subscription to the scope of the subscriber,
-  /// because the subscriber is automatically unsubscribed when the subscription
-  /// object goes out of scope.
-  virtual std::unique_ptr<Subscription> subscribe_bundle(
-      BundleEvents* subscriber) = 0;
-  /// Subscribe to SceneControlEvents.
-  /// Additionally, this sends the current state to the @a subscriber.
-  /// @see subscribe_bundle()
-  virtual std::unique_ptr<Subscription> subscribe_scene_control(
-      SceneControlEvents* subscriber) = 0;
-  /// Subscribe to SceneInformationEvents.
-  /// Additionally, this sends the current state to the @a subscriber.
-  /// @see subscribe_bundle()
-  virtual std::unique_ptr<Subscription> subscribe_scene_information(
-      SceneInformationEvents* subscriber) = 0;
-  /// Subscribe to RendererControlEvents.
-  /// Additionally, this sends the current state to the @a subscriber.
-  /// @see subscribe_bundle()
-  virtual std::unique_ptr<Subscription> subscribe_renderer_control(
-      RendererControlEvents* subscriber) = 0;
-  /// Subscribe to RendererInformationEvents.
-  /// Additionally, this sends the current state to the @a subscriber.
-  /// @see subscribe_bundle()
-  virtual std::unique_ptr<Subscription> subscribe_renderer_information(
-      RendererInformationEvents* subscriber) = 0;
-  /// Subscribe to TransportEvents.  @see subscribe_bundle()
-  virtual std::unique_ptr<Subscription> subscribe_transport(
-      TransportEvents* subscriber) = 0;
-  /// Subscribe to SourceMetering.  @see subscribe_bundle()
-  virtual std::unique_ptr<Subscription> subscribe_source_metering(
-      SourceMetering* subscriber) = 0;
-  /// Subscribe to MasterMetering.  @see subscribe_bundle()
-  virtual std::unique_ptr<Subscription> subscribe_master_metering(
-      MasterMetering* subscriber) = 0;
-  /// Subscribe to OutputActivity.  @see subscribe_bundle()
-  virtual std::unique_ptr<Subscription> subscribe_output_activity(
-      OutputActivity* subscriber) = 0;
-  /// Subscribe to CpuLoad.  @see subscribe_bundle()
-  virtual std::unique_ptr<Subscription> subscribe_cpu_load(
-      CpuLoad* subscriber) = 0;
+  /// Prepare to make subscriptions.  The returned SubscribeHelper object can be
+  /// used to make the actual subscriptions.  The SSR instance will remain
+  /// locked until the returned object is destroyed.
+  /// @warning While the SSR instance is locked, calls to attach_leader(),
+  ///   take_control() and update_follower() will not complete, neither will any
+  ///   attempts to unsubscribe previous subscriptions.
+  virtual std::unique_ptr<SubscribeHelper> subscribe() = 0;
 
-  /// Subscribe to "leader" (if this Publisher is a "follower").
-  virtual std::unique_ptr<Subscription> subscribe_leader(
-      Controller* leader) = 0;
+  /// Connect to "leader" (if this Publisher is a "follower").
+  /// The "leader" is automatically un-attached when the returned Subscription
+  /// object is destroyed.
+  virtual std::unique_ptr<Subscription> attach_leader(Controller* leader) = 0;
 
   /// Obtain exclusive control over this Publisher's SSR instance.
   /// This automatically starts a "bundle", see BundleEvents.
   /// When the returned object is destroyed, the "bundle" is closed and
   /// exclusive control is automatically released.
+  /// Use it like this for a single event:
+  ///                                                                      @code
+  /// mypublisher.take_control()->transport_locate(0.0f);
+  ///                                                                   @endcode
+  /// ... or in its own scope for multiple events:
+  ///                                                                      @code
+  /// {
+  ///   auto control = mypublisher.take_control();
+  ///   control->master_volume(0.8);
+  ///   control->processing(true);
+  /// }
+  ///                                                                   @endcode
   /// @param suppress_own The generated SceneControlEvents are not forwarded to
   ///   the given subscriber.
   virtual std::unique_ptr<Controller> take_control(

@@ -219,6 +219,8 @@ ENABLE_EXPLICIT([debugging],[debugging symbols, asserts, ...])
 AS_IF([test x$have_debugging = xyes],
 [
   dnl DEBUGGING_FLAGS="$DEBUGGING_FLAGS -D_GLIBCXX_DEBUG"
+  DEBUGGING_FLAGS="$DEBUGGING_FLAGS -DAPF_JACK_POLICY_DEBUG"
+  DEBUGGING_FLAGS="$DEBUGGING_FLAGS -DAPF_JACKCLIENT_DEBUG"
 ],
 [
   DEBUGGING_FLAGS="$DEBUGGING_FLAGS -DNDEBUG"
@@ -256,6 +258,12 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
 dnl NOTE: -pthread works on GCC, other compilers may need differnt flags!
 AS_IF([test x$GCC = xyes],
       [CXXFLAGS="$CXXFLAGS -pthread"])
+
+abs_srcdir=`(cd $srcdir && pwd)`
+
+dnl https://github.com/ilmola/gml
+CPPFLAGS="$CPPFLAGS -I$abs_srcdir/gml/include"
+AC_CHECK_HEADER([gml/vec.hpp], , [AC_MSG_ERROR([GML library cannot be found.])])
 
 ENABLE_AUTO([optimization], [code optimization],
 [
@@ -525,6 +533,15 @@ ENABLE_FORCED([ip-interface], [network (TCP/IP) interface (needs Asio, https://t
   AC_CHECK_HEADER([asio.hpp], , [have_ip_interface=no])
 ])
 
+ENABLE_FORCED([websocket-interface], [WebSocket interface (needs WebSocket++ and Asio)],
+[
+  CPPFLAGS="$CPPFLAGS -DASIO_STANDALONE"
+  AC_CHECK_HEADER([asio.hpp], , [have_websocket_interface=no])
+  AC_CHECK_HEADER([websocketpp/server.hpp], , [have_websocket_interface=no])
+  CPPFLAGS="$CPPFLAGS -I$abs_srcdir/rapidjson/include"
+  AC_CHECK_HEADER([rapidjson/document.h], , [have_websocket_interface=no])
+])
+
 ENABLE_FORCED([ecasound], [Ecasound soundfile playback/recording],
 [
   dnl Checking for libecasoundc. It does not provide pkg-config and installs
@@ -766,7 +783,7 @@ echo "|    Razor AHRS .......................... : $have_razor"
 echo "|    VRPN ................................ : $have_vrpn"
 echo "|"
 echo "| Build with Ecasound support ............ : $have_ecasound"
-echo "| Build with IP interface ................ : $have_ip_interface"
+echo "| Network: legacy/WebSocket .............. : $have_ip_interface/$have_websocket_interface"
 echo "| Build with GUI ......................... : $gui_string"
 echo "|"
 echo "| Enable debugging/optimization .......... : $have_debugging/$have_optimization"

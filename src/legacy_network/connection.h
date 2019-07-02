@@ -25,75 +25,87 @@
  ******************************************************************************/
 
 /// @file
-/// NetworkSubscriber (definition).
+/// Connection class (definition).
 
-#ifndef SSR_NETWORKSUBSCRIBER_H
-#define SSR_NETWORKSUBSCRIBER_H
+#ifndef SSR_CONNECTION_H
+#define SSR_CONNECTION_H
 
-#include "api.h"
-#include <map>
+#ifdef HAVE_CONFIG_H
+#include <config.h> // for ENABLE_*
+#endif
+
+#include <functional>
+#include <iostream>
+#include <chrono>
+#include <thread>
+#include <memory>
+
+#if !defined(ASIO_STANDALONE)
+#define ASIO_STANDALONE
+#endif
+#include <asio.hpp>
+
+#include "networksubscriber.h"
+#include "commandparser.h"
 
 namespace ssr
 {
 
-class Connection;
+namespace api { struct Publisher; }
 
-/** NetworkSubscriber.
- * This Subscriber turns function calls to the Subscriber interface into
- * strings (XML-messages in ASDF format) and sends it over a Connection to
- * the connected client.
- **/
-class NetworkSubscriber : public api::SceneControlEvents
-                        , public api::RendererControlEvents
-                        , public api::SourceMetering
-                        , public api::OutputActivity
+namespace legacy_network
+{
+
+/// Connection class.
+class Connection : public std::enable_shared_from_this<Connection>
 {
   public:
-    explicit NetworkSubscriber(Connection &connection)
-      : _connection(connection)
-    {}
+    /// Ptr to Connection
+    typedef std::shared_ptr<Connection> pointer;
+    typedef asio::ip::tcp::socket socket_t;
+
+    static pointer create(asio::io_service &io_service
+        , api::Publisher &controller, char end_of_message_character);
+
+    void start();
+    void write(const std::string& writestring);
+
+    /// @return Reference to socket
+    socket_t& socket() { return _socket; }
+
+    unsigned int get_source_number(id_t source_id) const;
 
   private:
+    Connection(asio::io_service &io_service, api::Publisher &controller
+        , char end_of_message_character);
 
-    // SceneControlEvents
+    void start_read();
+    void read_handler(const asio::error_code &error, size_t size);
+    void write_handler(std::shared_ptr<std::string> str_ptr
+        , const asio::error_code &error, size_t bytes_transferred);
 
-    void auto_rotate_sources(bool) override {}
-    void delete_source(id_t id) override;
-    void source_position(id_t id, const Pos& position) override;
-    void source_rotation(id_t id, const Rot& rotation) override;
-    void source_volume(id_t id, float gain) override;
-    void source_mute(id_t id, bool mute) override;
-    void source_name(id_t, const std::string&) override {}
-    void source_model(id_t id, const std::string& model) override;
-    void source_fixed(id_t id, bool fix) override;
+    void timeout_handler(const asio::error_code &e);
 
-    void reference_position(const Pos& position) override;
-    void reference_rotation(const Rot& rotation) override;
+    /// TCP/IP socket
+    socket_t _socket;
+    /// Buffer for incoming messages.
+    asio::streambuf _streambuf;
+    /// @see Connection::timeout_handler
+    asio::steady_timer _timer;
 
-    void master_volume(float volume) override;
-    void decay_exponent(float) override {}
-    void amplitude_reference_distance(float) override {}
+    /// Reference to Controller
+    api::Publisher &_controller;
+    /// Subscriber obj
+    NetworkSubscriber _subscriber;
+    /// Commandparser obj
+    CommandParser _commandparser;
 
-    // RendererControlEvents
+    char _end_of_message_character;
 
-    void processing(bool) override {}
-    void reference_offset_position(const Pos& position) override;
-    void reference_offset_rotation(const Rot& rotation) override;
-
-    // SourceMetering
-
-    void source_level(id_t id, float level) override;
-
-    // OutputActivity
-
-    void output_activity(id_t id, float* first, float* last) override;
-
-    void _send_message(const std::string& str);
-    void _send_source_message(
-        const std::string& first_part, id_t id, const std::string& second_part);
-
-    Connection &_connection;
+    std::vector<std::unique_ptr<api::Subscription>> _subs;
 };
+
+}  // namespace legacy_network
 
 }  // namespace ssr
 

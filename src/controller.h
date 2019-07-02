@@ -36,6 +36,7 @@
 
 #include <functional>  // for std::function
 #include <type_traits>  // for std::is_same_v
+#include <regex>
 #include <unordered_set>
 
 #include "apf/jack_policy.h"
@@ -61,8 +62,11 @@
 #endif
 
 #ifdef ENABLE_IP_INTERFACE
-#include "server.h"
+#include "legacy_network/server.h"
 #include "legacy_xmlsceneprovider.h"  // for LegacyXmlSceneProvider
+#endif
+#ifdef ENABLE_WEBSOCKET_INTERFACE
+#include "websocket/server.h"  // for ws::Server
 #endif
 
 #include "tracker.h"
@@ -145,6 +149,13 @@ class Controller : public api::Publisher
     // Ordered list, keeps subscription order
     template<typename Events> using Subscribers = std::vector<Events*>;
 
+    class SubscribeHelper;
+
+    std::unique_ptr<api::SubscribeHelper> subscribe() override
+    {
+      return std::make_unique<SubscribeHelper>(*this);
+    }
+
     class Subscription : public api::Subscription
     {
     public:
@@ -155,92 +166,7 @@ class Controller : public api::Publisher
       std::function<void()> _f;
     };
 
-    struct _noop { void operator()() {} };
-
-    template<typename Events, typename F = _noop>
-    std::unique_ptr<api::Subscription>
-    _subscribe_helper(Events* subscriber, F&& init_func = F{})
-    {
-      std::lock_guard lock{_m};
-      std::forward<F>(init_func)();
-      _subscribe<Events>(subscriber);
-      return std::make_unique<Subscription>([this, subscriber]() {
-          std::lock_guard lock{_m};
-          _unsubscribe<Events>(subscriber);
-      });
-    }
-
-    std::unique_ptr<api::Subscription>
-    subscribe_bundle(api::BundleEvents* subscriber) override
-    {
-      return _subscribe_helper(subscriber);
-    }
-
-    std::unique_ptr<api::Subscription>
-    subscribe_scene_control(api::SceneControlEvents* subscriber) override
-    {
-      return _subscribe_helper(subscriber, [this, subscriber]() {
-          _scene.get_data(subscriber);
-      });
-    }
-
-    std::unique_ptr<api::Subscription>
-    subscribe_scene_information(api::SceneInformationEvents* subscriber) override
-    {
-      return _subscribe_helper(subscriber, [this, subscriber]() {
-          _scene.get_data(subscriber);
-      });
-    }
-
-    std::unique_ptr<api::Subscription>
-    subscribe_renderer_control(api::RendererControlEvents* subscriber) override
-    {
-      return _subscribe_helper(subscriber, [this, subscriber]() {
-          _rendersubscriber.get_data(subscriber);
-      });
-    }
-
-    std::unique_ptr<api::Subscription>
-    subscribe_renderer_information(
-        api::RendererInformationEvents* subscriber) override
-    {
-      return _subscribe_helper(subscriber, [this, subscriber]() {
-          _rendersubscriber.get_data(subscriber);
-      });
-    }
-
-    std::unique_ptr<api::Subscription>
-    subscribe_transport(api::TransportEvents* subscriber) override
-    {
-      return _subscribe_helper(subscriber);
-    }
-
-    std::unique_ptr<api::Subscription>
-    subscribe_source_metering(api::SourceMetering* subscriber) override
-    {
-      return _subscribe_helper(subscriber);
-    }
-
-    std::unique_ptr<api::Subscription>
-    subscribe_master_metering(api::MasterMetering* subscriber) override
-    {
-      return _subscribe_helper(subscriber);
-    }
-
-    std::unique_ptr<api::Subscription>
-    subscribe_output_activity(api::OutputActivity* subscriber) override
-    {
-      return _subscribe_helper(subscriber);
-    }
-
-    std::unique_ptr<api::Subscription>
-    subscribe_cpu_load(api::CpuLoad* subscriber) override
-    {
-      return _subscribe_helper(subscriber);
-    }
-
-    std::unique_ptr<api::Subscription>
-    subscribe_leader(api::Controller*) override;
+    std::unique_ptr<api::Subscription> attach_leader(api::Controller*) override;
 
     std::unique_ptr<api::Controller> take_control(api::SceneControlEvents*) override;
     std::unique_ptr<api::Controller> take_control() override;
@@ -267,17 +193,19 @@ class Controller : public api::Publisher
 
     void _calibrate_client();
 
-    void _transport_locate(float time);
+    void _transport_locate_frames(uint32_t time);
 
     template<typename Events>
-    void _subscribe(Events* subscriber)
+    bool _subscribe(Events* subscriber)
     {
       assert(subscriber);
       auto& list = std::get<Subscribers<Events>>(_subscribers);
       if (std::find(list.begin(), list.end(), subscriber) == list.end())
       {
         list.push_back(subscriber);
+        return true;
       }
+      return false;
     }
 
     template<typename Events>
@@ -398,7 +326,7 @@ class Controller : public api::Publisher
       Subscribers<api::BundleEvents>,
       Subscribers<api::SceneControlEvents>,
       Subscribers<api::SceneInformationEvents>,
-      Subscribers<api::TransportEvents>,
+      Subscribers<api::TransportFrameEvents>,
       Subscribers<api::RendererControlEvents>,
       Subscribers<api::RendererInformationEvents>,
       Subscribers<api::SourceMetering>,
@@ -420,7 +348,10 @@ class Controller : public api::Publisher
     AudioPlayer::ptr_t      _audio_player;   ///< pointer to audio player
 #endif
 #ifdef ENABLE_IP_INTERFACE
-    std::unique_ptr<Server> _network_interface;
+    std::unique_ptr<legacy_network::Server> _network_interface;
+#endif
+#ifdef ENABLE_WEBSOCKET_INTERFACE
+    std::unique_ptr<ws::Server> _websocket_interface;
 #endif
     std::unique_ptr<Tracker> _tracker;
 
@@ -438,10 +369,27 @@ class Controller : public api::Publisher
 
     bool _loop; ///< part of a quick-hack. should be removed some time.
 
-    std::unique_ptr<typename Renderer::template ScopedThread<
-      typename Renderer::QueryThread>> _query_thread;
+    std::unique_ptr<typename Renderer::QueryThread> _query_thread;
 
     std::mutex _m;
+
+    // "non-colonized name": https://www.w3.org/TR/xml-names11/#NT-NCName
+    std::regex _re_ncname{
+      // NCNameStartChar
+      "["
+      "A-Z_a-z"
+      "\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D"
+      "\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF"
+      "\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD\U00010000-\U000EFFFF"
+      "]"
+      // NCNameChar*
+      "["
+      "-.0-9\u00B7\u0300-\u036F\u203F-\u2040"
+      "A-Z_a-z"
+      "\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D"
+      "\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF"
+      "\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD\U00010000-\U000EFFFF"
+      "]*"};
 };
 
 template<typename Renderer>
@@ -468,6 +416,16 @@ Controller<Renderer>::Controller(int argc, char* argv[])
   }
 #endif
 
+#ifndef ENABLE_WEBSOCKET_INTERFACE
+  if (_conf.websocket_server)
+  {
+    throw std::logic_error(_conf.exec_name
+        + " was compiled without WebSocket server support!\n"
+        "Use --no-websocket-server to disable the WebSocket server.\n"
+        "Type '" + _conf.exec_name + " --help' for more information.");
+  }
+#endif
+
 #ifndef ENABLE_GUI
   if (_conf.gui)
   {
@@ -478,9 +436,10 @@ Controller<Renderer>::Controller(int argc, char* argv[])
   }
 #endif
 
-  if (_conf.ip_server && _conf.freewheeling)
+  if ((_conf.ip_server || _conf.websocket_server) && _conf.freewheeling)
   {
-    WARNING("Freewheel mode cannot be used together with IP-server. Ignored.\n"
+    WARNING("Freewheel mode cannot be used together with "
+        "--ip-server or --websocket-server. Ignored.\n"
         "Type '" + _conf.exec_name + " --help' for more information.");
     _conf.freewheeling = false;
   }
@@ -501,7 +460,7 @@ Controller<Renderer>::Controller(int argc, char* argv[])
   _subscribe<api::SceneInformationEvents>(&_legacy_scene);
   _subscribe<api::RendererControlEvents>(&_legacy_scene);
   _subscribe<api::RendererInformationEvents>(&_legacy_scene);
-  _subscribe<api::TransportEvents>(&_legacy_scene);
+  _subscribe<api::TransportFrameEvents>(&_legacy_scene);
   _subscribe<api::SourceMetering>(&_legacy_scene);
   _subscribe<api::MasterMetering>(&_legacy_scene);
   _subscribe<api::OutputActivity>(&_legacy_scene);
@@ -519,9 +478,6 @@ Controller<Renderer>::Controller(int argc, char* argv[])
 
   _renderer.load_reproduction_setup();
 
-  _publish(&api::RendererInformationEvents::sample_rate
-      , _renderer.sample_rate());
-
   _publish(&api::RendererInformationEvents::loudspeakers, _get_loudspeakers());
 
 #ifdef ENABLE_ECASOUND
@@ -530,8 +486,14 @@ Controller<Renderer>::Controller(int argc, char* argv[])
 
   if (!_conf.follow)
   {
-    // NB: This is ignored in "followers"
-    this->take_control()->auto_rotate_sources(_conf.auto_rotate_sources);
+    _publish(&api::SceneControlEvents::auto_rotate_sources
+        , _conf.auto_rotate_sources);
+    _publish(&api::SceneInformationEvents::sample_rate
+        , _renderer.sample_rate());
+    bool is_rolling;
+    std::tie(is_rolling, std::ignore) = _renderer.get_transport_state();
+    // This is may not be necessary since the renderer continuously sends this?
+    _publish(&api::SceneInformationEvents::transport_rolling, is_rolling);
   }
 
   if (_conf.freewheeling)
@@ -549,14 +511,21 @@ Controller<Renderer>::Controller(int argc, char* argv[])
     VERBOSE("Starting IP Server with port " << _conf.server_port
         << " and with end-of-message character with ASCII code " <<
         _conf.end_of_message_character << ".");
-    auto _Server = new Server(*this, *this, _conf.server_port
-        , static_cast<char>(_conf.end_of_message_character));
-    assert(_Server);
-    VERBOSE2("Start network interface...");
-    _network_interface.reset(_Server);
+
+    _network_interface = std::make_unique<legacy_network::Server>(*this, *this
+        , _conf.server_port, static_cast<char>(_conf.end_of_message_character));
     _network_interface->start();
   }
 #endif // ENABLE_IP_INTERFACE
+
+#ifdef ENABLE_WEBSOCKET_INTERFACE
+  if (_conf.websocket_server)
+  {
+    VERBOSE("Starting WebSocket server with port " << _conf.websocket_port);
+    _websocket_interface = std::make_unique<ws::Server>(*this
+        , _conf.websocket_port, _conf.websocket_resource_directory);
+  }
+#endif // ENABLE_WEBSOCKET_INTERFACE
 
   if (_conf.follow && _conf.scene_file_name != "")
   {
@@ -634,8 +603,14 @@ class Controller<Renderer>::query_state
 
       if (!_controller._conf.follow)
       {
-        _controller._publish(&api::TransportEvents::transport_state
-            , _state.first, _state.second);
+        _controller._publish(&api::TransportFrameEvents::transport_frame
+            , _state.second);
+        bool rolling{_state.first};
+        if (rolling != _controller._scene.transport_is_rolling())
+        {
+          _controller._publish(&api::SceneInformationEvents::transport_rolling
+              , rolling);
+        }
       }
       _controller._publish(&api::CpuLoad::cpu_load, _cpu_load);
       _controller._publish(&api::MasterMetering::master_level, _master_level);
@@ -698,8 +673,7 @@ template<typename Renderer>
 bool Controller<Renderer>::run()
 {
   // TODO: make sleep time customizable
-  _query_thread.reset(Renderer::new_scoped_thread(
-        typename Renderer::QueryThread(_renderer._query_fifo), 10 * 1000));
+  _query_thread = _renderer.make_query_thread(10 * 1000);
 
   _start_tracker(_conf.tracker, _conf.tracker_ports);
 
@@ -718,7 +692,7 @@ bool Controller<Renderer>::run()
     control->processing(true);
     if (!_conf.follow)
     {
-      control->transport_locate(0.0f);
+      control->transport_locate_frames(0);
     }
   }
 
@@ -744,7 +718,7 @@ bool Controller<Renderer>::run()
       {
         case 'c':
           std::cout << "Calibrating client.\n";
-          this->take_control()->calibrate_tracker();
+          this->take_control()->reset_tracker();
           break;
         case 'p':
           this->take_control()->transport_start();
@@ -753,7 +727,7 @@ bool Controller<Renderer>::run()
           keep_running = false;
           break;
         case 'r':
-          this->take_control()->transport_locate(0.0f);
+          this->take_control()->transport_locate_frames(0);
           break;
         case 's':
           this->take_control()->transport_stop();
@@ -975,6 +949,7 @@ public:
 
   void delete_source(id_t id) override
   {
+    // TODO: check if source actually exists?
     _controller._publish(_initiator,
         &api::SceneControlEvents::delete_source, id);
 
@@ -1209,19 +1184,34 @@ public:
     }
   }
 
-  void transport_locate(float time) override
+  void transport_locate_frames(uint32_t time) override
   {
     if constexpr (_is_leader)
     {
-      _controller._transport_locate(time);
+      _controller._transport_locate_frames(time);
     }
     else
     {
-      _controller._call_leader(&api::Controller::transport_locate, time);
+      _controller._call_leader(&api::Controller::transport_locate_frames, time);
     }
   }
 
-  void calibrate_tracker() override
+  void transport_locate_seconds(float time) override
+  {
+    if constexpr (_is_leader)
+    {
+      auto frames = static_cast<uint32_t>(
+          time * _controller._renderer.sample_rate());
+      _controller._transport_locate_frames(frames);
+    }
+    else
+    {
+      _controller._call_leader(&api::Controller::transport_locate_seconds
+          , time);
+    }
+  }
+
+  void reset_tracker() override
   {
     // NB: This is not sent to the leader
     _controller._calibrate_client();
@@ -1239,15 +1229,15 @@ public:
     _controller._publish(&api::RendererControlEvents::processing, state);
   }
 
-  void reference_offset_position(const Pos& position) override
+  void reference_position_offset(const Pos& position) override
   {
-    _controller._publish(&api::RendererControlEvents::reference_offset_position
+    _controller._publish(&api::RendererControlEvents::reference_position_offset
         , position);
   }
 
-  void reference_offset_rotation(const Rot& rotation) override
+  void reference_rotation_offset(const Rot& rotation) override
   {
-    _controller._publish(&api::RendererControlEvents::reference_offset_rotation
+    _controller._publish(&api::RendererControlEvents::reference_rotation_offset
         , rotation);
   }
 
@@ -1273,6 +1263,11 @@ public:
 
   // SceneInformationEvents
 
+  void sample_rate(int rate) override
+  {
+    _controller._publish(&api::SceneInformationEvents::sample_rate, rate);
+  }
+
   void new_source(id_t id) override
   {
     _controller._publish(&api::SceneInformationEvents::new_source, id);
@@ -1285,12 +1280,17 @@ public:
         , id, key, value);
   }
 
-  // TransportEvents
-
-  void transport_state(bool rolling, uint32_t frame) override
+  void transport_rolling(bool rolling) override
   {
-    _controller._publish(&api::TransportEvents::transport_state
-        , rolling, frame);
+    _controller._publish(&api::SceneInformationEvents::transport_rolling
+        , rolling);
+  }
+
+  // TransportFrameEvents
+
+  void transport_frame(uint32_t frame) override
+  {
+    _controller._publish(&api::TransportFrameEvents::transport_frame, frame);
   }
 
   // SourceMetering
@@ -1303,13 +1303,126 @@ public:
 
 
 template<typename Renderer>
+class Controller<Renderer>::SubscribeHelper : public api::SubscribeHelper
+{
+public:
+  explicit SubscribeHelper(Controller<Renderer>& controller)
+    : _controller(controller)
+    , _lock(_controller._m)
+  {
+    _controller._publish(&api::BundleEvents::bundle_start);
+  }
+
+  ~SubscribeHelper()
+  {
+    _controller._publish(&api::BundleEvents::bundle_stop);
+  }
+
+private:
+  struct _noop { void operator()() {} };
+
+  template<typename Events, typename F = _noop>
+  std::unique_ptr<api::Subscription>
+  _subscribe_helper(Events* subscriber, F&& init_func = F{})
+  {
+    if (_controller._subscribe<Events>(subscriber))
+    {
+      std::forward<F>(init_func)();
+      auto* ctrl_ptr = &_controller;
+      // NB: Capturing pointer by value, because SubscribeHelper will die soon:
+      return std::make_unique<Subscription>([ctrl_ptr, subscriber]() {
+          assert(ctrl_ptr);
+          assert(subscriber);
+          std::lock_guard lock{ctrl_ptr->_m};
+          ctrl_ptr->template _unsubscribe<Events>(subscriber);
+      });
+    }
+    throw std::runtime_error("Repeated subscriptions are not allowed");
+  }
+
+  std::unique_ptr<api::Subscription>
+  bundle(api::BundleEvents* subscriber) override
+  {
+    return _subscribe_helper(subscriber, [this, subscriber]() {
+        subscriber->bundle_start();
+    });
+  }
+
+  std::unique_ptr<api::Subscription>
+  scene_control(api::SceneControlEvents* subscriber) override
+  {
+    return _subscribe_helper(subscriber, [this, subscriber]() {
+        _controller._scene.get_data(subscriber);
+    });
+  }
+
+  std::unique_ptr<api::Subscription>
+  scene_information(api::SceneInformationEvents* subscriber) override
+  {
+    return _subscribe_helper(subscriber, [this, subscriber]() {
+        _controller._scene.get_data(subscriber);
+    });
+  }
+
+  std::unique_ptr<api::Subscription>
+  renderer_control(api::RendererControlEvents* subscriber) override
+  {
+    return _subscribe_helper(subscriber, [this, subscriber]() {
+        _controller._rendersubscriber.get_data(subscriber);
+    });
+  }
+
+  std::unique_ptr<api::Subscription>
+  renderer_information(api::RendererInformationEvents* subscriber) override
+  {
+    return _subscribe_helper(subscriber, [this, subscriber]() {
+        _controller._rendersubscriber.get_data(subscriber);
+    });
+  }
+
+  std::unique_ptr<api::Subscription>
+  transport_frame(api::TransportFrameEvents* subscriber) override
+  {
+    return _subscribe_helper(subscriber);
+  }
+
+  std::unique_ptr<api::Subscription>
+  source_metering(api::SourceMetering* subscriber) override
+  {
+    return _subscribe_helper(subscriber);
+  }
+
+  std::unique_ptr<api::Subscription>
+  master_metering(api::MasterMetering* subscriber) override
+  {
+    return _subscribe_helper(subscriber);
+  }
+
+  std::unique_ptr<api::Subscription>
+  output_activity(api::OutputActivity* subscriber) override
+  {
+    return _subscribe_helper(subscriber);
+  }
+
+  std::unique_ptr<api::Subscription>
+  cpu_load(api::CpuLoad* subscriber) override
+  {
+    return _subscribe_helper(subscriber);
+  }
+
+  Controller<Renderer>& _controller;
+  std::lock_guard<std::mutex> _lock;
+};
+
+
+template<typename Renderer>
 std::unique_ptr<api::Subscription>
-Controller<Renderer>::subscribe_leader(api::Controller* leader)
+Controller<Renderer>::attach_leader(api::Controller* leader)
 {
   if (!_conf.follow)
   {
     throw std::logic_error(
-        "\"subscribe_leader()\" can only be called on \"follower\"");
+        "\"attach_leader()\" can only be called on \"follower\"");
   }
   std::lock_guard lock{_m};
   if (_leader != nullptr)
@@ -1514,7 +1627,7 @@ Controller<Renderer>::_load_scene(const std::string& scene_file_name)
       {
         std::string name  = node.get_attribute("name");
         std::string id    = node.get_attribute("id");
-        std::string properties_file = node.get_attribute("properties_file");
+        std::string properties_file = node.get_attribute("properties-file");
 
         properties_file = posixpathtools::make_path_relative_to_current_dir(
             properties_file, scene_file_name);
@@ -1586,7 +1699,7 @@ Controller<Renderer>::_load_scene(const std::string& scene_file_name)
       return false;
     }
   }
-  _transport_locate(0);  // go to beginning of audio files
+  _transport_locate_frames(0);  // go to beginning of audio files
   return true;
 }
 
@@ -1823,10 +1936,9 @@ Controller<Renderer>::_calibrate_client()
 
 template<typename Renderer>
 void
-Controller<Renderer>::_transport_locate(float time)
+Controller<Renderer>::_transport_locate_frames(uint32_t time)
 {
-  _renderer.transport_locate(
-      static_cast<uint32_t>(time * _renderer.sample_rate()));
+  _renderer.transport_locate(time);
 }
 
 #ifdef ENABLE_ECASOUND
@@ -1885,6 +1997,12 @@ Controller<Renderer>::_new_source(id_t requested_id, const std::string& name
 
   std::string id = requested_id;
 
+  if (id != "" && !std::regex_match(id, _re_ncname))
+  {
+    ERROR("Invalid source ID: " << id);
+    return;
+  }
+
   std::string port_name;
   long int file_length = 0;
 
@@ -1922,8 +2040,8 @@ Controller<Renderer>::_new_source(id_t requested_id, const std::string& name
   }
 
   apf::parameter_map p;
-  p.set("connect_to", port_name);
-  p.set("properties_file", properties_file);
+  p.set("connect-to", port_name);
+  p.set("properties-file", properties_file);
   try
   {
     id = _renderer.add_source(id, p);
@@ -1937,19 +2055,19 @@ Controller<Renderer>::_new_source(id_t requested_id, const std::string& name
 
   _publish(&api::SceneInformationEvents::new_source, id);
   _publish(&api::SceneInformationEvents::source_property
-      , id, "port_name", port_name);
+      , id, "port-name", port_name);
 
   if (file_name_or_port_number != "")
   {
     _publish(&api::SceneInformationEvents::source_property
-        , id, "audio_file", file_name_or_port_number);
+        , id, "audio-file", file_name_or_port_number);
     _publish(&api::SceneInformationEvents::source_property
-        , id, "audio_file_channel", apf::str::A2S(channel));
+        , id, "audio-file-channel", apf::str::A2S(channel));
     _publish(&api::SceneInformationEvents::source_property
-        , id, "audio_file_length", apf::str::A2S(file_length));
+        , id, "audio-file-length", apf::str::A2S(file_length));
   }
   _publish(&api::SceneInformationEvents::source_property
-      , id, "properties_file", properties_file);
+      , id, "properties-file", properties_file);
 
   _publish(&api::SceneControlEvents::source_name, id, name);
   _publish(&api::SceneControlEvents::source_model, id, model);
@@ -2194,7 +2312,7 @@ Controller<Renderer>::_add_sources(Node& node
 
     if (source.properties_file != "")
     {
-      source_node.new_attribute("properties_file"
+      source_node.new_attribute("properties-file"
           , posixpathtools::make_path_relative_to_file(source.properties_file
             , scene_file_name));
     }

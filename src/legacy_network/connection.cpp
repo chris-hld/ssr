@@ -32,9 +32,10 @@
 #include "connection.h"
 #include "ssr_global.h"  // for VERBOSE2()
 
+using ssr::legacy_network::Connection;
 
 /// ctor
-ssr::Connection::Connection(asio::io_service &io_service
+Connection::Connection(asio::io_service &io_service
     , api::Publisher &controller, char end_of_message_character)
   : _socket(io_service)
   , _timer(io_service)
@@ -49,8 +50,8 @@ ssr::Connection::Connection(asio::io_service &io_service
  * @param controller used to (un)subscribe and get the actual Scene
  * @return ptr to Connection
  **/
-ssr::Connection::pointer
-ssr::Connection::create(asio::io_service &io_service
+Connection::pointer
+Connection::create(asio::io_service &io_service
     , api::Publisher& controller, char end_of_message_character)
 {
   VERBOSE2("New network connection ...");
@@ -65,12 +66,15 @@ ssr::Connection::create(asio::io_service &io_service
  * - Initialize the timer.
  **/
 void
-ssr::Connection::start()
+Connection::start()
 {
-  _subs.push_back(_controller.subscribe_scene_control(&_subscriber));
-  _subs.push_back(_controller.subscribe_renderer_control(&_subscriber));
-  _subs.push_back(_controller.subscribe_source_metering(&_subscriber));
-  _subs.push_back(_controller.subscribe_output_activity(&_subscriber));
+  {
+    auto subscribe = _controller.subscribe();
+    _subs.push_back(subscribe->scene_control(&_subscriber));
+    _subs.push_back(subscribe->renderer_control(&_subscriber));
+    _subs.push_back(subscribe->source_metering(&_subscriber));
+    _subs.push_back(subscribe->output_activity(&_subscriber));
+  }
 
   start_read();
 
@@ -87,7 +91,7 @@ ssr::Connection::start()
  * @param e self explanatory
  **/
 void
-ssr::Connection::timeout_handler(const asio::error_code &e)
+Connection::timeout_handler(const asio::error_code &e)
 {
   if (e) return;
 
@@ -99,7 +103,7 @@ ssr::Connection::timeout_handler(const asio::error_code &e)
 
 /// Start reading from socket.
 void
-ssr::Connection::start_read()
+Connection::start_read()
 {
   async_read_until(_socket, _streambuf, _end_of_message_character
       , std::bind(&Connection::read_handler, shared_from_this()
@@ -109,7 +113,7 @@ ssr::Connection::start_read()
 
 /// Forward string from socket to CommandParser.
 void
-ssr::Connection::read_handler(const asio::error_code &error
+Connection::read_handler(const asio::error_code &error
     , size_t size)
 {
   if (!error)
@@ -135,7 +139,7 @@ ssr::Connection::read_handler(const asio::error_code &error
  * @param writestring: String to be send over the network.
  **/
 void
-ssr::Connection::write(const std::string& writestring)
+Connection::write(const std::string& writestring)
 {
   // Create a Copy of this string.
   // Put into shared_ptr bound to the callback
@@ -160,7 +164,7 @@ ssr::Connection::write(const std::string& writestring)
  * @todo Check if we can delete this function.
  **/
 void
-ssr::Connection::write_handler(std::shared_ptr<std::string> str_ptr
+Connection::write_handler(std::shared_ptr<std::string> str_ptr
     , const asio::error_code &error, size_t bytes_transferred)
 {
   (void) str_ptr;
@@ -172,7 +176,7 @@ ssr::Connection::write_handler(std::shared_ptr<std::string> str_ptr
 }
 
 unsigned int
-ssr::Connection::get_source_number(id_t source_id) const
+Connection::get_source_number(id_t source_id) const
 {
   return _controller.get_source_number(source_id);
 }

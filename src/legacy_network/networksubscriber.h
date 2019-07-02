@@ -25,34 +25,80 @@
  ******************************************************************************/
 
 /// @file
-/// CommandParser class (definition).
+/// NetworkSubscriber (definition).
 
-#ifndef SSR_COMMANDPARSER_H
-#define SSR_COMMANDPARSER_H
+#ifndef SSR_NETWORKSUBSCRIBER_H
+#define SSR_NETWORKSUBSCRIBER_H
 
-#include <string>
-
+#include "api.h"
+#include <map>
 
 namespace ssr
 {
 
-namespace api { struct Publisher; }
+namespace legacy_network
+{
 
-/** Parses a XML string and maps to Controller.
- * This class is the bridge between the network interface and the Controller.
- * Incoming XML messages (in ASDF-format) are parsed and the appropriate
- * functions of Controller called.
+class Connection;
+
+/** NetworkSubscriber.
+ * This Subscriber turns function calls to the Subscriber interface into
+ * strings (XML-messages in ASDF format) and sends it over a Connection to
+ * the connected client.
  **/
-class CommandParser
+class NetworkSubscriber : public api::SceneControlEvents
+                        , public api::RendererControlEvents
+                        , public api::SourceMetering
+                        , public api::OutputActivity
 {
   public:
-    CommandParser(api::Publisher& publisher);
-
-    void parse_cmd(const std::string &cmd);
+    explicit NetworkSubscriber(Connection &connection)
+      : _connection(connection)
+    {}
 
   private:
-    api::Publisher& _publisher;
+
+    // SceneControlEvents
+
+    void auto_rotate_sources(bool) override {}
+    void delete_source(id_t id) override;
+    void source_position(id_t id, const Pos& position) override;
+    void source_rotation(id_t id, const Rot& rotation) override;
+    void source_volume(id_t id, float gain) override;
+    void source_mute(id_t id, bool mute) override;
+    void source_name(id_t, const std::string&) override {}
+    void source_model(id_t id, const std::string& model) override;
+    void source_fixed(id_t id, bool fix) override;
+
+    void reference_position(const Pos& position) override;
+    void reference_rotation(const Rot& rotation) override;
+
+    void master_volume(float volume) override;
+    void decay_exponent(float) override {}
+    void amplitude_reference_distance(float) override {}
+
+    // RendererControlEvents
+
+    void processing(bool) override {}
+    void reference_position_offset(const Pos& position) override;
+    void reference_rotation_offset(const Rot& rotation) override;
+
+    // SourceMetering
+
+    void source_level(id_t id, float level) override;
+
+    // OutputActivity
+
+    void output_activity(id_t id, float* first, float* last) override;
+
+    void _send_message(const std::string& str);
+    void _send_source_message(
+        const std::string& first_part, id_t id, const std::string& second_part);
+
+    Connection &_connection;
 };
+
+}  // namespace legacy_network
 
 }  // namespace ssr
 

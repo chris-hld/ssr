@@ -40,11 +40,12 @@
 #include "apf/math.h"  // for dB2linear()
 
 using namespace apf::str;
+using ssr::legacy_network::CommandParser;
 
 /** ctor.
  * @param publisher
  **/
-ssr::CommandParser::CommandParser(api::Publisher& publisher)
+CommandParser::CommandParser(api::Publisher& publisher)
   : _publisher(publisher)
 {}
 
@@ -52,7 +53,7 @@ ssr::CommandParser::CommandParser(api::Publisher& publisher)
  * @param cmd XML string.
  **/
 void
-ssr::CommandParser::parse_cmd(const std::string& cmd)
+CommandParser::parse_cmd(const std::string& cmd)
 {
   XMLParser xp;
   XMLParser::doc_t doc1 = xp.load_string(cmd);
@@ -199,7 +200,7 @@ ssr::CommandParser::parse_cmd(const std::string& cmd)
         VERBOSE2("set source name: id = " << id << ", name = " << name);
       }
 
-      std::string properties_file = i.get_attribute("properties_file");
+      std::string properties_file = i.get_attribute("properties-file");
       if (!properties_file.empty() && !new_source)
       {
         SSRERROR("Cannot set properties_file! This works only for new sources.");
@@ -324,7 +325,7 @@ ssr::CommandParser::parse_cmd(const std::string& cmd)
           if (S2A(inner_loop.get_attribute("x"), x)
               && S2A(inner_loop.get_attribute("y"), y))
           {
-            control->reference_offset_position(Position(x,y));
+            control->reference_position_offset(Position(x,y));
             VERBOSE2("set reference offset position: " << Position(x,y));
           }
           else SSRERROR("Invalid reference offset position!");
@@ -334,7 +335,7 @@ ssr::CommandParser::parse_cmd(const std::string& cmd)
           float azimuth;
           if (S2A(inner_loop.get_attribute("azimuth"), azimuth))
           {
-            control->reference_offset_rotation(Orientation(azimuth));
+            control->reference_rotation_offset(Orientation(azimuth));
             VERBOSE2("set reference offset orientation: " << Orientation(azimuth));
           }
           else SSRERROR("Invalid reference offset orientation!");
@@ -437,7 +438,7 @@ ssr::CommandParser::parse_cmd(const std::string& cmd)
       }
       else if (transport == "rewind")
       {
-        control->transport_locate(0);
+        control->transport_locate_frames(0);
       }
       else if (transport != "")
       {
@@ -455,7 +456,7 @@ ssr::CommandParser::parse_cmd(const std::string& cmd)
       float time;
       if (string2time(seek, time))
       {
-        control->transport_locate(time);
+        control->transport_locate_seconds(time);
       }
       else if (seek != "")
       {
@@ -468,7 +469,7 @@ ssr::CommandParser::parse_cmd(const std::string& cmd)
       std::string tracker = i.get_attribute("tracker");
       if (tracker == "reset")
       {
-        control->calibrate_tracker();
+        control->reset_tracker();
       }
       else if (tracker != "")
       {

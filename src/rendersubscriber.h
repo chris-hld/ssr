@@ -31,8 +31,6 @@
 #define SSR_RENDERSUBSCRIBER_H
 
 #include "api.h"
-#include "legacy_position.h"  // legacy Position type
-#include "legacy_orientation.h"  // legacy Orientation type
 #include "ssr_global.h"  // for WARNING()
 
 #include "rendererbase.h"  // for Source
@@ -53,14 +51,13 @@ public:
   void get_data(api::RendererControlEvents* subscriber)
   {
     subscriber->processing(_processing);
-    subscriber->reference_offset_position(_reference_offset_position);
-    subscriber->reference_offset_rotation(_reference_offset_rotation);
+    subscriber->reference_position_offset(_reference_position_offset);
+    subscriber->reference_rotation_offset(_reference_rotation_offset);
   }
 
   void get_data(api::RendererInformationEvents* subscriber)
   {
     subscriber->renderer_name(_renderer_name);
-    subscriber->sample_rate(_sample_rate);
     subscriber->loudspeakers(_loudspeakers);
   }
 
@@ -112,7 +109,7 @@ private:
 
   void source_rotation(id_t id, const Rot& rot) override
   {
-    _set_source_member(id, &Source::orientation, rot);
+    _set_source_member(id, &Source::rotation, rot);
   }
 
   void source_volume(id_t id, float volume) override
@@ -142,13 +139,12 @@ private:
 
   void reference_position(const Pos& pos) override
   {
-    Position position{pos};
-    _renderer.state.reference_position = position;
+    _renderer.state.reference_position = pos;
   }
 
   void reference_rotation(const Rot& rot) override
   {
-    _renderer.state.reference_orientation = rot;
+    _renderer.state.reference_rotation = rot;
   }
 
   void master_volume(float volume) override
@@ -174,21 +170,16 @@ private:
     _processing = state;
   }
 
-  void reference_offset_position(const Pos& pos) override
+  void reference_position_offset(const Pos& pos) override
   {
-    Position position{pos};
-    _renderer.state.reference_offset_position = position;
-    _reference_offset_position = pos;
+    _renderer.state.reference_position_offset = pos;
+    _reference_position_offset = pos;
   }
 
-  void reference_offset_rotation(const Rot& rot) override
+  void reference_rotation_offset(const Rot& rot) override
   {
-    Orientation orientation{rot};
-    // For backwards compatibility, 90 degrees are added when converting to
-    // Orientation.  This, however, should not be done for the reference offset.
-    orientation.azimuth -= 90.0f;
-    _renderer.state.reference_offset_orientation = orientation;
-    _reference_offset_rotation = rot;
+    _renderer.state.reference_rotation_offset = rot;
+    _reference_rotation_offset = rot;
   }
 
   // RendererInformationEvents (not needed in renderer!)
@@ -196,11 +187,6 @@ private:
   void renderer_name(const std::string& name) override
   {
     _renderer_name = name;
-  }
-
-  void sample_rate(int rate) override
-  {
-    _sample_rate = rate;
   }
 
   void loudspeakers(const std::vector<Loudspeaker>& loudspeakers) override
@@ -211,10 +197,9 @@ private:
   Renderer& _renderer;
 
   bool _processing{false};
-  Pos _reference_offset_position;
-  Rot _reference_offset_rotation;
+  Pos _reference_position_offset;
+  Rot _reference_rotation_offset;
   std::string _renderer_name;
-  int _sample_rate;
   std::vector<Loudspeaker> _loudspeakers;
 };
 

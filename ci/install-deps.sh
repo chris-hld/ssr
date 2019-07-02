@@ -3,7 +3,7 @@
 set -euo pipefail
 
 if [ "$TRAVIS_OS_NAME" == "osx" ]; then
-  brew install --c++11 \
+  brew install \
     asio \
     autoconf \
     ecasound \
@@ -24,6 +24,7 @@ if [ "$TRAVIS_OS_NAME" == "linux" ]; then
   sudo apt-get install -y \
     libasio-dev \
     qt5-default \
+    libqt5opengl5-dev \
     libecasoundc-dev \
     doxygen \
     ecasound \

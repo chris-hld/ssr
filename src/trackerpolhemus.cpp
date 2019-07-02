@@ -31,7 +31,6 @@
 #include <termios.h> // for cfsetispeed(), ...
 #include <sstream>   // for std::stringstream
 #include <cassert>   // for assert()
-#include <thread>    // std::this_thread::sleep_for
 #include <chrono>    // std::chrono::milliseconds
 
 #ifndef _WIN32
@@ -64,9 +63,8 @@ ssr::TrackerPolhemus::TrackerPolhemus(api::Publisher& controller
     , const std::string& type, const std::string& ports)
   : Tracker()
   , _controller(controller)
-  , _stopped(false)
   , _az_corr(0.0f)
-  , _thread_id(0)
+  , _stop_thread(false)
 {
   if (ports == "")
   {
@@ -168,8 +166,8 @@ ssr::TrackerPolhemus::TrackerPolhemus(api::Publisher& controller
 
 ssr::TrackerPolhemus::~TrackerPolhemus()
 {
-  // if thread was started
-  if (_thread_id) _stop();
+  // stop thread
+  _stop();
   close(_tracker_port);
 }
 
@@ -221,28 +219,23 @@ void
 ssr::TrackerPolhemus::_start()
 {
   // create thread
-  pthread_create(&_thread_id , nullptr, _thread, this);
+  _tracker_thread = std::thread(&ssr::TrackerPolhemus::_thread, this);
   VERBOSE("Starting tracker ...");
 }
 
 void
 ssr::TrackerPolhemus::_stop()
 {
-  // dummy
-  void *thread_exit_status;
-
-  _stopped = true;
-  pthread_join(_thread_id , &thread_exit_status);
+  _stop_thread = true;
+  if (_tracker_thread.joinable())
+  {
+    VERBOSE2("Stopping tracker...");
+    _tracker_thread.join();
+  }
 }
 
-void*
-ssr::TrackerPolhemus::_thread(void *arg)
-{
-  return reinterpret_cast<TrackerPolhemus*> (arg)->thread(nullptr);
-}
-
-void*
-ssr::TrackerPolhemus::thread(void *arg)
+void
+ssr::TrackerPolhemus::_thread()
 {
   char c;
   std::string line;
@@ -252,7 +245,7 @@ ssr::TrackerPolhemus::thread(void *arg)
   fds.fd = _tracker_port;
   fds.events = POLLRDNORM;
 
-  while (!_stopped)
+  while (!_stop_thread)
   {
     c = 0;
     line.clear();
@@ -324,8 +317,7 @@ ssr::TrackerPolhemus::thread(void *arg)
               >> _current_data.elevation
               >> _current_data.roll;
 
-    _controller.take_control()->reference_offset_rotation(
+    _controller.take_control()->reference_rotation_offset(
         Orientation(-_current_data.azimuth + _az_corr));
   };
-  return arg;
 }

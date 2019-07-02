@@ -93,7 +93,7 @@ class BrsRenderer::Source : public _base::Source
       , _brtf_index(size_t(-1))
     {
       SndfileHandle ir_file
-        = apf::load_sndfile(p.get<std::string>("properties_file")
+        = apf::load_sndfile(p.get<std::string>("properties-file")
             , this->parent.sample_rate(), 0);
 
       size_t no_of_channels = ir_file.channels();
@@ -144,8 +144,9 @@ class BrsRenderer::Source : public _base::Source
 
       _weighting_factor = this->weighting_factor;
 
-      auto ori = _input.parent.state.reference_orientation
-        + _input.parent.state.reference_offset_orientation;
+      auto ori = Orientation(_input.parent.state.reference_rotation)
+        + Orientation(_input.parent.state.reference_rotation_offset)
+        - Orientation(90);
       float azi = ori.azimuth;
 
       // get BRTF index from listener orientation
@@ -286,13 +287,13 @@ BrsRenderer::load_reproduction_setup()
   if (prefix != "")
   {
     // TODO: read target from proper reproduction file
-    params.set("connect_to", prefix + "1");
+    params.set("connect-to", prefix + "1");
   }
   this->add(params);
 
   if (prefix != "")
   {
-    params.set("connect_to", prefix + "2");
+    params.set("connect-to", prefix + "2");
   }
   this->add(params);
 }
