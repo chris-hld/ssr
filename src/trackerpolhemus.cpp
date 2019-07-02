@@ -261,7 +261,6 @@ ssr::TrackerPolhemus::_thread()
       if (error < 1)
       {
         SSRERROR("Can not read from serial port. Stopping Polhemus tracker.");
-        return arg;
       }
 
       if ((error = read(_tracker_port, &c, 1)))
@@ -271,7 +270,6 @@ ssr::TrackerPolhemus::_thread()
       else
       {
         SSRERROR("Can not read from serial port.");
-        return arg;
       }
     }
 

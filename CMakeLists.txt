@@ -212,10 +212,10 @@ endif(GUI)
 option(ENABLE_IP_INTERFACE "network (TCP/IP) interface" ON)
 if(ENABLE_IP_INTERFACE)
   list(APPEND SOURCE_FILES
-    src/network/commandparser.cpp
-    src/network/connection.cpp
-    src/network/networksubscriber.cpp
-    src/network/server.cpp
+    src/legacy_network/commandparser.cpp
+    src/legacy_network/connection.cpp
+    src/legacy_network/networksubscriber.cpp
+    src/legacy_network/server.cpp
     )
   include_directories(${PROJECT_SOURCE_DIR}/src/network)
   add_definitions(-DASIO_STANDALONE)

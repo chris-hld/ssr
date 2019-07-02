@@ -1999,7 +1999,7 @@ Controller<Renderer>::_new_source(id_t requested_id, const std::string& name
 
   if (id != "" && !std::regex_match(id, _re_ncname))
   {
-    ERROR("Invalid source ID: " << id);
+    SSRERROR("Invalid source ID: " << id);
     return;
   }
 
