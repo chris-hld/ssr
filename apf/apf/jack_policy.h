@@ -119,13 +119,13 @@ struct thread_traits<jack_policy, pthread_t>
   {
     if (obj.is_realtime())
     {
-      struct sched_param param;
-      param.sched_priority = obj.get_real_time_priority();
       #ifndef _WIN32
-      if (pthread_setschedparam(thread_id, SCHED_FIFO, &param))
-      {
-        throw std::runtime_error("Can't set scheduling priority for thread!");
-      }
+        struct sched_param param;
+        param.sched_priority = obj.get_real_time_priority();
+        if (pthread_setschedparam(thread_id, SCHED_FIFO, &param))
+        {
+          throw std::runtime_error("Can't set scheduling priority for thread!");
+        }
       #else
       // TODO: Windows scheduling
         printf("Realtime scheduling not available under Windows.\n");
@@ -135,6 +135,7 @@ struct thread_traits<jack_policy, pthread_t>
     {
       // do nothing
     }
+
 #ifdef APF_JACK_POLICY_DEBUG
     struct sched_param param;
     int policy;
