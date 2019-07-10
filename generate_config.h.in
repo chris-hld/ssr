@@ -19,6 +19,9 @@
 /* Polhemus Fastrak/Patriot tracker support */
 #cmakedefine ENABLE_POLHEMUS 1
 
+/* VRPN tracker support */
+#cmakedefine ENABLE_VRPN 1
+
 /*?? support for isatty() ??*/
 #cmakedefine ENABLE_ISATTY 1
 

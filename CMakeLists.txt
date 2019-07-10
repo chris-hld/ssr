@@ -231,6 +231,8 @@ endif(ENABLE_IP_INTERFACE)
 
 # Head tracker
 option(HEAD_TRACKER "Basic head tracker support" ON)
+option(HEAD_TRACKER_VRPN "VRPN head tracker support" ON)
+
 if(HEAD_TRACKER)
   list(APPEND SOURCE_FILES
     src/trackerrazor.cpp
@@ -243,6 +245,22 @@ if(HEAD_TRACKER)
     add_definitions(-DENABLE_O_NDELAY_WORKAROUND)  # bits/fcntl2.h
   endif(WIN32)
   message(STATUS "Basic head tracker support")
+
+  if(HEAD_TRACKER_VRPN)
+    include_directories(${EXTERN_PATH}/include/vrpn)
+    list(APPEND SOURCE_FILES
+      src/trackervrpn.cpp
+      )
+    set(ENABLE_VRPN ON)
+    find_library(VRPN_LIBRARY NAMES libvrpn)
+    list(APPEND LINKLIBS ${VRPN_LIBRARY})
+    message(STATUS "Found VRPN :" ${VRPN_LIBRARY})
+    find_library(QUAT_LIBRARY NAMES libquat)
+    list(APPEND LINKLIBS ${QUAT_LIBRARY})
+    message(STATUS "Found VRPN QUAT:" ${QUAT_LIBRARY})
+    message(STATUS "VRPN head tracker support")
+  endif(HEAD_TRACKER_VRPN)
+
 else(HEAD_TRACKER)
   message(WARNING "HEAD_TRACKER disabled.")
 endif(HEAD_TRACKER)
@@ -273,18 +291,18 @@ message(STATUS "Debug Flags: " ${CMAKE_CXX_FLAGS_DEBUG})
 set(EXECUTABLES
     ssr-binaural
     ssr-brs
-    ssr-vbap
-    ssr-wfs
-    ssr-aap
-    ssr-dca
+#    ssr-vbap
+#    ssr-wfs
+#    ssr-aap
+#    ssr-dca
     ssr-generic
     )
 add_executable(ssr-binaural src/ssr_binaural.cpp ${SOURCE_FILES})
 add_executable(ssr-brs src/ssr_brs.cpp ${SOURCE_FILES})
-add_executable(ssr-vbap src/ssr_vbap.cpp ${SOURCE_FILES})
-add_executable(ssr-wfs src/ssr_wfs.cpp ${SOURCE_FILES})
-add_executable(ssr-aap src/ssr_aap.cpp ${SOURCE_FILES})
-add_executable(ssr-dca src/ssr_dca.cpp ${SOURCE_FILES})
+#add_executable(ssr-vbap src/ssr_vbap.cpp ${SOURCE_FILES})
+#add_executable(ssr-wfs src/ssr_wfs.cpp ${SOURCE_FILES})
+#add_executable(ssr-aap src/ssr_aap.cpp ${SOURCE_FILES})
+#add_executable(ssr-dca src/ssr_dca.cpp ${SOURCE_FILES})
 add_executable(ssr-generic src/ssr_generic.cpp ${SOURCE_FILES})
 
 
