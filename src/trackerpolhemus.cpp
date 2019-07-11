@@ -54,7 +54,6 @@
 #include "api.h"  // for Publisher
 #include "legacy_orientation.h"  // for Orientation
 #include "trackerpolhemus.h"
-#include "ssr_global.h"
 #include "apf/stringtools.h"
 
 using apf::str::A2S;
@@ -63,7 +62,7 @@ ssr::TrackerPolhemus::TrackerPolhemus(api::Publisher& controller
     , const std::string& type, const std::string& ports)
   : Tracker()
   , _controller(controller)
-  , _az_corr(0.0f)
+  , _current_azimuth(0.0)
   , _stop_thread(false)
 {
   if (ports == "")
@@ -210,12 +209,6 @@ ssr::TrackerPolhemus::_open_serial_port(const char *portname)
 }
 
 void
-ssr::TrackerPolhemus::calibrate()
-{
-  _az_corr = _current_data.azimuth + 90;
-}
-
-void
 ssr::TrackerPolhemus::_start()
 {
   // create thread
@@ -244,6 +237,17 @@ ssr::TrackerPolhemus::_thread()
   int error;
   fds.fd = _tracker_port;
   fds.events = POLLRDNORM;
+
+  struct
+    {
+      float header{};
+      float x{};
+      float y{};
+      float z{};
+      float azimuth{};
+      float elevation{};
+      float roll{};
+    } _current_data{} ;
 
   while (!_stop_thread)
   {
@@ -315,7 +319,9 @@ ssr::TrackerPolhemus::_thread()
               >> _current_data.elevation
               >> _current_data.roll;
 
-    _controller.take_control()->reference_rotation_offset(
-        Orientation(-_current_data.azimuth + _az_corr));
+    // Write back to tracker_data
+    Tracker::current_data.yaw = _current_data.azimuth;
+    Tracker::current_data.pitch = _current_data.elevation;
+    Tracker::current_data.roll = _current_data.roll;
   };
 }

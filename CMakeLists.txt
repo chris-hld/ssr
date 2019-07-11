@@ -292,7 +292,7 @@ set(EXECUTABLES
     ssr-binaural
     ssr-brs
 #    ssr-vbap
-#    ssr-wfs
+    ssr-wfs
 #    ssr-aap
 #    ssr-dca
     ssr-generic
@@ -300,7 +300,7 @@ set(EXECUTABLES
 add_executable(ssr-binaural src/ssr_binaural.cpp ${SOURCE_FILES})
 add_executable(ssr-brs src/ssr_brs.cpp ${SOURCE_FILES})
 #add_executable(ssr-vbap src/ssr_vbap.cpp ${SOURCE_FILES})
-#add_executable(ssr-wfs src/ssr_wfs.cpp ${SOURCE_FILES})
+add_executable(ssr-wfs src/ssr_wfs.cpp ${SOURCE_FILES})
 #add_executable(ssr-aap src/ssr_aap.cpp ${SOURCE_FILES})
 #add_executable(ssr-dca src/ssr_dca.cpp ${SOURCE_FILES})
 add_executable(ssr-generic src/ssr_generic.cpp ${SOURCE_FILES})
