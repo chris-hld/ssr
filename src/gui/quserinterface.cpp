@@ -125,7 +125,7 @@ ssr::QUserInterface::QUserInterface(api::Publisher& controller
 
   _controlsParent = new QLabel(this, Qt::Window | Qt::CustomizeWindowHint | Qt::WindowTitleHint);
   _controlsParent->setFixedSize(900, 75);
-  //_controlsParent->move(200, 780);
+  _controlsParent->move(200, 780);
   _controlsParent->setWindowTitle("Controls");
   _controlsParent->installEventFilter(this);
   _controlsParent->show();
@@ -269,6 +269,8 @@ ssr::QUserInterface::~QUserInterface()
   }
   _scene_button_list.clear();
 
+    _controlsParent->close();
+  delete _controlsParent;
 }
 
 /// Skips back to the beginning of the scene
@@ -1201,10 +1203,17 @@ void ssr::QUserInterface::keyPressEvent(QKeyEvent *event)
   case Qt::Key_F11: {if (!isFullScreen()) setWindowState(Qt::WindowFullScreen);
       else setWindowState( Qt::WindowNoState );} break;
   case Qt::Key_C: {if (event->modifiers() == Qt::ControlModifier)
+      {
         close();
+        this->~QUserInterface();
+      }
       else
         break;}
-  case Qt::Key_Escape: close();
+  case Qt::Key_Escape:
+      {
+        close();
+        this->~QUserInterface();
+      }
   } // switch
 }
 
