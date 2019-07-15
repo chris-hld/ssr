@@ -81,6 +81,7 @@ class TrackerRazor : public Tracker
       // Push updates to SSR
       this->update(*Tracker::get_tracker_data());
     }
+    void on_error(const std::string &msg) { SSR_ERROR("Razor AHRS: " << msg); }
 
     void on_error(const std::string &msg) { SSRERROR("Razor AHRS: " << msg); }
 

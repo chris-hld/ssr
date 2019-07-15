@@ -69,7 +69,7 @@ ssr::TrackerPolhemus::TrackerPolhemus(api::Publisher& controller
   {
     throw std::runtime_error("No serial port(s) specified!");
   }
-  VERBOSE("Opening serial port for Polhemus Fastrak/Patriot ...");
+  SSR_VERBOSE("Opening serial port for Polhemus Fastrak/Patriot ...");
 
   std::istringstream iss(ports);
   std::string port;
@@ -77,15 +77,15 @@ ssr::TrackerPolhemus::TrackerPolhemus(api::Publisher& controller
   {
     if (port != "")
     {
-      VERBOSE_NOLF("Trying to open port " << port << " ... ");
+      SSR_VERBOSE_NOLF("Trying to open port " << port << " ... ");
       _tracker_port = _open_serial_port(port.c_str());
       if (_tracker_port == -1)
       {
-        VERBOSE("failure!");
+        SSR_VERBOSE("failure!");
       }
       else
       {
-        VERBOSE("success!");
+        SSR_VERBOSE("success!");
         break; // stop trying
       }
     }
@@ -181,7 +181,7 @@ ssr::TrackerPolhemus::create(api::Publisher& controller
   }
   catch(std::runtime_error& e)
   {
-    SSRERROR(e.what());
+    SSR_ERROR(e.what());
   }
   return temp;
 }
@@ -213,7 +213,7 @@ ssr::TrackerPolhemus::_start()
 {
   // create thread
   _tracker_thread = std::thread(&ssr::TrackerPolhemus::_thread, this);
-  VERBOSE("Starting tracker ...");
+  SSR_VERBOSE("Starting tracker ...");
 }
 
 void
@@ -222,7 +222,7 @@ ssr::TrackerPolhemus::_stop()
   _stop_thread = true;
   if (_tracker_thread.joinable())
   {
-    VERBOSE2("Stopping tracker...");
+    SSR_VERBOSE2("Stopping tracker...");
     _tracker_thread.join();
   }
 }
@@ -264,7 +264,7 @@ ssr::TrackerPolhemus::_thread()
 
       if (error < 1)
       {
-        SSRERROR("Can not read from serial port. Stopping Polhemus tracker.");
+        SSR_ERROR("Can not read from serial port. Stopping Polhemus tracker.");
       }
 
       if ((error = read(_tracker_port, &c, 1)))
@@ -273,7 +273,7 @@ ssr::TrackerPolhemus::_thread()
       }
       else
       {
-        SSRERROR("Can not read from serial port.");
+        SSR_ERROR("Can not read from serial port.");
       }
     }
 

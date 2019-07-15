@@ -35,7 +35,7 @@
 #include <vector>
 
 #include "api.h"
-#include "ssr_global.h"  // for VERBOSE()
+#include "ssr_global.h"  // for SSR_VERBOSE()
 
 namespace ssr
 {
@@ -143,7 +143,7 @@ private:
     auto src = _source_map.find(id);
     if (src == _source_map.end())
     {
-      WARNING("Source \"" << id << "\" doesn't exist!");
+      SSR_WARNING("Source \"" << id << "\" doesn't exist!");
     }
     else
     {
@@ -164,7 +164,7 @@ private:
     assert(erased < 2);
     if (erased == 0)
     {
-      WARNING("Source \"" << id << "\" not available, couldn't delete");
+      SSR_WARNING("Source \"" << id << "\" not available, couldn't delete");
     }
     else
     {
@@ -241,7 +241,7 @@ private:
 
   void new_source(id_t id) override
   {
-    VERBOSE("Adding source \"" << id << "\" to source map");
+    SSR_VERBOSE("Adding source \"" << id << "\" to source map");
     auto [iter, inserted] = _source_map.try_emplace(id);
     if (inserted)
     {
@@ -249,7 +249,7 @@ private:
     }
     else
     {
-      SSRERROR("Source \"" << id << "\" already existed in the source map");
+      SSR_ERROR("Source \"" << id << "\" already existed in the source map");
     }
   }
 
@@ -259,7 +259,7 @@ private:
     auto src = _source_map.find(id);
     if (src == _source_map.end())
     {
-      SSRERROR("Source \"" << id << "\" doesn't exist!");
+      SSR_ERROR("Source \"" << id << "\" doesn't exist!");
     }
     else
     {
