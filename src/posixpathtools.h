@@ -154,7 +154,7 @@ inline bool getcwd(std::string& path)
         #ifndef _WIN32
         fchdir(start_fd);
         #else
-        WARNING("fchdir() not available on Windows.");
+        SSR_WARNING("fchdir() not available on Windows.");
         #endif
       }
     }

@@ -59,7 +59,7 @@ class TrackerRazor : public Tracker
 
   virtual void calibrate() override
   {
-      VERBOSE2("Calibrate.");
+      SSR_VERBOSE2("Calibrate.");
       Tracker::azi_correction = _current_azimuth + 90;
   }
 
@@ -82,8 +82,6 @@ class TrackerRazor : public Tracker
       this->update(*Tracker::get_tracker_data());
     }
     void on_error(const std::string &msg) { SSR_ERROR("Razor AHRS: " << msg); }
-
-    void on_error(const std::string &msg) { SSRERROR("Razor AHRS: " << msg); }
 
     void update(const Tracker::Tracker_data &_data) override;
 

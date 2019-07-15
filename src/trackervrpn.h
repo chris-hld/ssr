@@ -59,7 +59,7 @@ class TrackerVrpn : public Tracker, public vrpn_Tracker_Remote
 
     virtual void calibrate() override
     {
-        VERBOSE2("Calibrate.");
+        SSR_VERBOSE2("Calibrate.");
         Tracker::azi_correction = _current_azimuth + 90;
     }
 

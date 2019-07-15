@@ -30,7 +30,7 @@
 #include <functional>
 #include <memory>
 #include "connection.h"
-#include "ssr_global.h"  // for VERBOSE2()
+#include "ssr_global.h"  // for SSR_VERBOSE2()
 
 using ssr::legacy_network::Connection;
 
@@ -54,7 +54,7 @@ Connection::pointer
 Connection::create(asio::io_service &io_service
     , api::Publisher& controller, char end_of_message_character)
 {
-  VERBOSE2("New network connection ...");
+  SSR_VERBOSE2("New network connection ...");
   return pointer(new Connection(io_service, controller
       , end_of_message_character));
 }

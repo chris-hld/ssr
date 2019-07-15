@@ -76,7 +76,7 @@ Server::handle_accept(Connection::pointer new_connection
     // A hack to mimic the old behavior of the legacy network interface:
     new_connection->write(_scene_provider.get_scene_as_XML());
     new_connection->start();
-    VERBOSE2("Network connection accepted.");
+    SSR_VERBOSE2("Network connection accepted.");
 
     start_accept();
   }
@@ -86,7 +86,7 @@ void
 Server::start()
 {
   _network_thread = new std::thread(std::bind(&Server::run, this));
-  VERBOSE2("Created network thread.");
+  SSR_VERBOSE2("Created network thread.");
 }
 
 void
