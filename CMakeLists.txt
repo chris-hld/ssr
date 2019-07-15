@@ -247,18 +247,28 @@ if(HEAD_TRACKER)
   message(STATUS "Basic head tracker support")
 
   if(HEAD_TRACKER_VRPN)
-    include_directories(${EXTERN_PATH}/include/vrpn)
-    list(APPEND SOURCE_FILES
-      src/trackervrpn.cpp
-      )
-    set(ENABLE_VRPN ON)
+    if(WIN32)
+      include_directories(${EXTERN_PATH}/include/vrpn)
+      list(APPEND SOURCE_FILES
+        src/trackervrpn.cpp
+        )
+    endif(WIN32)
+
     find_library(VRPN_LIBRARY NAMES libvrpn)
-    list(APPEND LINKLIBS ${VRPN_LIBRARY})
-    message(STATUS "Found VRPN :" ${VRPN_LIBRARY})
-    find_library(QUAT_LIBRARY NAMES libquat)
-    list(APPEND LINKLIBS ${QUAT_LIBRARY})
-    message(STATUS "Found VRPN QUAT:" ${QUAT_LIBRARY})
-    message(STATUS "VRPN head tracker support")
+
+    if(VRPN_LIBRARY)
+      message(STATUS "Found VRPN :" ${VRPN_LIBRARY})
+      set(ENABLE_VRPN ON)
+      list(APPEND LINKLIBS ${VRPN_LIBRARY})
+
+      find_library(QUAT_LIBRARY NAMES libquat)
+      list(APPEND LINKLIBS ${QUAT_LIBRARY})
+      message(STATUS "Found VRPN QUAT:" ${QUAT_LIBRARY})
+      message(STATUS "VRPN head tracker support")
+    else(VRPN_LIBRARY)
+      message(WARNING "No VRPN head tracker support")
+      set(ENABLE_VRPN OFF)
+    endif(VRPN_LIBRARY)
   endif(HEAD_TRACKER_VRPN)
 
 else(HEAD_TRACKER)
